@@ -10,3 +10,5 @@ coverage/
 *.log
 .env*
 !.env.example
+python/cache/scan/
+python/cache/super_opportunities.json

@@ -13,6 +13,7 @@ import { PythonDataConsole } from './components/PythonDataConsole';
 import { SpotlightSearch } from './components/SpotlightSearch';
 import { WarrenFAB } from './components/WarrenFAB';
 import { OnboardingFlow } from './components/OnboardingFlow';
+import { SuperOpportunities } from './components/SuperOpportunities';
 import {
   CompanyAnalysis,
   PortfolioStats,
@@ -67,7 +68,7 @@ function AppContent() {
 
   // Sync default tab based on view mode
   useEffect(() => {
-    if (viewMode === 'simple' && (activeTab === 'simulator' || activeTab === 'impact')) {
+    if (viewMode === 'simple' && (activeTab === 'simulator' || activeTab === 'impact' || activeTab === 'opportunities')) {
       setActiveTab('fundamental');
     }
   }, [viewMode, activeTab]);
@@ -492,6 +493,15 @@ function AppContent() {
             onOpenPythonConsole={(ticker) => {
               setPythonConsoleTicker(ticker || selectedCompany?.ticker || 'KO');
               setIsPythonConsoleOpen(true);
+            }}
+          />
+        )}
+
+        {activeTab === 'opportunities' && viewMode === 'analyst' && (
+          <SuperOpportunities
+            onLoadCompany={(company) => {
+              handleAddCustomCompany(company);
+              setActiveTab('fundamental');
             }}
           />
         )}

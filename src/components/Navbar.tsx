@@ -9,11 +9,12 @@ import {
   Users,
   Search,
   Zap,
-  Gauge
+  Gauge,
+  Rocket
 } from 'lucide-react';
 import { ViewMode } from '../types';
 
-export type AppTab = 'fundamental' | 'simulator' | 'gamification' | 'impact' | 'methodology';
+export type AppTab = 'fundamental' | 'opportunities' | 'simulator' | 'gamification' | 'impact' | 'methodology';
 
 interface NavbarProps {
   activeTab: AppTab;
@@ -49,6 +50,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       icon: BarChart3,
       iconColor: 'text-accent',
       tag: 'Análisis de Empresas'
+    },
+    {
+      id: 'opportunities' as const,
+      label: 'Superoportunidades',
+      title: 'Escáner de Superoportunidades',
+      subtitle: 'Deep Value + catalizadores en el S&P 500',
+      icon: Rocket,
+      iconColor: 'text-emerald-600',
+      tag: 'Solo Analista'
     },
     {
       id: 'simulator' as const,
@@ -88,9 +98,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   ];
 
-  // En Modo Simple: ocultar Simulador y Evaluación DiD por defecto
+  // En Modo Simple: ocultar Simulador, Evaluación DiD y el escáner de Superoportunidades
   const visibleModules = viewMode === 'simple'
-    ? modules.filter(m => m.id !== 'simulator' && m.id !== 'impact')
+    ? modules.filter(m => m.id !== 'simulator' && m.id !== 'impact' && m.id !== 'opportunities')
     : modules;
 
   return (

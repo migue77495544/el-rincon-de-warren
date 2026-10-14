@@ -13,6 +13,9 @@ const execFileAsync = promisify(execFile);
 // Fuentes financieras: timeouts, errores estructurados y caché
 // -------------------------------------------------------------
 const DATA_TIMEOUT_MS = 25000;
+// 'company' encadena info + balances + resultados + flujos + Damodaran + consenso: en Render
+// (CPU compartida) supera con facilidad los 25 s y la importación fallaba por timeout.
+const COMPANY_TIMEOUT_MS = 50000;
 const TIMEOUT_MESSAGE = 'Tiempo de espera agotado al consultar la fuente financiera. Reintenta la búsqueda.';
 const SOURCE_ERROR_MESSAGE = 'No se pudo consultar la fuente financiera. Reintenta la búsqueda.';
 
@@ -108,7 +111,8 @@ async function runPythonEngine(args: string[]): Promise<any> {
   const command = args[0];
   if (!CACHEABLE_COMMANDS.has(command)) return execPython(args, DATA_TIMEOUT_MS);
   const ttl = command === 'price' ? PRICE_TTL_MS : DATA_TTL_MS;
-  return cached(`py:${args.join('\u0001')}`, ttl, () => execPython(args, DATA_TIMEOUT_MS));
+  const timeoutMs = command === 'company' ? COMPANY_TIMEOUT_MS : DATA_TIMEOUT_MS;
+  return cached(`py:${args.join('\u0001')}`, ttl, () => execPython(args, timeoutMs));
 }
 
 // fetch con límite de tiempo para las llamadas directas a Yahoo Finance
@@ -279,9 +283,10 @@ function resolveTicker(query: string): { ticker: string; formalName?: string; se
     return { ticker: exactMatch.ticker, formalName: exactMatch.formalName, sector: exactMatch.sector };
   }
 
-  // 2. Búsqueda por alias o nombre
+  // 2. Búsqueda por alias o nombre. Con 1-2 caracteres solo alias exacto: la coincidencia
+  // parcial convertía tickers cortos reales ("F" de Ford) en otra empresa ("facebook" → META)
   const nameMatch = KNOWN_STOCK_DIRECTORY.find(k =>
-    k.names.some(n => lower === n || lower.includes(n) || n.includes(lower))
+    k.names.some(n => lower === n || (lower.length > 2 && (lower.includes(n) || n.includes(lower))))
   );
   if (nameMatch) {
     return { ticker: nameMatch.ticker, formalName: nameMatch.formalName, sector: nameMatch.sector };
@@ -538,6 +543,121 @@ app.get('/api/python/tracking-error/:ticker', async (req, res) => {
   }
 });
 
+// -------------------------------------------------------------
+// MÓDULO ANALISTA: Escáner de Superoportunidades (Deep Value + Catalizadores)
+// -------------------------------------------------------------
+// El escaneo recorre ~170 empresas del S&P 500 (≈1-2 min sin caché), así que corre en segundo plano:
+// la petición espera como mucho SCAN_WAIT_MS y, si no ha terminado, responde status 'escaneando'
+// para que la UI vuelva a consultar. El resultado se guarda 24 h en memoria.
+const SCAN_TTL_MS = 24 * 60 * 60 * 1000;
+// El motor se autolimita a 4 min de descargas; margen para arranque y cálculo
+const SCAN_TIMEOUT_MS = 6 * 60 * 1000;
+const SCAN_WAIT_MS = 15000;
+const SCAN_MIN_REFRESH_MS = 15 * 60 * 1000;
+const SCAN_DISK_CACHE = path.resolve(process.cwd(), 'python', 'cache', 'super_opportunities.json');
+
+let scanResult: { data: any; expires: number; generatedAt: number } | null = null;
+let scanInflight: { promise: Promise<any>; startedAt: number } | null = null;
+let scanLastError: string | null = null;
+let scanLastErrorAt = 0;
+const SCAN_RETRY_MS = 2 * 60 * 1000;
+
+function startOpportunityScan(refresh: boolean): Promise<any> {
+  if (scanInflight) return scanInflight.promise;
+  const args = ['super-opportunities', ...(refresh ? ['--refresh'] : [])];
+  const promise = execPython(args, SCAN_TIMEOUT_MS)
+    .then(data => {
+      if (!data?.success) throw Object.assign(new Error(data?.error || 'Escaneo sin resultados'), { userMessage: data?.error });
+      // La vigencia cuenta desde que el motor generó el escaneo (puede venir de su caché en disco)
+      const generatedAt = Date.parse(data.generadoEn) || Date.now();
+      scanResult = { data, expires: generatedAt + SCAN_TTL_MS, generatedAt };
+      scanLastError = null;
+      return data;
+    })
+    .catch(err => {
+      scanLastError = err instanceof UpstreamTimeoutError
+        ? 'El escaneo superó el tiempo límite. Reintenta en unos minutos.'
+        : (err?.userMessage || 'No se pudo completar el escaneo con Yahoo Finance.');
+      scanLastErrorAt = Date.now();
+      throw err;
+    })
+    .finally(() => { scanInflight = null; });
+  scanInflight = { promise, startedAt: Date.now() };
+  return promise;
+}
+
+// Último escaneo guardado por el motor Python (aunque haya caducado): degradación a datos locales
+function readStaleScan(): any | null {
+  try {
+    const data = JSON.parse(fs.readFileSync(SCAN_DISK_CACHE, 'utf-8'));
+    return data?.success ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+function sendScan(res: express.Response, data: any, source: string, extra: Record<string, any> = {}) {
+  return res.json({
+    ...data,
+    success: true,
+    status: 'listo',
+    source: `${data.source} (${source})`,
+    cache: {
+      generadoEn: data.generadoEn,
+      expiraEn: scanResult?.data === data ? new Date(scanResult.expires).toISOString() : null
+    },
+    ...extra
+  });
+}
+
+app.get('/api/analyst/super-opportunities', async (req, res) => {
+  const wantsRefresh = req.query.refresh === 'true';
+  // Un refresco forzado solo se acepta si el resultado tiene más de 15 min: protege el límite de Yahoo
+  const refresh = wantsRefresh && (!scanResult || Date.now() - scanResult.generatedAt > SCAN_MIN_REFRESH_MS);
+
+  if (scanResult && scanResult.expires > Date.now() && !refresh) {
+    return sendScan(res, scanResult.data, 'caché en memoria');
+  }
+
+  const scanning = (startedAt: number) => {
+    const stale = scanResult?.data || readStaleScan();
+    return res.json({
+      success: true,
+      status: 'escaneando',
+      iniciadoEn: new Date(startedAt).toISOString(),
+      message: 'Escaneando el S&P 500 con datos de Yahoo Finance. Suele tardar entre 1 y 2 minutos.',
+      ultimoResultado: stale
+    });
+  };
+
+  if (scanInflight) return scanning(scanInflight.startedAt);
+
+  // Fallo reciente en segundo plano: se informa sin relanzar el escaneo en cada sondeo de la UI
+  if (scanLastError && Date.now() - scanLastErrorAt < SCAN_RETRY_MS) {
+    const stale = scanResult?.data || readStaleScan();
+    if (stale) return sendScan(res, stale, 'último escaneo guardado', { stale: true, aviso: scanLastError });
+    return res.status(502).json({ success: false, error: true, message: scanLastError });
+  }
+
+  const promise = startOpportunityScan(refresh);
+  const startedAt = scanInflight?.startedAt ?? Date.now();
+  promise.catch(() => {}); // el error se informa en la siguiente consulta mediante scanLastError
+  try {
+    const data = await Promise.race([
+      promise,
+      new Promise(resolve => setTimeout(() => resolve(null), SCAN_WAIT_MS))
+    ]);
+    if (data) return sendScan(res, data, 'motor Python');
+    return scanning(startedAt);
+  } catch (err: any) {
+    const stale = scanResult?.data || readStaleScan();
+    if (stale) {
+      return sendScan(res, stale, 'último escaneo guardado', { stale: true, aviso: scanLastError });
+    }
+    return sendUpstreamError(res, err, scanLastError || SOURCE_ERROR_MESSAGE);
+  }
+});
+
 
 // Asesores Jairo / Juan Guillermo (Python + Gemini). Si el motor no responde a tiempo o no obtiene
 // datos reales, se devuelve un error estructurado: nunca se sustituye por una respuesta con cifras estimadas.
@@ -680,10 +800,28 @@ app.get('/api/market/search', async (req, res) => {
     console.warn('[MarketSearch] Feed bursátil diferido:', err);
   }
 
+  // Ordenar por relevancia antes de recortar: con consultas cortas ("V", "MA") el ticker exacto
+  // quedaba fuera del top 10 por coincidencias parciales en nombres y sectores.
+  const relevance = (r: { ticker: string; nombre: string }) => {
+    const t = r.ticker.toUpperCase();
+    const n = r.nombre.toLowerCase();
+    if (t === upper || t === upper.replace('.', '-')) return 0;
+    if (n === lower || n.startsWith(`${lower} `)) return 1;
+    if (t.startsWith(upper)) return 2;
+    if (n.startsWith(lower)) return 3;
+    return 4;
+  };
+  const ranked = results
+    .map((r, i) => ({ r, i, score: relevance(r) }))
+    // Con 1-2 caracteres solo valen coincidencias por inicio de ticker o nombre (evita ruido)
+    .filter(x => query.length > 2 || x.score < 4)
+    .sort((a, b) => a.score - b.score || a.i - b.i)
+    .map(x => x.r);
+
   return res.json({
     success: true,
     query,
-    results: results.slice(0, 10)
+    results: ranked.slice(0, 10)
   });
 });
 

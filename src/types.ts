@@ -295,3 +295,70 @@ export interface TrackingErrorData {
   status: 'success' | 'error';
   error?: string;
 }
+
+// Escáner de Superoportunidades (GET /api/analyst/super-opportunities)
+export interface OpportunityCatalyst {
+  tipo: 'recompra' | 'sorpresas_bpa' | 'margen_operativo';
+  nombre: string;
+  activo: boolean;
+  valor: number | null;
+  detalle: string;
+  rendimientoRecompraPct?: number | null;
+  sorpresas?: { trimestre: string; sorpresaPct: number }[];
+  margenActualPct?: number | null;
+  acelera?: boolean;
+}
+
+export interface SuperOpportunity {
+  ticker: string;
+  nombre: string;
+  sector: string;
+  industria: string;
+  precio: number;
+  valorIntrinseco: number | null;
+  valorDcf: number | null;
+  valorGraham: number | null;
+  metodoValoracion: string | null;
+  upsidePct: number | null;
+  descuentoPct: number | null;
+  roicPct: number | null;
+  roePct: number | null;
+  piotroski: number;
+  piotroskiEvaluados: number;
+  piotroskiDetalle: { criterio: string; cumple: boolean | null }[];
+  altmanZ: number | null;
+  fcfYieldPct: number | null;
+  fcfMM: number | null;
+  evMM: number | null;
+  marketCapMM: number;
+  volumenDiarioMM: number;
+  waccPct: number | null;
+  catalizadores: OpportunityCatalyst[];
+  filtros: { id: string; nombre: string; cumple: boolean }[];
+  score: number;
+  desglose: Record<'descuento' | 'calidad' | 'balance' | 'fcf' | 'catalizadores', number>;
+  tesis: string;
+  alertaDatos: string | null;
+}
+
+export interface SuperOpportunitiesScan {
+  success: boolean;
+  status: 'listo' | 'escaneando';
+  source?: string;
+  generadoEn?: string;
+  duracionSeg?: number;
+  universo?: number;
+  analizadas?: number;
+  liquidas?: number;
+  sinDatos?: string[];
+  completo?: boolean;
+  superanFiltros?: number;
+  oportunidades?: SuperOpportunity[];
+  candidatasCercanas?: SuperOpportunity[];
+  cache?: { generadoEn: string; expiraEn: string | null };
+  stale?: boolean;
+  aviso?: string | null;
+  message?: string;
+  iniciadoEn?: string;
+  ultimoResultado?: SuperOpportunitiesScan | null;
+}

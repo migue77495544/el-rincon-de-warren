@@ -3770,6 +3770,15 @@ if __name__ == '__main__':
         }
         print(json.dumps(res, indent=2))
 
+    elif command == 'super-opportunities':
+        # Import diferido: el escáner reutiliza funciones de este módulo
+        from opportunity_scanner import escanear_superoportunidades
+        res = escanear_superoportunidades(refrescar='--refresh' in sys.argv[2:])
+        print(json.dumps(res, ensure_ascii=False))
+        # os._exit: no esperar a hilos de yfinance que sigan colgados tras agotar el presupuesto
+        sys.stdout.flush()
+        os._exit(0)
+
     elif command in ('consulta-dual', 'consultar-dual') and len(sys.argv) >= 3:
         # argv[2] = pregunta (JSON-encoded string), argv[3] = ticker (opcional)
         pregunta = sys.argv[2]
