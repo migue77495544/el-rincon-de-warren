@@ -170,27 +170,33 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
   // Búsqueda inteligente en vivo conectada a la API al escribir
   useEffect(() => {
     const term = searchTerm.trim();
-    if (term.length < 2) {
+    // Tickers de una letra (V, F, T, C) son válidos: se busca desde el primer carácter
+    if (!term) {
       setLiveSearchResults([]);
       setIsSearchingLive(false);
       return;
     }
 
+    let cancelled = false;
     setIsSearchingLive(true);
     const timer = setTimeout(async () => {
       try {
         const data = await fetchJson(`/api/market/search?q=${encodeURIComponent(term)}`, {}, 12000);
-        if (data.success && Array.isArray(data.results)) {
+        // Ignorar respuestas de búsquedas anteriores que lleguen tarde
+        if (!cancelled && data.success && Array.isArray(data.results)) {
           setLiveSearchResults(data.results);
         }
       } catch (err) {
         console.warn('Error en consulta de búsqueda bursátil:', err);
       } finally {
-        setIsSearchingLive(false);
+        if (!cancelled) setIsSearchingLive(false);
       }
-    }, 200);
+    }, 250);
 
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [searchTerm]);
 
   const handleSyncPrices = async () => {
@@ -226,7 +232,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
     // Verificar si ya está en las empresas cargadas en el cliente
     const localMatch = companies.find(
       c => c.ticker.toUpperCase() === query.toUpperCase() ||
-           c.nombre.toLowerCase().includes(query.toLowerCase())
+           (query.length > 2 && c.nombre.toLowerCase().includes(query.toLowerCase()))
     );
     if (localMatch && !directQuery) {
       handleSelectAndOpenCompany(localMatch);
@@ -240,7 +246,8 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
     setSyncStatusBanner(null);
     setShowSearchDropdown(false);
     try {
-      const data = await postJson('/api/market/import', { query, ticker: query });
+      // El servidor puede tardar hasta 50 s en descargar los estados financieros de un ticker nuevo
+      const data = await postJson('/api/market/import', { query, ticker: query }, 60000);
       if (data.success && data.company) {
         if (onAddCustomCompany) {
           onAddCustomCompany(data.company);
@@ -260,6 +267,27 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
     }
   };
 
+  // Enter en el buscador: ticker exacto del catálogo → ticker exacto sugerido en vivo →
+  // primera coincidencia del catálogo → importación en vivo de lo escrito
+  const handleSearchSubmit = () => {
+    const term = searchTerm.trim();
+    if (!term) return;
+    const upper = term.toUpperCase();
+    const openLocal = (company: CompanyAnalysis) => {
+      handleSelectAndOpenCompany(company);
+      setShowSearchDropdown(false);
+    };
+
+    const exactLocal = companies.find(c => c.ticker.toUpperCase() === upper);
+    if (exactLocal) return openLocal(exactLocal);
+
+    const exactLive = liveSearchResults.find(r => r.ticker.toUpperCase() === upper);
+    if (exactLive) return handleImportTicker(undefined, exactLive.ticker);
+
+    if (filteredCompanies.length > 0) return openLocal(filteredCompanies[0]);
+    handleImportTicker(undefined, term);
+  };
+
   const showCustomModal = customModalOpen !== undefined ? customModalOpen : internalCustomModal;
   const setShowCustomModal = (open: boolean) => {
     setInternalCustomModal(open);
@@ -270,10 +298,14 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
   const [customForm, setCustomForm] = useState<CustomCompanyFormData>(INITIAL_CUSTOM_FORM);
 
   const filteredCompanies = companies.filter(c => {
-    const matchesSearch =
-      c.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.sector.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.trim().toLowerCase();
+    // Con 1-2 caracteres ("V", "MA") solo cuenta el inicio del ticker o del nombre:
+    // "contiene" casaba con casi todo el catálogo y Enter abría una empresa equivocada
+    const matchesSearch = term.length <= 2
+      ? c.ticker.toLowerCase().startsWith(term) || c.nombre.toLowerCase().startsWith(term)
+      : c.ticker.toLowerCase().includes(term) ||
+        c.nombre.toLowerCase().includes(term) ||
+        c.sector.toLowerCase().includes(term);
 
     if (!matchesSearch) return false;
 
@@ -483,12 +515,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                   <form
                     onSubmit={e => {
                       e.preventDefault();
-                      if (filteredCompanies.length > 0) {
-                        handleSelectAndOpenCompany(filteredCompanies[0]);
-                        setShowSearchDropdown(false);
-                      } else if (searchTerm.trim()) {
-                        handleImportTicker(undefined, searchTerm);
-                      }
+                      handleSearchSubmit();
                     }}
                     className="relative"
                   >
@@ -505,12 +532,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                       onKeyDown={e => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
-                          if (filteredCompanies.length > 0) {
-                            handleSelectAndOpenCompany(filteredCompanies[0]);
-                            setShowSearchDropdown(false);
-                          } else if (searchTerm.trim()) {
-                            handleImportTicker(undefined, searchTerm);
-                          }
+                          handleSearchSubmit();
                         }
                       }}
                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-16 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 shadow-xs"
@@ -1024,12 +1046,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               <form
                 onSubmit={e => {
                   e.preventDefault();
-                  if (filteredCompanies.length > 0) {
-                    handleSelectAndOpenCompany(filteredCompanies[0]);
-                    setShowSearchDropdown(false);
-                  } else if (searchTerm.trim()) {
-                    handleImportTicker(undefined, searchTerm);
-                  }
+                  handleSearchSubmit();
                 }}
                 className="relative"
               >
@@ -1046,12 +1063,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                   onKeyDown={e => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      if (filteredCompanies.length > 0) {
-                        handleSelectAndOpenCompany(filteredCompanies[0]);
-                        setShowSearchDropdown(false);
-                      } else if (searchTerm.trim()) {
-                        handleImportTicker(undefined, searchTerm);
-                      }
+                      handleSearchSubmit();
                     }
                   }}
                   className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-16 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 shadow-xs"
