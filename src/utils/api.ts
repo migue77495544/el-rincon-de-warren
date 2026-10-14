@@ -45,6 +45,11 @@ export async function fetchJson<T = any>(url: string, init: RequestInit = {}, ti
       (res.status === 504 ? TIMEOUT_MESSAGE : `El servidor respondió con un error (HTTP ${res.status}). Reintenta.`);
     throw new ApiError(message, res.status);
   }
+  // 200 sin JSON: el servidor no conoce la ruta y responde con la página de la SPA
+  // (típico de un `npm run dev` arrancado antes de añadir el endpoint)
+  if (body === null) {
+    throw new ApiError('El servidor no reconoce esta función. Reinicia el servidor (npm run dev) y vuelve a intentarlo.', res.status);
+  }
   return body as T;
 }
 
