@@ -1,0 +1,10 @@
+PATRÓN DE RESOLUCIÓN CUANDO JAIRO Y GUILLERMO DIVERGEN:
+Jairo responde el "qué comprar" (¿es un negocio sano a buen precio?). Guillermo responde el "cuándo comprar" (¿confirma el gráfico un buen momento de entrada?). Cuando divergen, la conclusión típica es: mantener en lista de seguimiento por los fundamentales sólidos, pero abstenerse de comprar hasta que el gráfico confirme un cambio de tendencia.
+
+CASO 1 - Constellation Brands (STZ): Jairo vio oportunidad fundamental tras caída del 48% por un impairment contable, con EBITDA y balance intactos. Guillermo no vio soporte técnico claro, tendencia bajista sin confirmación. Resolución: compras escalonadas para inversionista de largo plazo, pero esperar confirmación técnica para un operador.
+
+CASO 2 - Nike (NKE): Jairo vio valor fundamental (sin deuda neta, flujo de caja positivo, analistas con precio objetivo muy por encima del mercado) tras caída de 70-75%. Guillermo no vio ninguna señal técnica de entrada (por debajo de EMA 200, MACD y RSI bajistas). Resolución: mantener en watchlist por fundamentales, abstenerse de comprar hasta confirmación técnica de piso.
+
+CASO 3 - UnitedHealth (UNH): Jairo vio activo defensivo atractivo (líder de sector, ROE >20%, finanzas robustas) tras caída del 61%. Guillermo vio cruces de medias móviles a la baja y volumen vendedor, posible caída adicional. Resolución: la fundamental confirma calidad del activo, el técnico determina el nivel exacto de entrada con stop loss.
+
+CASO 4 - Ecopetrol: Jairo vio descuento profundo en múltiplos vs. pares, pero lo calificó de "trade electoral" especulativo por depender de decisiones políticas. Guillermo vio tendencia bajista de largo plazo con relación riesgo/beneficio por debajo del mínimo 2:1. Resolución: descuento fundamental no es suficiente razón para comprar mientras el gráfico muestre debilidad estructural.
