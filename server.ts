@@ -32,7 +32,8 @@ import { CompanyAnalysis, FinancialRawData } from './src/types';
 import { generateDualAdvisorConsultation, generateJairoOnlyResponse, generateGuillermoOnlyResponse, identifyCompany } from './src/utils/dualAdvisorEngine';
 
 const app = express();
-const PORT = 3000;
+// Render (y otros PaaS) asignan el puerto por la variable PORT; 3000 en local
+const PORT = Number(process.env.PORT) || 3000;
 
 // Las consultas a los asesores descargan datos de mercado y llaman a Gemini (hasta 3 modelos en cadena)
 const ADVISOR_TIMEOUT_MS = 75000;
