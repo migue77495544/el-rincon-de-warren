@@ -19,7 +19,11 @@ import {
   Cpu
 } from 'lucide-react';
 import { CompanyAnalysis } from '../types';
-import { generateDualAdvisorConsultation, generateJairoOnlyResponse, generateGuillermoOnlyResponse, ModeloNegocio, identifyCompany } from '../utils/dualAdvisorEngine';
+import { ModeloNegocio, identifyCompany } from '../utils/dualAdvisorEngine';
+import { postJson, errorMessage } from '../utils/api';
+
+// Algo por encima del timeout del servidor para los asesores (45 s)
+const ADVISOR_CLIENT_TIMEOUT_MS = 50000;
 
 interface JairoGuillermoConsultProps {
   companies: CompanyAnalysis[];
@@ -255,25 +259,11 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
     const isCurrent = () => requestIds.current.diagnosis === requestId;
 
     try {
-      let data: DualResponse | null = null;
-      try {
-        const res = await fetch('/api/python/consulta-dual', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pregunta: q, ticker })
-        });
-        if (res.ok) {
-          const json: DualResponse = await res.json();
-          if (json && json.success && (json.respuesta_jairo || json.respuesta_guillermo)) data = json;
-        }
-      } catch (err: any) {
-        console.warn('[JairoGuillermoConsult] Red no disponible, activando motor analítico:', err);
-      }
-
-      const finalData = data ?? generateDualAdvisorConsultation(q, ticker, companies);
-      if (isCurrent()) setDiagnosis(finalData);
-    } catch (err: any) {
-      if (isCurrent()) setError('Ocurrió un error al procesar la consulta. Por favor intenta nuevamente.');
+      const data = await postJson<DualResponse>('/api/python/consulta-dual', { pregunta: q, ticker }, ADVISOR_CLIENT_TIMEOUT_MS);
+      if (isCurrent()) setDiagnosis(data);
+    } catch (err) {
+      // Sin respuesta real no se muestra un diagnóstico estimado: se informa el error
+      if (isCurrent()) setError(errorMessage(err, 'No se pudo generar el diagnóstico. Reintenta la consulta.'));
     } finally {
       if (isCurrent()) setDiagnosisLoading(false);
     }
@@ -307,29 +297,13 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
     setViewMode('specific');
 
     const endpoint = advisor === 'jairo' ? '/api/python/consulta-jairo' : '/api/python/consulta-guillermo';
-    const localFn = advisor === 'jairo' ? generateJairoOnlyResponse : generateGuillermoOnlyResponse;
 
     try {
-      let data: SingleResponse | null = null;
-      try {
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pregunta: q, ticker: resolvedTicker || undefined })
-        });
-        if (res.ok) {
-          const json: SingleResponse = await res.json();
-          if (json && json.success && json.respuesta) data = json;
-        }
-      } catch (err: any) {
-        console.warn(`[JairoGuillermoConsult] Red no disponible para ${advisor}, activando motor analítico:`, err);
-      }
-
-      const finalData = data ?? localFn(q, resolvedTicker, companies);
-      if (isCurrent()) patchChat(advisor, { result: finalData, loading: false });
-    } catch (err: any) {
+      const data = await postJson<SingleResponse>(endpoint, { pregunta: q, ticker: resolvedTicker || undefined }, ADVISOR_CLIENT_TIMEOUT_MS);
+      if (isCurrent()) patchChat(advisor, { result: data, loading: false });
+    } catch (err) {
       if (isCurrent()) {
-        patchChat(advisor, { loading: false, error: 'Ocurrió un error al procesar la consulta. Por favor intenta nuevamente.' });
+        patchChat(advisor, { loading: false, error: errorMessage(err, 'No se pudo procesar la consulta. Reintenta.') });
       }
     }
   };

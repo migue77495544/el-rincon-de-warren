@@ -38,6 +38,7 @@ import {
   CrosshairMode
 } from 'lightweight-charts';
 import { CompanyAnalysis } from '../types';
+import { fetchJson, postJson, errorMessage } from '../utils/api';
 
 import {
   PricePoint,
@@ -166,38 +167,23 @@ export const CompanyPriceChart: React.FC<CompanyPriceChartProps> = ({ company, s
 
     const fetchHistory = async () => {
       try {
-        const res = await fetch(
+        const data = await fetchJson(
           `/api/python/candles/${encodeURIComponent(company.ticker)}?period=${selectedPeriod}&interval=${selectedInterval}`
         );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (isMounted) {
-          if (data.success && Array.isArray(data.points) && data.points.length > 0) {
-            setHistoryData(data);
-          } else {
-            // Fallback analítico si el subproceso falla
-            const fallbackRange = selectedPeriod === 'max' ? '5y' : selectedPeriod.replace('o', '');
-            const fallbackRes = await fetch(`/api/market/history/${encodeURIComponent(company.ticker)}?range=${fallbackRange}`);
-            if (fallbackRes.ok) {
-              const fallbackData = await fallbackRes.json();
-              setHistoryData(fallbackData);
-            } else {
-              setError(data.error || 'No se pudieron recuperar las velas de cotización.');
-            }
+        if (isMounted) setHistoryData(data);
+      } catch (err) {
+        if (!isMounted) return;
+        console.warn('Error al cargar velas desde motor Python:', err);
+        // Respaldo: histórico real directo de Yahoo Finance (sin indicadores). Si también falla, se muestra el error.
+        try {
+          const fallbackRange = selectedPeriod === 'max' ? '5y' : selectedPeriod.replace('o', '');
+          const fallbackData = await fetchJson(`/api/market/history/${encodeURIComponent(company.ticker)}?range=${fallbackRange}`, {}, 15000);
+          if (isMounted) setHistoryData(fallbackData);
+        } catch (fallbackErr) {
+          if (isMounted) {
+            setHistoryData(null);
+            setError(errorMessage(fallbackErr, errorMessage(err, 'No fue posible cargar el feed de precios.')));
           }
-        }
-      } catch (err: any) {
-        if (isMounted) {
-          console.warn('Error al cargar velas desde motor Python:', err);
-          try {
-            const fallbackRes = await fetch(`/api/market/history/${encodeURIComponent(company.ticker)}?range=1y`);
-            if (fallbackRes.ok) {
-              const fallbackData = await fallbackRes.json();
-              if (isMounted) setHistoryData(fallbackData);
-              return;
-            }
-          } catch {}
-          setError('No fue posible cargar el feed de precios.');
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -217,14 +203,11 @@ export const CompanyPriceChart: React.FC<CompanyPriceChartProps> = ({ company, s
 
     const fetchTargets = async () => {
       try {
-        const res = await fetch(`/api/python/targets/${encodeURIComponent(company.ticker)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted && data.success) {
-            setTargetsData(data);
-          }
-        }
+        const data = await fetchJson(`/api/python/targets/${encodeURIComponent(company.ticker)}`);
+        if (isMounted) setTargetsData(data);
       } catch (err) {
+        // Sin consenso disponible: el gráfico se muestra sin línea objetivo
+        if (isMounted) setTargetsData(null);
         console.warn('Error al consultar targets de analistas:', err);
       }
     };
@@ -239,7 +222,8 @@ export const CompanyPriceChart: React.FC<CompanyPriceChartProps> = ({ company, s
   // Métricas calculadas para cabecera y estadísticas
   const analystTargetMean = targetsData?.targetMean;
   const currentPrice = historyData?.currentPrice ?? company.raw.precioCotizacion;
-  const targetMean = company.targetConsensus?.target_mean ?? analystTargetMean ?? (currentPrice * 1.15);
+  // Solo consenso real de analistas; 0 = sin consenso (no se dibuja ni se calcula margen)
+  const targetMean: number = company.targetConsensus?.target_mean ?? analystTargetMean ?? 0;
   const changePercent = historyData?.changePercent ?? 0;
   const changeAmount = historyData?.change ?? 0;
   const isPositivePeriod = changeAmount >= 0;
@@ -278,24 +262,20 @@ export const CompanyPriceChart: React.FC<CompanyPriceChartProps> = ({ company, s
         ema200: p.ema200 ?? null,
       }));
 
-      const res = await fetch(`/api/market/technical-patterns/${encodeURIComponent(company.ticker)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          points: enrichedPoints,
-          indicators: historyData.indicators ?? null,
-        })
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: TechnicalPatternsResponse = await res.json();
-      if (data.success && Array.isArray(data.patterns)) {
+      // Hasta 3 modelos de Gemini con 20 s cada uno en el servidor
+      const data = await postJson<TechnicalPatternsResponse>(
+        `/api/market/technical-patterns/${encodeURIComponent(company.ticker)}`,
+        { points: enrichedPoints, indicators: historyData.indicators ?? null },
+        65000
+      );
+      if (Array.isArray(data.patterns)) {
         setPatternsData(data);
       } else {
-        setPatternsError('No se pudieron identificar patrones técnicos. Intentá de nuevo.');
+        setPatternsError('No se pudieron identificar patrones técnicos. Intenta de nuevo.');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('[AnalyzePatterns] Error:', err);
-      setPatternsError('Error al conectar con el motor de análisis. Verificá la conexión.');
+      setPatternsError(errorMessage(err, 'Error al conectar con el motor de análisis. Verifica la conexión.'));
     } finally {
       setIsPatternsLoading(false);
     }
@@ -940,7 +920,7 @@ export const CompanyPriceChart: React.FC<CompanyPriceChartProps> = ({ company, s
             {/* Comparativa con Consenso de Wall Street */}
             <div className="flex items-center gap-1.5 text-xs font-semibold font-mono px-3 py-1 rounded-xl border bg-indigo-50 text-indigo-900 border-indigo-200">
               <Target className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Consenso: ${targetMean.toFixed(2)}</span>
+              <span>Consenso: {targetMean > 0 ? `$${targetMean.toFixed(2)}` : 'N/D'}</span>
               <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-bold ${
                 isDiscounted ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
               }`}>
@@ -1161,7 +1141,7 @@ export const CompanyPriceChart: React.FC<CompanyPriceChartProps> = ({ company, s
             Precio Objetivo (Consenso Wall St)
           </span>
           <span className="text-xs sm:text-sm font-bold text-indigo-700 font-mono block mt-0.5">
-            ${targetMean.toFixed(2)}
+            {targetMean > 0 ? `$${targetMean.toFixed(2)}` : 'N/D'}
           </span>
         </div>
 

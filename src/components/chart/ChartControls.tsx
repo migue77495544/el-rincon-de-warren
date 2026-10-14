@@ -309,7 +309,7 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
             title="Mostrar/Ocultar línea de Precio Objetivo de Wall Street"
           >
             <span className="w-2.5 h-0.5 bg-indigo-600 inline-block border-t border-b border-indigo-600"></span>
-            <span>Consenso (~${targetMean.toFixed(2)})</span>
+            <span>Consenso ({targetMean > 0 ? `~$${targetMean.toFixed(2)}` : 'N/D'})</span>
           </button>
         </div>
       </div>

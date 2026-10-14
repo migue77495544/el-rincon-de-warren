@@ -352,7 +352,31 @@ def calcular_valoracion(info: dict, income, cashflow, precio: float, market_cap:
     }
 
 
+COMPANY_CACHE_TTL = 3600  # 1 hora
+
+
 def get_company_data(raw_ticker: str):
+    """
+    Datos reales de la empresa con caché en disco de 1 hora (python/cache/company_<TICKER>.json).
+    Solo se guardan respuestas correctas; un fallo nunca se cachea.
+    """
+    ticker = raw_ticker.upper().strip()
+    cache_file = CACHE_DIR / f"company_{re.sub(r'[^A-Z0-9]', '_', ticker)}.json"
+    if is_cache_valid(cache_file, COMPANY_CACHE_TTL):
+        try:
+            return json.loads(cache_file.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    datos = _descargar_company_data(ticker)
+    if datos.get("success"):
+        try:
+            cache_file.write_text(json.dumps(datos, ensure_ascii=False), encoding="utf-8")
+        except Exception as e:
+            _log(f"[CACHE] No se pudo guardar {cache_file.name}: {e}")
+    return datos
+
+
+def _descargar_company_data(raw_ticker: str):
     """
     Descarga estados financieros reales y cotizaciones usando yfinance,
     calculando los ratios fundamentales mediante pandas y numpy.
@@ -362,10 +386,22 @@ def get_company_data(raw_ticker: str):
     yf_symbol = 'BRK-B' if ticker == 'BRK.B' else ticker
 
     stock = yf.Ticker(yf_symbol)
-    info = stock.info or {}
+    try:
+        info = stock.info or {}
+    except Exception:
+        info = {}
+
+    # Sin cotización real no hay empresa que analizar: se informa el error en vez de estimar cifras
+    precio_real = info.get('currentPrice') or info.get('regularMarketPrice') or info.get('previousClose')
+    if not precio_real:
+        return {
+            "success": False,
+            "ticker": ticker,
+            "error": f"Yahoo Finance no devolvió cotización para {ticker}. Verifica el símbolo bursátil."
+        }
 
     # Precio actual y mercado
-    precio = clean_val(info.get('currentPrice') or info.get('regularMarketPrice') or info.get('previousClose'), 100.0)
+    precio = clean_val(precio_real, 0.0)
     market_cap = clean_val(info.get('marketCap'), 0.0)
     shares_outstanding = clean_val(info.get('sharesOutstanding'), 1.0)
     
@@ -391,6 +427,13 @@ def get_company_data(raw_ticker: str):
         bs = pd.DataFrame()
         income = pd.DataFrame()
 
+    if bs is None or income is None or bs.empty or income.empty:
+        return {
+            "success": False,
+            "ticker": ticker,
+            "error": f"Yahoo Finance no publica estados financieros para {ticker}; no es posible calcular sus ratios."
+        }
+
     # Extracción de variables del Balance General con fallback a info
     def get_bs_item(keys, fallback_val=0.0):
         if not bs.empty:
@@ -413,7 +456,10 @@ def get_company_data(raw_ticker: str):
     # Datos en millones de USD para consistencia con la plataforma
     raw_efectivo = get_bs_item(['Cash And Cash Equivalents', 'Cash Cash Equivalents And Short Term Investments'], info.get('totalCash', 5000000000))
     raw_activo_circ = get_bs_item(['Current Assets', 'Total Current Assets'], raw_efectivo * 1.8)
-    raw_inventarios = get_bs_item(['Inventory', 'Total Inventories'], raw_activo_circ * 0.15)
+    # Sin partida de inventarios en el balance (servicios, banca) el valor real es 0
+    raw_inventarios = get_bs_item(['Inventory', 'Total Inventories'], 0.0)
+    raw_cuentas_cobrar = get_bs_item(['Accounts Receivable', 'Receivables'], 0.0)
+    raw_otros_circ = get_bs_item(['Other Current Assets'], 0.0)
     raw_activos_totales = get_bs_item(['Total Assets'], info.get('totalAssets', raw_activo_circ * 3.0))
     
     raw_pasivo_circ = get_bs_item(['Current Liabilities', 'Total Current Liabilities'], raw_activo_circ * 0.6)
@@ -536,7 +582,10 @@ def get_company_data(raw_ticker: str):
             "interesesPorPagar": intereses_m,
             "capitalizacionBursatil": cap_bursatil_m,
             "numeroAcciones": num_acciones_m,
-            "dividendoPorAccion": raw_dividendo
+            "dividendoPorAccion": raw_dividendo,
+            "cuentasPorCobrar": round(raw_cuentas_cobrar / scale, 2),
+            "otrosActivosCirculantes": round(raw_otros_circ / scale, 2),
+            "ingresosTotales": round(raw_ventas / scale, 2)
         },
         "ratios": {
             "liquidezCorriente": current_ratio,
@@ -1596,37 +1645,32 @@ def get_sector_benchmarks(matched_industry: str, risk_free_rate: float = None, m
 
 
 def get_histimpl_erp() -> float:
-    """Download Damodaran implied ERP (FCFE) Excel and return latest value as decimal.
-    Reutiliza la caché local de 7 días.
+    """Prima de riesgo implícita de Damodaran (Implied ERP FCFE, último año) como decimal.
+    Se cachea el valor en histimpl_erp.json durante 7 días.
     """
-    cache_file = CACHE_DIR / "histimpl.xls"
+    cache_file = CACHE_DIR / "histimpl_erp.json"
     if is_cache_valid(cache_file, 86400 * 7):
         try:
-            df = pd.read_excel(cache_file)
-            col = "Implied ERP (FCFE)"
-            if col in df.columns:
-                series = pd.to_numeric(df[col], errors='coerce')
-                latest = series.dropna().iloc[-1]
-                return float(latest) / 100.0
+            return float(json.loads(cache_file.read_text(encoding="utf-8"))["erp"])
         except Exception:
             pass
 
     url = "https://www.stern.nyu.edu/~adamodar/pc/datasets/histimpl.xls"
     try:
-        df = pd.read_excel(url)
-        df.to_excel(cache_file, index=False)
-    except Exception:
-        if cache_file.exists():
-            df = pd.read_excel(cache_file)
-        else:
+        # Las 6 primeras filas son metadatos; la cabecera real está en la fila 7
+        df = pd.read_excel(url, header=6)
+        anios = pd.to_numeric(df["Year"], errors="coerce")
+        serie = pd.to_numeric(df.loc[anios.notna(), "Implied ERP (FCFE)"], errors="coerce").dropna()
+        erp = float(serie.iloc[-1])
+        erp = erp / 100.0 if erp > 1 else erp  # el archivo publica decimales (0.0423)
+        cache_file.write_text(json.dumps({"erp": erp, "year": int(anios.dropna().iloc[-1])}), encoding="utf-8")
+        return erp
+    except Exception as e:
+        _log(f"[ERP] No se pudo leer histimpl.xls de Damodaran: {e}")
+        try:
+            return float(json.loads(cache_file.read_text(encoding="utf-8"))["erp"])  # valor anterior, aunque caducado
+        except Exception:
             return 0.055
-
-    col = "Implied ERP (FCFE)"
-    if col in df.columns:
-        series = pd.to_numeric(df[col], errors='coerce')
-        latest = series.dropna().iloc[-1]
-        return float(latest) / 100.0
-    return 0.055
 
 def get_risk_free_rate() -> float:
     """Fetch current 10‑year Treasury rate from FRED and cache it.
@@ -2056,7 +2100,8 @@ NO agregues texto extra, NO uses markdown, SOLO el JSON.
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
             req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
             try:
-                with urllib.request.urlopen(req, timeout=30) as resp:
+                # 8 s por modelo: un modelo saturado no debe bloquear la descarga de datos de la empresa
+                with urllib.request.urlopen(req, timeout=8) as resp:
                     data = json.loads(resp.read().decode("utf-8"))
                     text = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
                     if text and text.strip():
@@ -2217,6 +2262,20 @@ AVISO_SIN_DATOS = (
     "  ⚠ NO se pudieron descargar datos reales de este activo: las cifras de este bloque son valores "
     "genéricos de referencia. Adviértelo en la primera frase y no las presentes como datos de la empresa.\n"
 )
+
+
+def error_sin_datos(pregunta: str, t_clean: str) -> dict:
+    """Respuesta de error de los asesores: sin datos reales no se genera análisis."""
+    return {
+        "success": False,
+        "error": True,
+        "pregunta": pregunta,
+        "ticker": t_clean or None,
+        "message": (
+            f"No se pudieron obtener datos reales de {t_clean} en la fuente financiera. Reintenta la búsqueda."
+            if t_clean else "Selecciona o menciona una empresa para realizar la consulta."
+        ),
+    }
 
 
 def formatear_valoracion(v: dict) -> str:
@@ -2589,6 +2648,9 @@ def consultar_dual(pregunta: str, ticker: str = None):
         f"{p_recomendacion}, {p_num_analistas} analistas\n"
         + formatear_valoracion(valoracion)
     )
+
+    if not datos_ok or not tec["datos_ok"]:
+        return error_sin_datos(pregunta, t_clean)
 
     contexto_tecnico = formatear_contexto_tecnico(tec, p_nombre, t_clean)
 
@@ -3285,6 +3347,9 @@ def consultar_jairo(pregunta: str, ticker: str = None):
         + formatear_valoracion(valoracion)
     )
 
+    if not datos_ok:
+        return error_sin_datos(pregunta, t_clean)
+
     system_instruction_jairo = construir_prompt_jairo(perfil_jairo, contexto_fundamental)
 
     client = get_gemini_client()
@@ -3502,6 +3567,9 @@ def consultar_guillermo(pregunta: str, ticker: str = None):
     p_precio, p_ema20, p_ema50, p_ema200 = tec["precio"], tec["ema20"], tec["ema50"], tec["ema200"]
     p_rsi, p_macd_line, p_macd_signal, p_macd_hist = tec["rsi"], tec["macd_line"], tec["macd_signal"], tec["macd_hist"]
     p_soporte, p_resistencia, p_stop_loss, p_ratio_rb = tec["soporte"], tec["resistencia"], tec["stop_loss"], tec["ratio_rb"]
+
+    if not tec["datos_ok"]:
+        return error_sin_datos(pregunta, t_clean)
 
     contexto_tecnico = formatear_contexto_tecnico(tec, p_nombre, t_clean)
     system_instruction_guillermo = construir_prompt_guillermo(perfil_guillermo, contexto_tecnico)

@@ -1,6 +1,8 @@
 node_modules/
 __pycache__/
 .antigravity/
+python/cache/company_*.json
+python/cache/histimpl_erp.json
 build/
 dist/
 coverage/

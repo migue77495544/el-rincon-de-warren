@@ -11,6 +11,7 @@ import {
   Zap
 } from 'lucide-react';
 import { TrackingErrorData } from '../types';
+import { fetchJson, postJson, errorMessage } from '../utils/api';
 import { InfoTooltip } from './SmartTooltip';
 
 interface TrackingErrorCardProps {
@@ -75,18 +76,11 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
         benchmark,
         period
       });
-      const res = await fetch(`/api/python/tracking-error/${cleanTicker}?${params}`);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      const json: TrackingErrorData = await res.json();
-      if (!json.success && json.error) {
-        throw new Error(json.error);
-      }
+      const json = await fetchJson<TrackingErrorData>(`/api/python/tracking-error/${cleanTicker}?${params}`);
       setData(json);
-    } catch (err: any) {
+    } catch (err) {
       console.error('[TrackingErrorCard] Error:', err);
-      setError('No se pudo calcular el Risk Tracking en vivo. Reintentá en unos segundos.');
+      setError(errorMessage(err, 'No se pudo calcular el Risk Tracking en vivo. Reintenta en unos segundos.'));
     } finally {
       setLoading(false);
       setRefreshing(false);

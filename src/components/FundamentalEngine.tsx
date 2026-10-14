@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CompanyAnalysis, FinancialRawData } from '../types';
+import { fetchJson, postJson, errorMessage } from '../utils/api';
 import { useViewMode } from '../context/ViewModeContext';
 import {
   AlertTriangle,
@@ -178,8 +179,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
     setIsSearchingLive(true);
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/market/search?q=${encodeURIComponent(term)}`);
-        const data = await res.json();
+        const data = await fetchJson(`/api/market/search?q=${encodeURIComponent(term)}`, {}, 12000);
         if (data.success && Array.isArray(data.results)) {
           setLiveSearchResults(data.results);
         }
@@ -197,8 +197,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
     setIsSyncingPrices(true);
     setSyncStatusBanner(null);
     try {
-      const res = await fetch('/api/market/sync-prices', { method: 'POST' });
-      const data = await res.json();
+      const data = await postJson('/api/market/sync-prices', {});
       if (data.success && Array.isArray(data.companies)) {
         if (onUpdateCompanies) {
           onUpdateCompanies(data.companies);
@@ -209,10 +208,10 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
         }
         setSyncStatusBanner(data.message || 'Cotizaciones sincronizadas en vivo con Wall Street.');
       } else {
-        setSyncStatusBanner(data.error || 'Error al conectar con el feed de mercado.');
+        setSyncStatusBanner('Error al conectar con el feed de mercado.');
       }
     } catch (err: any) {
-      setSyncStatusBanner('Error de red al sincronizar con el mercado en vivo.');
+      setSyncStatusBanner(errorMessage(err, 'Error de red al sincronizar con el mercado en vivo.'));
     } finally {
       setIsSyncingPrices(false);
       setTimeout(() => setSyncStatusBanner(null), 7000);
@@ -241,12 +240,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
     setSyncStatusBanner(null);
     setShowSearchDropdown(false);
     try {
-      const res = await fetch('/api/market/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, ticker: query })
-      });
-      const data = await res.json();
+      const data = await postJson('/api/market/import', { query, ticker: query });
       if (data.success && data.company) {
         if (onAddCustomCompany) {
           onAddCustomCompany(data.company);
@@ -256,10 +250,10 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
         setSearchTerm('');
         setSyncStatusBanner(data.message || `¡${data.company.nombre} (${data.company.ticker}) cargada en vivo con éxito!`);
       } else {
-        setSyncStatusBanner(data.error || `No se pudo obtener información en vivo para "${query}".`);
+        setSyncStatusBanner(`No se pudo obtener información en vivo para "${query}".`);
       }
     } catch (err: any) {
-      setSyncStatusBanner(`Error al consultar ticker en vivo: ${err.message}`);
+      setSyncStatusBanner(errorMessage(err, `No se pudo consultar "${query}" en vivo. Reintenta la búsqueda.`));
     } finally {
       setIsImporting(false);
       setTimeout(() => setSyncStatusBanner(null), 7000);

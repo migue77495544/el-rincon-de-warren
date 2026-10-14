@@ -16,6 +16,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { CompanyAnalysis } from '../types';
+import { fetchJson, postJson, errorMessage } from '../utils/api';
 import confetti from 'canvas-confetti';
 
 interface PythonDataConsoleProps {
@@ -104,8 +105,7 @@ const [selectedPlotType, setSelectedPlotType] = useState<'heatmap' | 'frontier' 
     ]);
 
     try {
-      const res = await fetch(`/api/python/company/${cleanTicker}?addToCatalog=true`);
-      const data = await res.json();
+      const data = await fetchJson(`/api/python/company/${cleanTicker}?addToCatalog=true`);
       if (data.success) {
         setCompanyResult(data);
         setLogs(prev => [
@@ -123,7 +123,7 @@ const [selectedPlotType, setSelectedPlotType] = useState<'heatmap' | 'frontier' 
         setLogs(prev => [...prev, `[ERROR] ${data.error || 'No se pudieron extraer los datos.'}`]);
       }
     } catch (err: any) {
-      setLogs(prev => [...prev, `[FATAL] Error de conexión con Python: ${err.message}`]);
+      setLogs(prev => [...prev, `[ERROR] ${errorMessage(err, 'Error de conexión con Python.')}`]);
     } finally {
       setLoading(false);
     }
@@ -146,12 +146,7 @@ const [selectedPlotType, setSelectedPlotType] = useState<'heatmap' | 'frontier' 
     ]);
 
     try {
-      const res = await fetch('/api/python/markowitz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tickers: list, riskFreeRate: 0.04 })
-      });
-      const data = await res.json();
+      const data = await postJson('/api/python/markowitz', { tickers: list, riskFreeRate: 0.04 });
       if (data.success) {
         setMarkowitzResult(data);
         setLogs(prev => [
@@ -166,7 +161,7 @@ const [selectedPlotType, setSelectedPlotType] = useState<'heatmap' | 'frontier' 
         setLogs(prev => [...prev, `[ERROR] ${data.error || 'Fallo en optimización.'}`]);
       }
     } catch (err: any) {
-      setLogs(prev => [...prev, `[FATAL] Error: ${err.message}`]);
+      setLogs(prev => [...prev, `[ERROR] ${errorMessage(err, 'Fallo en optimización.')}`]);
     } finally {
       setLoading(false);
     }
@@ -187,12 +182,7 @@ const [selectedPlotType, setSelectedPlotType] = useState<'heatmap' | 'frontier' 
     ]);
 
     try {
-      const res = await fetch('/api/python/plots', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tickers: list, targetTicker: target })
-      });
-      const data = await res.json();
+      const data = await postJson('/api/python/plots', { tickers: list, targetTicker: target });
       if (data.success && data.plots) {
         setPlotsResult(data.plots);
         setLogs(prev => [
@@ -207,7 +197,7 @@ const [selectedPlotType, setSelectedPlotType] = useState<'heatmap' | 'frontier' 
         setLogs(prev => [...prev, `[ERROR] ${data.error || 'No se pudieron generar los gráficos.'}`]);
       }
     } catch (err: any) {
-      setLogs(prev => [...prev, `[FATAL] Error al generar gráficos: ${err.message}`]);
+      setLogs(prev => [...prev, `[ERROR] ${errorMessage(err, 'No se pudieron generar los gráficos.')}`]);
     } finally {
       setPlotsLoading(false);
     }

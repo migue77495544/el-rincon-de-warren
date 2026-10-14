@@ -14,6 +14,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { TargetConsensus } from '../types';
+import { fetchJson, postJson, errorMessage } from '../utils/api';
 
 interface AnalystTargetsData {
   success: boolean;
@@ -123,34 +124,24 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
     try {
       const cleanTicker = symbol.toUpperCase().trim();
       const [targetsRes, recsRes, newsRes] = await Promise.allSettled([
-        fetch(`/api/python/targets/${cleanTicker}`),
-        fetch(`/api/python/recommendations/${cleanTicker}`),
-        fetch(`/api/python/news/${cleanTicker}`)
+        fetchJson(`/api/python/targets/${cleanTicker}`),
+        fetchJson(`/api/python/recommendations/${cleanTicker}`),
+        fetchJson(`/api/python/news/${cleanTicker}`)
       ]);
 
-      if (targetsRes.status === 'fulfilled' && targetsRes.value.ok) {
-        const tJson = await targetsRes.value.json();
-        setTargetsData(tJson);
-      } else {
-        setTargetsData(null);
-      }
+      setTargetsData(targetsRes.status === 'fulfilled' ? targetsRes.value : null);
+      setRecommendationsData(recsRes.status === 'fulfilled' ? recsRes.value : null);
+      setNewsData(newsRes.status === 'fulfilled' ? newsRes.value : null);
 
-      if (recsRes.status === 'fulfilled' && recsRes.value.ok) {
-        const rJson = await recsRes.value.json();
-        setRecommendationsData(rJson);
-      } else {
-        setRecommendationsData(null);
+      // Si ninguna de las tres fuentes respondió, se muestra el motivo (p. ej. tiempo agotado)
+      const results = [targetsRes, recsRes, newsRes];
+      if (results.every(r => r.status === 'rejected')) {
+        setError(errorMessage((targetsRes as PromiseRejectedResult).reason,
+          'No se pudieron sincronizar los datos de consenso de Wall Street.'));
       }
-
-      if (newsRes.status === 'fulfilled' && newsRes.value.ok) {
-        const nJson = await newsRes.value.json();
-        setNewsData(nJson);
-      } else {
-        setNewsData(null);
-      }
-    } catch (err: any) {
+    } catch (err) {
       console.error('[WallStreetConsensus] Error al consultar datos:', err);
-      setError('No se pudieron sincronizar todos los datos de consenso de Wall Street.');
+      setError(errorMessage(err, 'No se pudieron sincronizar todos los datos de consenso de Wall Street.'));
     } finally {
       setLoading(false);
       setRefreshing(false);

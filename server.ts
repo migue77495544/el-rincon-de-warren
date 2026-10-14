@@ -9,16 +9,107 @@ import { GoogleGenAI } from '@google/genai';
 
 const execFileAsync = promisify(execFile);
 
-// Helper para ejecutar el motor de Python (pandas, numpy, yfinance)
-async function runPythonEngine(args: string[]): Promise<any> {
+// -------------------------------------------------------------
+// Fuentes financieras: timeouts, errores estructurados y caché
+// -------------------------------------------------------------
+const DATA_TIMEOUT_MS = 25000;
+const TIMEOUT_MESSAGE = 'Tiempo de espera agotado al consultar la fuente financiera. Reintenta la búsqueda.';
+const SOURCE_ERROR_MESSAGE = 'No se pudo consultar la fuente financiera. Reintenta la búsqueda.';
+
+class UpstreamTimeoutError extends Error {
+  constructor() {
+    super(TIMEOUT_MESSAGE);
+    this.name = 'UpstreamTimeoutError';
+  }
+}
+
+// Respuesta de error uniforme para el frontend: nunca se sustituye por datos estimados
+function sendUpstreamError(res: express.Response, err: any, fallbackMessage = SOURCE_ERROR_MESSAGE) {
+  const isTimeout = err instanceof UpstreamTimeoutError;
+  if (!isTimeout) console.warn('[Upstream]', err?.message || err);
+  return res.status(isTimeout ? 504 : 502).json({
+    success: false,
+    error: true,
+    message: isTimeout ? TIMEOUT_MESSAGE : (err?.userMessage || fallbackMessage)
+  });
+}
+
+// Resultado del motor Python: si informa success:false se devuelve como error estructurado
+function sendEngineResult(res: express.Response, data: any) {
+  if (data && data.success === false) {
+    const detail = typeof data.error === 'string' ? data.error : data.message;
+    return res.status(502).json({ success: false, error: true, message: detail || SOURCE_ERROR_MESSAGE });
+  }
+  return res.json(data);
+}
+
+// Caché en memoria de respuestas reales (nunca se cachean errores). Las peticiones simultáneas
+// a la misma clave comparten un único subproceso.
+const PRICE_TTL_MS = 60 * 1000;
+const DATA_TTL_MS = 60 * 60 * 1000;
+const responseCache = new Map<string, { expires: number; data: any }>();
+const inflight = new Map<string, Promise<any>>();
+
+async function cached<T>(key: string, ttlMs: number, loader: () => Promise<T>): Promise<T> {
+  const hit = responseCache.get(key);
+  if (hit && hit.expires > Date.now()) return hit.data;
+  if (hit) responseCache.delete(key);
+  const pending = inflight.get(key);
+  if (pending) return pending;
+
+  const promise = loader()
+    .then(data => {
+      const ok = data && (data as any).success !== false && !(data as any).error;
+      if (ok) responseCache.set(key, { expires: Date.now() + ttlMs, data });
+      return data;
+    })
+    .finally(() => inflight.delete(key));
+  inflight.set(key, promise);
+  return promise;
+}
+
+// Comandos de solo lectura del motor que se pueden reutilizar entre usuarios
+const CACHEABLE_COMMANDS = new Set([
+  'company', 'price', 'candles', 'targets', 'recommendations', 'news',
+  'capm', 'classify-industry', 'tracking-error', 'markowitz', 'plots', 'test'
+]);
+
+// Ejecuta python/finance_engine.py; lanza UpstreamTimeoutError si supera el tiempo límite
+async function execPython(args: string[], timeoutMs: number, extraEnv: Record<string, string> = {}): Promise<any> {
   const pythonBin = process.platform === 'win32' ? 'python' : 'python3';
   const scriptPath = path.resolve(process.cwd(), 'python', 'finance_engine.py');
-  const { stdout } = await execFileAsync(pythonBin, [scriptPath, ...args], {
-    timeout: 30000,
-    maxBuffer: 10 * 1024 * 1024
-  });
-  return JSON.parse(stdout);
+  try {
+    const { stdout } = await execFileAsync(pythonBin, [scriptPath, ...args], {
+      timeout: timeoutMs,
+      maxBuffer: 10 * 1024 * 1024,
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8', ...extraEnv }
+    });
+    return JSON.parse(stdout);
+  } catch (err: any) {
+    if (err?.killed || err?.signal === 'SIGTERM') throw new UpstreamTimeoutError();
+    throw err;
+  }
 }
+
+// Helper para ejecutar el motor de Python (pandas, numpy, yfinance) con caché por argumentos
+async function runPythonEngine(args: string[]): Promise<any> {
+  const command = args[0];
+  if (!CACHEABLE_COMMANDS.has(command)) return execPython(args, DATA_TIMEOUT_MS);
+  const ttl = command === 'price' ? PRICE_TTL_MS : DATA_TTL_MS;
+  return cached(`py:${args.join('\u0001')}`, ttl, () => execPython(args, DATA_TIMEOUT_MS));
+}
+
+// fetch con límite de tiempo para las llamadas directas a Yahoo Finance
+async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 8000): Promise<Response> {
+  try {
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+  } catch (err: any) {
+    if (err?.name === 'TimeoutError' || err?.name === 'AbortError') throw new UpstreamTimeoutError();
+    throw err;
+  }
+}
+
+const YAHOO_HEADERS = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' };
 import { INITIAL_COMPANIES, INITIAL_THESES, INITIAL_BADGES, INITIAL_LEAGUE, INITIAL_LEARNING_STEPS } from './src/data/initialData';
 import { POPULAR_LIVE_TICKERS } from './src/data/popularTickersData';
 import {
@@ -29,14 +120,14 @@ import {
   calculateDifferenceInDifferences
 } from './src/utils/financialCalculations';
 import { CompanyAnalysis, FinancialRawData } from './src/types';
-import { generateDualAdvisorConsultation, generateJairoOnlyResponse, generateGuillermoOnlyResponse, identifyCompany } from './src/utils/dualAdvisorEngine';
+import { identifyCompany } from './src/utils/dualAdvisorEngine';
 
 const app = express();
 // Render (y otros PaaS) asignan el puerto por la variable PORT; 3000 en local
 const PORT = Number(process.env.PORT) || 3000;
 
-// Las consultas a los asesores descargan datos de mercado y llaman a Gemini (hasta 3 modelos en cadena)
-const ADVISOR_TIMEOUT_MS = 75000;
+// Asesores: descarga de datos (máx. 25 s, con caché de 1 h) + generación con Gemini
+const ADVISOR_TIMEOUT_MS = 45000;
 
 app.use(express.json());
 
@@ -54,30 +145,19 @@ async function fetchLivePrice(rawTicker: string): Promise<{
   source: string;
 } | null> {
   const ticker = rawTicker.toUpperCase().trim();
+  const hit = responseCache.get(`live:${ticker}`);
+  if (hit && hit.expires > Date.now()) return hit.data;
 
-  // 1. Obtención de cotización directa mediante el motor Python de yfinance
-  try {
-    const live = await runPythonEngine(['price', ticker]);
-    if (live && live.success && live.price > 0) {
-      return {
-        price: live.price,
-        previousClose: live.previousClose || live.price,
-        change: live.change,
-        changePercent: live.changePercent,
-        source: live.source || 'Yahoo Finance (yfinance)'
-      };
-    }
-  } catch (err) {
-    console.warn(`[LiveMarket] Error en motor yfinance para ${ticker}:`, err);
-  }
+  const remember = (quote: { price: number; previousClose: number; change: number; changePercent: number; source: string }) => {
+    responseCache.set(`live:${ticker}`, { expires: Date.now() + PRICE_TTL_MS, data: quote });
+    return quote;
+  };
 
-  // 2. Fallback de alta velocidad a feed directo de Yahoo Finance en caso de demora del subproceso
+  // 1. Feed directo de Yahoo Finance: una petición HTTP, mucho más rápida que lanzar Python
   try {
     const yahooTicker = ticker === 'BRK.B' ? 'BRK-B' : ticker;
     const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooTicker}`;
-    const yRes = await fetch(yUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-    });
+    const yRes = await fetchWithTimeout(yUrl, { headers: YAHOO_HEADERS });
     if (yRes.ok) {
       const yData = await yRes.json();
       const meta = yData?.chart?.result?.[0]?.meta;
@@ -86,17 +166,33 @@ async function fetchLivePrice(rawTicker: string): Promise<{
         const prev = meta.chartPreviousClose || price;
         const change = price - prev;
         const changePercent = prev > 0 ? (change / prev) * 100 : 0;
-        return {
+        return remember({
           price: Math.round(price * 100) / 100,
           previousClose: Math.round(prev * 100) / 100,
           change: Math.round(change * 100) / 100,
           changePercent: Math.round(changePercent * 100) / 100,
           source: 'Yahoo Finance (Direct Stream)'
-        };
+        });
       }
     }
-  } catch (err) {
-    console.warn(`[LiveMarket] Error en feed directo de Yahoo Finance para ${ticker}:`, err);
+  } catch (err: any) {
+    console.warn(`[LiveMarket] Error en feed directo de Yahoo Finance para ${ticker}:`, err?.message || err);
+  }
+
+  // 2. Respaldo: motor Python de yfinance
+  try {
+    const live = await runPythonEngine(['price', ticker]);
+    if (live && live.success && live.price > 0) {
+      return remember({
+        price: live.price,
+        previousClose: live.previousClose || live.price,
+        change: live.change,
+        changePercent: live.changePercent,
+        source: live.source || 'Yahoo Finance (yfinance)'
+      });
+    }
+  } catch (err: any) {
+    console.warn(`[LiveMarket] Error en motor yfinance para ${ticker}:`, err?.message || err);
   }
 
   return null;
@@ -222,7 +318,7 @@ pd.options.display.float_format = '{:,.6f}'.format
 print("Librerías cargadas correctamente.")`
     });
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -250,9 +346,9 @@ app.get('/api/python/company/:ticker', async (req, res) => {
         companiesDB.push(newSeed);
       }
     }
-    return res.json(data);
+    return sendEngineResult(res, data);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -261,9 +357,9 @@ app.post('/api/python/markowitz', async (req, res) => {
   const rf = Number(req.body.riskFreeRate || 0.04);
   try {
     const result = await runPythonEngine(['markowitz', tickers.join(','), String(rf)]);
-    return res.json(result);
+    return sendEngineResult(res, result);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -273,7 +369,7 @@ app.get('/api/python/script', (req, res) => {
     const content = fs.readFileSync(scriptPath, 'utf8');
     return res.json({ success: true, script: content });
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -282,9 +378,9 @@ app.post('/api/python/plots', async (req, res) => {
   const targetTicker: string = req.body.targetTicker || 'KO';
   try {
     const result = await runPythonEngine(['plots', tickers.join(','), targetTicker]);
-    return res.json(result);
+    return sendEngineResult(res, result);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -298,23 +394,21 @@ app.get('/api/python/candles/:ticker', async (req, res) => {
 
   try {
     const data = await runPythonEngine(['candles', rawTicker, period, interval]);
+    if (!data?.success || !Array.isArray(data.points) || data.points.length === 0) {
+      return sendEngineResult(res, { success: false, error: data?.error || `No hay cotizaciones disponibles para ${rawTicker}.` });
+    }
     const company = companiesDB.find(c => c.ticker === rawTicker);
+    // Solo el consenso real de analistas; sin consenso no se dibuja línea objetivo
     const targetMean = company?.targetConsensus?.target_mean;
-    const targetMeanVal = targetMean || (data.currentPrice ? data.currentPrice * 1.15 : 100);
 
     return res.json({
       ...data,
       period,
       interval,
-      targetMean: Math.round(targetMeanVal * 100) / 100
+      targetMean: targetMean ? Math.round(targetMean * 100) / 100 : null
     });
   } catch (err: any) {
-    return res.status(500).json({
-      success: false,
-      error: err.message,
-      points: [],
-      emas: { ema20: [], ema50: [], ema40: [], ema200: [] }
-    });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -327,18 +421,18 @@ app.get('/api/python/targets/:ticker', async (req, res) => {
   const rawTicker = req.params.ticker.toUpperCase().trim();
   try {
     const data = await runPythonEngine(['targets', rawTicker]);
-    return res.json(data);
+    return sendEngineResult(res, data);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 app.get('/api/market/targets/:ticker', async (req, res) => {
   const rawTicker = req.params.ticker.toUpperCase().trim();
   try {
     const data = await runPythonEngine(['targets', rawTicker]);
-    return res.json(data);
+    return sendEngineResult(res, data);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -347,18 +441,18 @@ app.get('/api/python/recommendations/:ticker', async (req, res) => {
   const rawTicker = req.params.ticker.toUpperCase().trim();
   try {
     const data = await runPythonEngine(['recommendations', rawTicker]);
-    return res.json(data);
+    return sendEngineResult(res, data);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 app.get('/api/market/recommendations/:ticker', async (req, res) => {
   const rawTicker = req.params.ticker.toUpperCase().trim();
   try {
     const data = await runPythonEngine(['recommendations', rawTicker]);
-    return res.json(data);
+    return sendEngineResult(res, data);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -367,18 +461,18 @@ app.get('/api/python/news/:ticker', async (req, res) => {
   const rawTicker = req.params.ticker.toUpperCase().trim();
   try {
     const data = await runPythonEngine(['news', rawTicker]);
-    return res.json(data);
+    return sendEngineResult(res, data);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 app.get('/api/market/news/:ticker', async (req, res) => {
   const rawTicker = req.params.ticker.toUpperCase().trim();
   try {
     const data = await runPythonEngine(['news', rawTicker]);
-    return res.json(data);
+    return sendEngineResult(res, data);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -389,9 +483,9 @@ app.get('/api/python/capm/:ticker', async (req, res) => {
   try {
     const args = ['capm', rawTicker, ...(mrp ? [mrp] : [])];
     const data = await runPythonEngine(args);
-    return res.json(data);
+    return sendEngineResult(res, data);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 app.get('/api/market/capm/:ticker', async (req, res) => {
@@ -400,9 +494,9 @@ app.get('/api/market/capm/:ticker', async (req, res) => {
   try {
     const args = ['capm', rawTicker, ...(mrp ? [mrp] : [])];
     const data = await runPythonEngine(args);
-    return res.json(data);
+    return sendEngineResult(res, data);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -412,9 +506,9 @@ app.get('/api/python/classify-industry/:ticker', async (req, res) => {
   try {
     const args = ['classify-industry', rawTicker];
     const data = await runPythonEngine(args);
-    return res.json(data);
+    return sendEngineResult(res, data);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -426,190 +520,51 @@ app.get('/api/python/tracking-error/:ticker', async (req, res) => {
   try {
     const args = ['tracking-error', rawTicker, benchmark, period];
     const data = await runPythonEngine(args);
-    return res.json(data);
+    return sendEngineResult(res, data);
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
 
-// Endpoint de Consulta Dual Jairo + Juan Guillermo (Análisis Fundamental + Técnico con Gemini / Motor Analítico)
-app.post('/api/python/consulta-dual', async (req, res) => {
-  const pregunta: string = (req.body?.pregunta || '').trim();
-  let ticker: string = (req.body?.ticker || '').trim();
+// Asesores Jairo / Juan Guillermo (Python + Gemini). Si el motor no responde a tiempo o no obtiene
+// datos reales, se devuelve un error estructurado: nunca se sustituye por una respuesta con cifras estimadas.
+function registerAdvisorEndpoint(route: string, command: string, isComplete: (data: any) => boolean) {
+  app.post(route, async (req, res) => {
+    const pregunta: string = (req.body?.pregunta || '').trim();
+    let ticker: string = (req.body?.ticker || '').trim();
 
-  if (!pregunta) {
-    return res.status(400).json({ success: false, error: 'Pregunta no proporcionada' });
-  }
-
-  // Si no se proporcionó ticker explícito, detectar si la pregunta se refiere a alguna empresa
-  if (!ticker) {
-    const matched = identifyCompany(pregunta, undefined, companiesDB);
-    if (matched?.ticker) {
-      ticker = matched.ticker;
+    if (!pregunta) {
+      return res.status(400).json({ success: false, error: true, message: 'Escribe una pregunta para el asesor.' });
     }
-  }
 
-  // 1. Intentar ejecución mediante el motor Python (con Gemini SDK + systemInstruction)
-  try {
-    const args = ['consulta-dual', pregunta, ...(ticker ? [ticker] : [])];
-    const pythonBin = process.platform === 'win32' ? 'python' : 'python3';
-    const scriptPath = path.resolve(process.cwd(), 'python', 'finance_engine.py');
-
-    // Pasar explícitamente GEMINI_API_KEY y configurar entorno para UTF-8
-    const env = { 
-      ...process.env, 
-      GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
-      PYTHONIOENCODING: 'utf-8'
-    };
-
-    const { stdout } = await execFileAsync(pythonBin, [scriptPath, ...args], {
-      timeout: ADVISOR_TIMEOUT_MS,
-      maxBuffer: 10 * 1024 * 1024,
-      env
-    });
-    
-    const data = JSON.parse(stdout);
-    if (data && data.success && data.respuesta_jairo && data.respuesta_guillermo) {
-      const modeloNegocio = data.modeloNegocio || (data.modelo_negocio ? {
-        queHace: data.modelo_negocio.que_hace || data.modelo_negocio.queHace,
-        comoGanaDinero: data.modelo_negocio.como_gana_dinero || data.modelo_negocio.comoGanaDinero,
-        sector: data.modelo_negocio.sector
-      } : undefined);
-
-      // La fuente la declara el motor Python: 'gemini-live' solo si ambas respuestas vienen del modelo
-      return res.json({
-        ...data,
-        modeloNegocio,
-        source: data.source === 'gemini-live' ? 'gemini-live' : 'motor-analitico'
-      });
+    // Si no se proporcionó ticker explícito, detectar si la pregunta se refiere a alguna empresa
+    if (!ticker) {
+      const matched = identifyCompany(pregunta, undefined, companiesDB);
+      if (matched?.ticker) ticker = matched.ticker;
     }
-  } catch (err: any) {
-    console.warn('[ConsultaDual] Subproceso Python no respondió a tiempo o falló, activando motor analítico nativo:', err.message);
-  }
 
-  // 2. Fallback nativo de alta disponibilidad (garantiza que el botón siempre responda con máxima fidelidad)
-  try {
-    const localResult = generateDualAdvisorConsultation(pregunta, ticker, companiesDB);
-    return res.json({
-      ...localResult,
-      source: 'motor-analitico'
-    });
-  } catch (fallbackErr: any) {
-    console.error('[ConsultaDual] Error en motor analítico local:', fallbackErr);
-    return res.status(500).json({ success: false, error: fallbackErr.message || 'Error al procesar la consulta' });
-  }
-});
-
-// Endpoint para Preguntas Específicas e Individuales: solo Jairo (Análisis Fundamental)
-app.post('/api/python/consulta-jairo', async (req, res) => {
-  const pregunta: string = (req.body?.pregunta || '').trim();
-  let ticker: string = (req.body?.ticker || '').trim();
-
-  if (!pregunta) {
-    return res.status(400).json({ success: false, error: 'Pregunta no proporcionada' });
-  }
-
-  if (!ticker) {
-    const matched = identifyCompany(pregunta, undefined, companiesDB);
-    if (matched?.ticker) {
-      ticker = matched.ticker;
+    try {
+      const args = [command, pregunta, ...(ticker ? [ticker] : [])];
+      const data = await execPython(args, ADVISOR_TIMEOUT_MS, { GEMINI_API_KEY: process.env.GEMINI_API_KEY || '' });
+      if (!data || data.success === false || !isComplete(data)) {
+        return res.status(502).json({
+          success: false,
+          error: true,
+          message: data?.message || 'El asesor no pudo generar una respuesta con datos reales. Reintenta la consulta.'
+        });
+      }
+      // La fuente la declara el motor Python
+      return res.json({ ...data, source: data.source === 'gemini-live' ? 'gemini-live' : 'motor-analitico' });
+    } catch (err: any) {
+      return sendUpstreamError(res, err);
     }
-  }
+  });
+}
 
-  try {
-    const args = ['consulta-jairo', pregunta, ...(ticker ? [ticker] : [])];
-    const pythonBin = process.platform === 'win32' ? 'python' : 'python3';
-    const scriptPath = path.resolve(process.cwd(), 'python', 'finance_engine.py');
-    const env = {
-      ...process.env,
-      GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
-      PYTHONIOENCODING: 'utf-8'
-    };
-
-    const { stdout } = await execFileAsync(pythonBin, [scriptPath, ...args], {
-      timeout: ADVISOR_TIMEOUT_MS,
-      maxBuffer: 10 * 1024 * 1024,
-      env
-    });
-
-    const data = JSON.parse(stdout);
-    if (data && data.success && data.respuesta) {
-      return res.json({
-        ...data,
-        source: data.source === 'gemini-live' ? 'gemini-live' : 'motor-analitico'
-      });
-    }
-  } catch (err: any) {
-    console.warn('[ConsultaJairo] Subproceso Python no respondió, usando motor analítico local:', err.message);
-  }
-
-  try {
-    const localResult = generateJairoOnlyResponse(pregunta, ticker, companiesDB);
-    return res.json({
-      ...localResult,
-      source: 'motor-analitico'
-    });
-  } catch (fallbackErr: any) {
-    console.error('[ConsultaJairo] Error en motor analítico local:', fallbackErr);
-    return res.status(500).json({ success: false, error: fallbackErr.message || 'Error al procesar la consulta' });
-  }
-});
-
-// Endpoint para Preguntas Específicas e Individuales: solo Guillermo (Análisis Técnico)
-app.post('/api/python/consulta-guillermo', async (req, res) => {
-  const pregunta: string = (req.body?.pregunta || '').trim();
-  let ticker: string = (req.body?.ticker || '').trim();
-
-  if (!pregunta) {
-    return res.status(400).json({ success: false, error: 'Pregunta no proporcionada' });
-  }
-
-  if (!ticker) {
-    const matched = identifyCompany(pregunta, undefined, companiesDB);
-    if (matched?.ticker) {
-      ticker = matched.ticker;
-    }
-  }
-
-  try {
-    const args = ['consulta-guillermo', pregunta, ...(ticker ? [ticker] : [])];
-    const pythonBin = process.platform === 'win32' ? 'python' : 'python3';
-    const scriptPath = path.resolve(process.cwd(), 'python', 'finance_engine.py');
-    const env = {
-      ...process.env,
-      GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
-      PYTHONIOENCODING: 'utf-8'
-    };
-
-    const { stdout } = await execFileAsync(pythonBin, [scriptPath, ...args], {
-      timeout: ADVISOR_TIMEOUT_MS,
-      maxBuffer: 10 * 1024 * 1024,
-      env
-    });
-
-    const data = JSON.parse(stdout);
-    if (data && data.success && data.respuesta) {
-      return res.json({
-        ...data,
-        source: data.source === 'gemini-live' ? 'gemini-live' : 'motor-analitico'
-      });
-    }
-  } catch (err: any) {
-    console.warn('[ConsultaGuillermo] Subproceso Python no respondió, usando motor analítico local:', err.message);
-  }
-
-  try {
-    const localResult = generateGuillermoOnlyResponse(pregunta, ticker, companiesDB);
-    return res.json({
-      ...localResult,
-      source: 'motor-analitico'
-    });
-  } catch (fallbackErr: any) {
-    console.error('[ConsultaGuillermo] Error en motor analítico local:', fallbackErr);
-    return res.status(500).json({ success: false, error: fallbackErr.message || 'Error al procesar la consulta' });
-  }
-});
+registerAdvisorEndpoint('/api/python/consulta-dual', 'consulta-dual', d => !!(d.respuesta_jairo && d.respuesta_guillermo));
+registerAdvisorEndpoint('/api/python/consulta-jairo', 'consulta-jairo', d => !!d.respuesta);
+registerAdvisorEndpoint('/api/python/consulta-guillermo', 'consulta-guillermo', d => !!d.respuesta);
 
 // Endpoint de búsqueda interactiva de acciones (Yahoo Finance + Feeds + Directorio)
 app.get('/api/market/search', async (req, res) => {
@@ -692,9 +647,7 @@ app.get('/api/market/search', async (req, res) => {
   // 4. Búsqueda en vivo de alta velocidad en Yahoo Finance
   try {
     const yUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=6`;
-    const yRes = await fetch(yUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-    });
+    const yRes = await fetchWithTimeout(yUrl, { headers: YAHOO_HEADERS });
     if (yRes.ok) {
       const yData = await yRes.json();
       const quotes = yData?.quotes || [];
@@ -727,7 +680,7 @@ app.get('/api/market/quote/:ticker', async (req, res) => {
   try {
     const liveData = await fetchLivePrice(ticker);
     if (!liveData) {
-      return res.status(404).json({ error: `No se pudo obtener la cotización en vivo para ${ticker}` });
+      return res.status(502).json({ success: false, error: true, message: `No se pudo obtener la cotización en vivo de ${ticker}. Reintenta la búsqueda.` });
     }
     return res.json({
       success: true,
@@ -736,7 +689,7 @@ app.get('/api/market/quote/:ticker', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -748,8 +701,10 @@ app.get('/api/market/history/:ticker', async (req, res) => {
 
   // Buscar si la empresa existe en el catálogo para tomar su precio actual y objetivo de analistas
   const company = companiesDB.find(c => c.ticker === rawTicker);
-  const currentPrice = company?.raw?.precioCotizacion || 100;
-  const targetMean = company?.targetConsensus?.target_mean || currentPrice * 1.15;
+  // Solo el consenso real de analistas; sin consenso no se dibuja línea objetivo
+  const targetMean: number | null = company?.targetConsensus?.target_mean
+    ? Math.round(company.targetConsensus.target_mean * 100) / 100
+    : null;
 
   let yRange = '1y';
   let yInterval = '1d';
@@ -787,9 +742,7 @@ app.get('/api/market/history/:ticker', async (req, res) => {
   // 1. Intentar obtener datos reales de mercado
   try {
     const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooTicker}?range=${yRange}&interval=${yInterval}`;
-    const yRes = await fetch(yUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-    });
+    const yRes = await fetchWithTimeout(yUrl, { headers: YAHOO_HEADERS });
 
     if (yRes.ok) {
       const yData = await yRes.json();
@@ -836,7 +789,7 @@ app.get('/api/market/history/:ticker', async (req, res) => {
             high,
             low,
             volume,
-            targetMean: Math.round(targetMean * 100) / 100
+            targetMean
           });
         }
 
@@ -866,67 +819,15 @@ app.get('/api/market/history/:ticker', async (req, res) => {
         }
       }
     }
-  } catch (err) {
-    console.warn(`[MarketHistory] Fallback a generador analítico para ${rawTicker}:`, err);
+  } catch (err: any) {
+    // Sin datos reales no se genera una serie sintética: se informa el error
+    return sendUpstreamError(res, err);
   }
 
-  // 2. Generador determinista de alta fidelidad basado en el precio actual y volatilidad de la acción
-  const now = new Date();
-  const seedMultiplier = rawTicker.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const trendSlope = (rawTicker === 'HYPE' ? -0.35 : (seedMultiplier % 3 === 0 ? 0.22 : 0.12));
-  const volatility = rawTicker === 'HYPE' ? 0.035 : (rawTicker === 'NVDA' || rawTicker === 'TSLA' ? 0.025 : 0.012);
-
-  const tempPoints: any[] = [];
-
-  for (let i = 0; i < numDays; i++) {
-    const d = new Date(now.getTime() - (numDays - 1 - i) * 24 * 60 * 60 * 1000);
-    if (d.getDay() === 0 || d.getDay() === 6) continue;
-
-    const progress = i / numDays;
-    const noise = Math.sin((i + seedMultiplier) * 0.45) * volatility + Math.cos((i * 2 + seedMultiplier) * 0.3) * (volatility * 0.7);
-    const trendComponent = (progress - 1) * trendSlope * currentPrice;
-    const priceVal = Math.max(1, Math.round((currentPrice + trendComponent + (noise * currentPrice)) * 100) / 100);
-    const dayVolume = Math.round(1500000 + Math.abs(Math.sin(i * 0.7)) * 4000000);
-
-    const high = Math.round(priceVal * (1 + Math.abs(noise * 0.5)) * 100) / 100;
-    const low = Math.round(priceVal * (1 - Math.abs(noise * 0.5)) * 100) / 100;
-    const open = Math.round(((high + low) / 2) * 100) / 100;
-
-    tempPoints.push({
-      date: d.toISOString().split('T')[0],
-      label: d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
-      price: i === numDays - 1 ? currentPrice : priceVal,
-      open,
-      high,
-      low,
-      volume: dayVolume,
-       targetMean: Math.round(targetMean * 100) / 100
-    });
-  }
-
-  if (tempPoints.length > 0) {
-    tempPoints[tempPoints.length - 1].price = currentPrice;
-  }
-
-  const allPrices = tempPoints.map(p => p.price);
-  const firstPrice = tempPoints[0]?.price || currentPrice;
-  const lastPrice = tempPoints[tempPoints.length - 1]?.price || currentPrice;
-  const change = Math.round((lastPrice - firstPrice) * 100) / 100;
-  const changePercent = firstPrice > 0 ? Math.round(((change / firstPrice) * 100) * 100) / 100 : 0;
-
-  return res.json({
-    success: true,
-    ticker: rawTicker,
-    range,
-    source: 'Modelo Analítico de Cotización Bursátil',
-    points: tempPoints,
-    currentPrice: lastPrice,
-    firstPrice,
-    change,
-    changePercent,
-    min52w: Math.min(...allPrices),
-    max52w: Math.max(...allPrices),
-    targetMean
+  return res.status(502).json({
+    success: false,
+    error: true,
+    message: `Yahoo Finance no devolvió cotizaciones históricas para ${rawTicker}. Reintenta la búsqueda.`
   });
 });
 
@@ -937,16 +838,14 @@ app.post('/api/market/technical-patterns/:ticker', async (req, res) => {
   const inputIndicators = req.body?.indicators ?? null; // { rsi, macdLine, macdSignal, macdHist, ema20, ema50, ema40, ema200 }
 
   try {
-    // Si no se pasaron puntos o son insuficientes, usar el histórico ya disponible
-    let pointsToAnalyze = inputPoints;
+    // Los patrones solo se buscan sobre velas reales enviadas por el gráfico
+    const pointsToAnalyze = inputPoints;
     if (pointsToAnalyze.length < 5) {
-      const company = companiesDB.find(c => c.ticker === rawTicker);
-      const currPrice = company?.raw.precioCotizacion || 100;
-      pointsToAnalyze = [
-        { date: '2026-08-01', open: currPrice * 0.95, high: currPrice * 1.02, low: currPrice * 0.93, price: currPrice * 0.98 },
-        { date: '2026-08-15', open: currPrice * 0.98, high: currPrice * 1.05, low: currPrice * 0.97, price: currPrice * 1.04 },
-        { date: '2026-09-01', open: currPrice * 1.04, high: currPrice * 1.06, low: currPrice * 0.99, price: currPrice * 1.01 }
-      ];
+      return res.status(400).json({
+        success: false,
+        error: true,
+        message: 'No hay suficientes velas reales para analizar patrones. Carga primero el gráfico de cotización.'
+      });
     }
 
     // Tomar las últimas 75 velas para análisis óptimo de patrones recientes
@@ -1093,7 +992,8 @@ RESPONDE ÚNICAMENTE un objeto JSON válido (sin formato markdown ni backticks a
     let jsonResult: any = null;
 
     if (apiKey) {
-      const ai = new GoogleGenAI({ apiKey });
+      // Timeout por modelo para que un modelo saturado no deje el análisis colgado
+      const ai = new GoogleGenAI({ apiKey, httpOptions: { timeout: 20000 } });
       for (const model of candidateModels) {
         try {
           const response = await ai.models.generateContent({
@@ -1201,7 +1101,7 @@ RESPONDE ÚNICAMENTE un objeto JSON válido (sin formato markdown ni backticks a
     });
   } catch (err: any) {
     console.error('[TechnicalPatterns] Error:', err);
-    return res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: true, message: 'No se pudo completar el análisis de patrones. Reintenta en unos segundos.' });
   }
 });
 
@@ -1210,8 +1110,12 @@ app.post('/api/market/sync-prices', async (req, res) => {
   try {
     const updates: Array<{ ticker: string; oldPrice: number; newPrice: number; change: number; source: string }> = [];
 
-    for (const company of companiesDB) {
-      const live = await fetchLivePrice(company.ticker);
+    // Cotizaciones en paralelo (antes eran secuenciales y la herramienta quedaba bloqueada minutos)
+    const quotes = await Promise.all(companiesDB.map(c => fetchLivePrice(c.ticker).catch(() => null)));
+    const failed = companiesDB.filter((_, i) => !quotes[i]).map(c => c.ticker);
+
+    for (const [i, company] of companiesDB.entries()) {
+      const live = quotes[i];
       if (live && live.price > 0) {
         const oldPrice = company.raw.precioCotizacion;
         company.raw.precioCotizacion = live.price;
@@ -1229,16 +1133,22 @@ app.post('/api/market/sync-prices', async (req, res) => {
       }
     }
 
+    if (updates.length === 0 && companiesDB.length > 0) {
+      return res.status(502).json({ success: false, error: true, message: 'No se pudo obtener ninguna cotización en vivo. Reintenta la sincronización.' });
+    }
+
     const analyzed = companiesDB.map(c => analyzeCompany(c));
     return res.json({
       success: true,
-      message: `Se actualizaron las cotizaciones de ${updates.length} empresas con el mercado real`,
+      message: `Se actualizaron las cotizaciones de ${updates.length} empresas con el mercado real`
+        + (failed.length ? `. Sin cotización disponible (precio anterior conservado): ${failed.join(', ')}.` : '.'),
       updates,
+      failed,
       companies: analyzed,
       timestamp: new Date().toISOString()
     });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 
@@ -1289,65 +1199,39 @@ app.post('/api/market/import', async (req, res) => {
       });
     }
 
-    // 3. Si es un ticker general de Wall Street, obtener cotización en vivo y generar modelo financiero
-    const live = await fetchLivePrice(ticker);
-    if (!live) {
+    // 3. Ticker general: estados financieros reales vía Python (yfinance). Sin datos reales no se importa.
+    const data = await runPythonEngine(['company', ticker]);
+    if (!data?.success || !data.raw) {
       return res.status(404).json({
-        error: `No se pudo encontrar cotización para "${rawInput}" (${ticker}). Verifica el símbolo bursátil (ej: NVDA, MSFT, TSLA, GOOGL, META, AMZN, NFLX).`
+        success: false,
+        error: true,
+        message: data?.error || `No se encontraron datos financieros reales para "${rawInput}" (${ticker}). Verifica el símbolo bursátil.`
       });
     }
 
-    // Crear modelo base con cotización real
-    const price = live.price;
-    const companyName = resolved.formalName || `${ticker} Corporation`;
-    const sectorName = resolved.sector || 'Mercado General / NYSE-NASDAQ';
-
-    const dynamicSeed: (typeof INITIAL_COMPANIES)[0] = {
+    const moatLabel = String(data.moat || '');
+    const realSeed: (typeof INITIAL_COMPANIES)[0] = {
       id: ticker.toLowerCase(),
       ticker,
-      nombre: companyName,
-      sector: sectorName,
-      descripcion: `Compañía cotizada en bolsa importada con cotización real en tiempo de mercado ($${price}).`,
-      moat: 'Medio',
-      raw: {
-        activoCirculante: Math.round(price * 120),
-        pasivoCirculante: Math.round(price * 75),
-        inventarios: Math.round(price * 15),
-        otrosActivosCirculantes: Math.round(price * 10),
-        cuentasPorCobrar: Math.round(price * 30),
-        efectivo: Math.round(price * 65),
-        totalPasivo: Math.round(price * 110),
-        patrimonioNeto: Math.round(price * 160),
-        activosTotales: Math.round(price * 270),
-        utilidadNeta: Math.round(price * 35),
-        ebit: Math.round(price * 45),
-        interesesPorPagar: Math.round(price * 2),
-        ingresosTotales: Math.round(price * 180),
-        precioCotizacion: price,
-        numeroAcciones: 1000,
-        capitalizacionBursatil: Math.round(price * 1000),
-        dividendoPorAccion: Math.round(price * 0.015 * 100) / 100
-      },
-      targetConsensus: {
-        target_mean: Math.round(price * 1.15 * 10) / 10,
-        target_high: Math.round(price * 1.25 * 10) / 10,
-        target_low: Math.round(price * 1.05 * 10) / 10,
-        recommendation: 'Mantener',
-        number_of_analysts: 15,
-        upside_potential: 15
-      },
-      warrenVerdict: `Empresa importada en tiempo real. Cotizando a $${price}. Analiza sus 11 ratios contables para confirmar si posee foso económico y margen de seguridad.`
-    };
+      nombre: data.nombre || resolved.formalName || ticker,
+      sector: data.sector || resolved.sector || 'Renta Variable Global',
+      descripcion: data.modeloNegocio || data.descripcion || '',
+      moat: moatLabel.includes('Amplio') ? 'Amplio' : moatLabel.includes('Moderado') ? 'Medio' : 'Ninguno',
+      raw: data.raw,
+      targetConsensus: data.target_consensus || undefined,
+      sectorBenchmarks: data.sector_benchmarks,
+      warrenVerdict: `Datos reales de Yahoo Finance (estados financieros y cotización de $${data.raw.precioCotizacion}). Revisa sus ratios para confirmar foso económico y margen de seguridad.`
+    } as any;
 
-    companiesDB.push(dynamicSeed);
+    companiesDB.push(realSeed);
     return res.json({
       success: true,
       isNew: true,
-      message: `¡${companyName} (${ticker}) importada exitosamente con cotización real de $${price}!`,
-      company: analyzeCompany(dynamicSeed)
+      message: `¡${realSeed.nombre} (${ticker}) importada con estados financieros reales y cotización de $${data.raw.precioCotizacion}!`,
+      company: analyzeCompany(realSeed)
     });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return sendUpstreamError(res, err);
   }
 });
 

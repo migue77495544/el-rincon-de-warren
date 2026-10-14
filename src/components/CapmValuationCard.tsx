@@ -17,6 +17,7 @@ import {
   Scale
 } from 'lucide-react';
 import { CapmData } from '../types';
+import { fetchJson, postJson, errorMessage } from '../utils/api';
 import { InfoTooltip } from './SmartTooltip';
 import { useViewMode } from '../context/ViewModeContext';
 
@@ -51,21 +52,14 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
 
     try {
       const cleanTicker = symbol.toUpperCase().trim();
-      const res = await fetch(`/api/python/capm/${cleanTicker}`);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      const json: CapmData = await res.json();
-      if (!json.success && json.error) {
-        throw new Error(json.error);
-      }
+      const json = await fetchJson<CapmData>(`/api/python/capm/${cleanTicker}`);
       setData(json);
       if (json.market_risk_premium) {
         setCustomMrp(Math.round(json.market_risk_premium * 1000) / 10);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('[CapmValuationCard] Error:', err);
-      setError('No se pudo calcular el CAPM en vivo. Reintentá en unos segundos.');
+      setError(errorMessage(err, 'No se pudo calcular el CAPM en vivo. Reintenta en unos segundos.'));
     } finally {
       setLoading(false);
       setRefreshing(false);
