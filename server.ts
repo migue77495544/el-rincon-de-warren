@@ -36,7 +36,8 @@ function sendUpstreamError(res: express.Response, err: any, fallbackMessage = SO
 
 // Resultado del motor Python: si informa success:false se devuelve como error estructurado
 function sendEngineResult(res: express.Response, data: any) {
-  if (data && data.success === false) {
+  // Algunos comandos (tracking-error) informan el fallo con status:'error' en lugar de success:false
+  if (data && (data.success === false || data.status === 'error')) {
     const detail = typeof data.error === 'string' ? data.error : data.message;
     return res.status(502).json({ success: false, error: true, message: detail || SOURCE_ERROR_MESSAGE });
   }
@@ -59,7 +60,7 @@ async function cached<T>(key: string, ttlMs: number, loader: () => Promise<T>): 
 
   const promise = loader()
     .then(data => {
-      const ok = data && (data as any).success !== false && !(data as any).error;
+      const ok = data && (data as any).success !== false && !(data as any).error && (data as any).status !== 'error';
       if (ok) responseCache.set(key, { expires: Date.now() + ttlMs, data });
       return data;
     })
@@ -87,6 +88,17 @@ async function execPython(args: string[], timeoutMs: number, extraEnv: Record<st
     return JSON.parse(stdout);
   } catch (err: any) {
     if (err?.killed || err?.signal === 'SIGTERM') throw new UpstreamTimeoutError();
+    // Causa concreta para el usuario (clave para diagnosticar el entorno de despliegue)
+    const stderr = String(err?.stderr || '');
+    const missingModule = stderr.match(/No module named '([^']+)'/);
+    if (err?.code === 'ENOENT') {
+      err.userMessage = `El servidor no encuentra Python (${pythonBin}). Instálalo en el entorno de despliegue.`;
+    } else if (missingModule) {
+      err.userMessage = `Falta la librería de Python "${missingModule[1]}" en el servidor. Ejecuta pip install -r requirements.txt.`;
+    } else if (/Too Many Requests|429|Rate limit/i.test(stderr)) {
+      err.userMessage = 'Yahoo Finance está limitando las peticiones de este servidor (error 429). Reintenta en unos minutos.';
+    }
+    console.error(`[Python] ${args[0]} falló:`, err?.code || '', stderr.split('\n').filter(Boolean).slice(-3).join(' | '));
     throw err;
   }
 }
