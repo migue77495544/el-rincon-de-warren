@@ -1,0 +1,37 @@
+# Despliegue en Netlify: frontend estático (dist/) + API como función serverless (sin Python)
+[build]
+  command = "npm run build:netlify"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  # yahoo-finance2 carga módulos de forma dinámica: se instala tal cual en lugar de empaquetarlo
+  external_node_modules = ["yahoo-finance2"]
+
+# Toda la API va a la función
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# Aplicación de una sola página: cualquier otra ruta sirve index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Recursos con hash: caché de un año en el CDN y el navegador
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"

@@ -19,7 +19,7 @@ const steps = [
   {
     id: 'analyst',
     title: 'Modo Analista (Opcional)',
-    description: 'Si quieres profundizar, activa el Modo Analista en la barra superior para ver simuladores avanzados, ratios completos y la consola Python.',
+    description: 'Si quieres profundizar, activa el Modo Analista en la barra superior para ver simuladores avanzados, ratios completos y la valoración por CAPM.',
     icon: ShieldCheck,
   },
 ];

@@ -25,7 +25,7 @@ export const VideoLessonsSection: React.FC<VideoLessonsSectionProps> = ({ onAddX
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Reproductor de Video Activo */}
-        <div className="lg:col-span-8 bg-slate-900/90 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-4">
+        <div className="lg:col-span-8 bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <span className="text-[10px] font-mono uppercase font-bold text-slate-400">
@@ -101,7 +101,7 @@ export const VideoLessonsSection: React.FC<VideoLessonsSectionProps> = ({ onAddX
                   className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                     isPlaying
                       ? 'bg-slate-900 border-white/20 shadow-md'
-                      : 'bg-slate-950/70 border-slate-800 hover:border-slate-700'
+                      : 'bg-slate-950 border-slate-800 hover:border-slate-700'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">

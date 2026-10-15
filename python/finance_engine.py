@@ -1858,6 +1858,133 @@ def calculate_tracking_error(ticker: str, benchmark_ticker: str = "^GSPC", perio
         }
 
 
+# ==========================================================
+# MEDIDAS DE RIESGO: VaR Y CVaR (NORMAL, EWMA, RANDOM FOREST)
+# ==========================================================
+
+def var_cvar_normal(retornos: pd.Series, confianza: float = 0.95) -> tuple[float, float]:
+    """VaR y CVaR diarios (fracción del capital) bajo supuesto de normalidad."""
+    from statistics import NormalDist
+    z = NormalDist().inv_cdf(1 - confianza)
+    vol_diaria = float(retornos.std())
+    var = -vol_diaria * z
+    cvar = vol_diaria * (NormalDist().pdf(z) / (1 - confianza))
+    return var, cvar
+
+
+def var_cvar_ewma(retornos: pd.Series, confianza: float = 0.95, lambda_: float = 0.94) -> tuple[float, float, float]:
+    """VaR y CVaR diarios con volatilidad EWMA (RiskMetrics, λ=0.94). Devuelve también la vol EWMA."""
+    from statistics import NormalDist
+    vol_ewma = float(retornos.ewm(alpha=1 - lambda_).std().iloc[-1])
+    z = NormalDist().inv_cdf(1 - confianza)
+    var = -vol_ewma * z
+    cvar = vol_ewma * (NormalDist().pdf(z) / (1 - confianza))
+    return var, cvar, vol_ewma
+
+
+def var_cvar_ml(retornos: pd.Series, confianza: float = 0.95, lag: int = 5) -> tuple[float, float]:
+    """VaR y CVaR diarios a partir de los residuos de un Random Forest sobre retornos rezagados."""
+    from sklearn.ensemble import RandomForestRegressor
+
+    df_ml = pd.DataFrame({"Log_Retorno": retornos})
+    for i in range(1, lag + 1):
+        df_ml[f"lag_{i}"] = df_ml["Log_Retorno"].shift(i)
+    df_ml = df_ml.dropna()
+
+    X = df_ml[[f"lag_{i}" for i in range(1, lag + 1)]]
+    y = df_ml["Log_Retorno"]
+
+    # Residuos out-of-bag: cada día lo predicen solo los árboles que no lo vieron. Con predict(X)
+    # el bosque memoriza la muestra y el VaR sale ~2-3 veces menor que el histórico real.
+    modelo = RandomForestRegressor(n_estimators=100, random_state=42, oob_score=True)
+    modelo.fit(X, y)
+    residuos = y - modelo.oob_prediction_
+
+    var = -float(np.percentile(residuos, (1 - confianza) * 100))
+    cvar = -float(residuos[residuos <= -var].mean())
+    return var, cvar
+
+
+def calcular_medidas_riesgo(ticker: str, period: str = "1y", monto_inversion: float = 100000,
+                            confianza: float = 0.95, benchmark_ticker: str = "^GSPC",
+                            trading_days: int = 252) -> dict:
+    """
+    Tabla comparativa de riesgo de una acción frente a su benchmark: rendimiento y volatilidad
+    anuales, Sharpe, beta, CAPM y VaR/CVaR diarios (Normal, EWMA y Random Forest).
+    """
+    try:
+        t = ticker.upper().strip()
+        yf_symbol = t.replace('.', '-') if re.fullmatch(r'[A-Z]+\.[A-Z]', t) else t
+        cierres = {}
+        for simbolo in (yf_symbol, benchmark_ticker):
+            hist = yf.Ticker(simbolo).history(period=period)
+            if hist.empty or 'Close' not in hist.columns:
+                return {"success": False, "error": f"No se obtuvieron precios de {simbolo} para el periodo {period}."}
+            serie = hist['Close']
+            serie.index = serie.index.tz_localize(None).normalize()
+            cierres[simbolo] = serie
+
+        log_ret = np.log(pd.DataFrame(cierres) / pd.DataFrame(cierres).shift(1)).dropna()
+        if len(log_ret) < 30:
+            return {"success": False, "error": f"Datos insuficientes para medir riesgo ({len(log_ret)} observaciones)."}
+
+        rf = get_risk_free_rate()
+        mercado = log_ret[benchmark_ticker]
+        rend_mercado = float(mercado.mean() * trading_days)
+        var_mercado = float(mercado.var())
+
+        activos = []
+        for simbolo, nombre in ((yf_symbol, t), (benchmark_ticker, "S&P 500" if benchmark_ticker == "^GSPC" else benchmark_ticker)):
+            r = log_ret[simbolo]
+            rend_anual = float(r.mean() * trading_days)
+            vol_anual = float(r.std() * np.sqrt(trading_days))
+            beta = float(r.cov(mercado) / var_mercado) if var_mercado > 0 else None
+
+            var_n, cvar_n = var_cvar_normal(r, confianza)
+            var_e, cvar_e, vol_ewma = var_cvar_ewma(r, confianza)
+            try:
+                var_m, cvar_m = var_cvar_ml(r, confianza)
+                ml = {"var": round(var_m * monto_inversion, 2), "cvar": round(cvar_m * monto_inversion, 2),
+                      "var_pct": round(var_m, 6), "cvar_pct": round(cvar_m, 6)}
+            except ImportError:
+                ml = None
+                _log("[riesgo] scikit-learn no instalado: se omite VaR/CVaR por Random Forest")
+
+            activos.append({
+                "nombre": nombre,
+                "ticker": simbolo,
+                "rendimiento_anual": round(rend_anual, 6),
+                "volatilidad_anual": round(vol_anual, 6),
+                "sharpe": round((rend_anual - rf) / vol_anual, 6) if vol_anual > 0 else None,
+                "beta": round(beta, 4) if beta is not None else None,
+                "capm": round(rf + beta * (rend_mercado - rf), 6) if beta is not None else None,
+                "vol_ewma_diaria": round(vol_ewma, 6),
+                "normal": {"var": round(var_n * monto_inversion, 2), "cvar": round(cvar_n * monto_inversion, 2),
+                           "var_pct": round(var_n, 6), "cvar_pct": round(cvar_n, 6)},
+                "ewma": {"var": round(var_e * monto_inversion, 2), "cvar": round(cvar_e * monto_inversion, 2),
+                         "var_pct": round(var_e, 6), "cvar_pct": round(cvar_e, 6)},
+                "ml": ml,
+            })
+
+        return {
+            "success": True,
+            "ticker": t,
+            "benchmark": benchmark_ticker,
+            "period": period,
+            "monto_inversion": monto_inversion,
+            "confianza": confianza,
+            "horizonte_dias": 1,
+            "lambda_ewma": 0.94,
+            "tasa_libre_riesgo": round(rf, 6),
+            "rendimiento_mercado": round(rend_mercado, 6),
+            "observaciones": int(len(log_ret)),
+            "activos": activos,
+            "source": "yfinance",
+        }
+    except Exception as e:
+        return {"success": False, "error": f"No se pudieron calcular las medidas de riesgo: {e}"}
+
+
 def capm_cost_of_equity_for_ticker(ticker: str, risk_free_rate: float = None, market_risk_premium: float = None) -> float:
     """Calculate CAPM cost of equity for a ticker.
     Retrieves beta automatically; uses fetched risk‑free rate and market risk premium.
@@ -3744,6 +3871,14 @@ if __name__ == '__main__':
         benchmark = sys.argv[3].upper() if len(sys.argv) >= 4 else "^GSPC"
         period = sys.argv[4] if len(sys.argv) >= 5 else "1y"
         res = calculate_tracking_error(ticker, benchmark, period)
+        print(json.dumps(res, ensure_ascii=False, indent=2))
+
+    elif command == 'risk-metrics' and len(sys.argv) >= 3:
+        ticker = sys.argv[2].upper()
+        period = sys.argv[3] if len(sys.argv) >= 4 else "1y"
+        monto = float(sys.argv[4]) if len(sys.argv) >= 5 else 100000
+        confianza = float(sys.argv[5]) if len(sys.argv) >= 6 else 0.95
+        res = calcular_medidas_riesgo(ticker, period, monto, confianza)
         print(json.dumps(res, ensure_ascii=False, indent=2))
 
     elif command == 'capm' and len(sys.argv) >= 3:

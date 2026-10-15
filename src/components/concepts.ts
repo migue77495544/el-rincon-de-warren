@@ -242,6 +242,30 @@ export const FINANCIAL_CONCEPTS: Record<string, FinancialConcept> = {
     category: 'riesgo',
   },
 
+  valueAtRisk: {
+    id: 'valueAtRisk',
+    term: 'VaR y CVaR (Valor en Riesgo)',
+    simpleAlias: 'Cuánto podrías perder en un mal día',
+    shortExplanation:
+      'El VaR es la pérdida máxima esperada en un día con cierta confianza; el CVaR es la pérdida media cuando se supera ese umbral.',
+    shortTip:
+      'VaR 95% de $2.000 = en 19 de cada 20 días no pierdes más de $2.000. El CVaR dice cuánto pierdes de media el día restante.',
+    longExplanation:
+      'Se estima con tres métodos. Normal: VaR = −σ·z, suponiendo retornos con campana de Gauss. ' +
+      'EWMA (RiskMetrics, λ = 0,94): igual, pero la volatilidad pondera más los días recientes, así que reacciona antes a las crisis. ' +
+      'Random Forest: un modelo predice el retorno con los 5 días anteriores y el VaR sale del percentil de sus errores. ' +
+      'El CVaR (Expected Shortfall) promedia las pérdidas peores que el VaR, por eso siempre es mayor.',
+    analogy:
+      'El VaR es como el parte meteorológico: "con un 95% de probabilidad no lloverá más de 20 mm". ' +
+      'El CVaR responde a la pregunta incómoda: "¿y si llueve más, cuánto suele llover?".',
+    buffettQuote:
+      '"Regla número 1: nunca pierdas dinero. Regla número 2: nunca olvides la regla número 1." — Warren Buffett',
+    whyItMatters:
+      'La volatilidad anual es abstracta; el VaR la traduce a dinero de tu bolsillo. Si el CVaR de una posición ' +
+      'te quitaría el sueño, la posición es demasiado grande para ti, por buena que sea la empresa.',
+    category: 'riesgo',
+  },
+
   liquidezVsSector: {
     id: 'liquidezVsSector',
     term: 'Liquidez vs Sector',

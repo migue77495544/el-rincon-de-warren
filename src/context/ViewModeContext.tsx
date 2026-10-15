@@ -15,8 +15,6 @@ export interface ViewModeFeatureFlags {
   maxRatiosVisible: number;
   /** Pestaña por defecto al entrar */
   defaultTab: 'fundamental' | 'simulator' | 'gamification';
-  /** Mostrar consola Python en Navbar */
-  showPythonConsole: boolean;
   /** Mostrar métricas de gamificación (XP, Level, Liga) en Navbar */
   showGamificationHUD: boolean;
   /** Qué juegos de gamificación están disponibles */
@@ -32,7 +30,6 @@ const SIMPLE_FLAGS: ViewModeFeatureFlags = {
   showAdvancedFilters: false,
   maxRatiosVisible: 4,
   defaultTab: 'fundamental',
-  showPythonConsole: false,
   showGamificationHUD: false,
   availableGames: ['moat', 'mos'],
   spotlightSections: ['companies', 'heuristics'],
@@ -45,7 +42,6 @@ const ANALYST_FLAGS: ViewModeFeatureFlags = {
   showAdvancedFilters: true,
   maxRatiosVisible: 11,
   defaultTab: 'fundamental',
-  showPythonConsole: true,
   showGamificationHUD: true,
   availableGames: ['moat', 'mos', 'markowitz', 'biases'],
   spotlightSections: ['apps', 'companies', 'heuristics'],

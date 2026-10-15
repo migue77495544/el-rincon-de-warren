@@ -262,7 +262,7 @@ export const CompanyPriceChart: React.FC<CompanyPriceChartProps> = ({ company, s
         ema200: p.ema200 ?? null,
       }));
 
-      // Hasta 3 modelos de Gemini con 20 s cada uno en el servidor
+      // El servidor recorre la cadena de modelos de Gemini con un presupuesto de 40 s
       const data = await postJson<TechnicalPatternsResponse>(
         `/api/market/technical-patterns/${encodeURIComponent(company.ticker)}`,
         { points: enrichedPoints, indicators: historyData.indicators ?? null },
@@ -999,9 +999,16 @@ export const CompanyPriceChart: React.FC<CompanyPriceChartProps> = ({ company, s
       {/* Contenedor Canvas del Gráfico Lightweight Charts */}
       <div className="relative w-full h-[380px] rounded-2xl overflow-hidden border border-slate-200/80 bg-white">
         {isLoading && (!historyData?.points || historyData.points.length === 0) ? (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 backdrop-blur-2xs text-slate-500 space-y-2">
-            <RefreshCw className="w-7 h-7 animate-spin text-indigo-600" />
-            <span className="text-xs font-mono font-medium">Sincronizando feed de cotización para {company.ticker}...</span>
+          <div className="absolute inset-0 z-10 flex flex-col justify-end gap-3 p-6 bg-white" role="status">
+            <div className="flex-1 flex items-end gap-1.5">
+              {[38, 52, 45, 63, 58, 71, 66, 80, 74, 86, 79, 92].map((h, i) => (
+                <div key={i} className="skeleton flex-1" style={{ height: `${h}%`, animationDelay: `${i * 60}ms` }} />
+              ))}
+            </div>
+            <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600" />
+              <span>Sincronizando feed de cotización para {company.ticker}...</span>
+            </div>
           </div>
         ) : error && (!historyData?.points || historyData.points.length === 0) ? (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-rose-50 text-rose-800 p-4 text-center space-y-1">

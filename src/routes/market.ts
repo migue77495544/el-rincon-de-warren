@@ -3,27 +3,12 @@ import { resolveTicker, KNOWN_STOCK_DIRECTORY } from '../services/stockDirectory
 import { fetchLivePrice } from '../services/marketData.js';
 import { analyzeCompany } from '../services/companyAnalyzer.js';
 import { POPULAR_LIVE_TICKERS } from '../data/popularTickersData.js';
-import { INITIAL_COMPANIES } from '../data/initialData.js';
+import { INITIAL_COMPANIES, CompanySeed } from '../data/initialData.js';
 import fs from 'fs';
 import path from 'path';
 
-export interface CompanyDBEntry {
-  id: string;
-  ticker: string;
-  nombre: string;
-  sector: string;
-  descripcion: string;
-  moat: 'Amplio' | 'Medio' | 'Ninguno';
-  raw: {
-    precioCotizacion: number;
-    numeroAcciones: number;
-    capitalizacionBursatil: number;
-    [key: string]: any;
-  };
-  targetConsensus?: { target_mean: number; [key: string]: any };
-  sectorBenchmarks?: any;
-  warrenVerdict: string;
-}
+// Mismo contrato que las semillas: analyzeCompany() necesita el FinancialRawData completo
+export type CompanyDBEntry = CompanySeed;
 
 let companiesDB: CompanyDBEntry[] = [];
 
@@ -424,7 +409,7 @@ router.post('/market/import', async (req: Request, res: Response) => {
     const companyName = resolved.formalName || `${ticker} Corporation`;
     const sectorName = resolved.sector || 'Mercado General / NYSE-NASDAQ';
 
-    const dynamicSeed = {
+    const dynamicSeed: CompanyDBEntry = {
       id: ticker.toLowerCase(),
       ticker,
       nombre: companyName,

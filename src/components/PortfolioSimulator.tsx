@@ -87,7 +87,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner: Mitigating Overtrading & Promoting Compounding */}
-      <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl p-5 border border-white/10 shadow-lg shadow-black/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-slate-900 rounded-3xl p-5 border border-white/10 shadow-lg shadow-black/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
@@ -106,7 +106,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
         </div>
         <button
           onClick={onResetPortfolio}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-semibold bg-slate-800/90 text-slate-300 hover:bg-slate-700 hover:text-white transition-all border border-white/10 shrink-0 active:scale-95"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-all border border-white/10 shrink-0 active:scale-95"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Reiniciar Cartera</span>
@@ -114,7 +114,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
       </div>
 
       {/* Selector de Modo: Operaciones vs Modelo de Markowitz */}
-      <div className="flex items-center justify-between bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800">
+      <div className="flex items-center justify-between bg-slate-900 p-1.5 rounded-2xl border border-slate-800">
         <div className="flex items-center gap-1 sm:gap-2">
           <button
             onClick={() => setSubView('trading')}
@@ -157,7 +157,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
           {/* Portfolio Financial & Risk KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Portfolio Value */}
-        <div className="bg-slate-900/80 backdrop-blur-xl p-5 rounded-3xl border border-white/10 shadow-lg shadow-black/20 space-y-2">
+        <div className="bg-slate-900 p-5 rounded-3xl border border-white/10 shadow-lg shadow-black/20 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400">Valor Total de Cartera</span>
             <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300">
@@ -183,7 +183,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
         </div>
 
         {/* Ratio de Sharpe */}
-        <div className="bg-slate-900/80 backdrop-blur-xl p-5 rounded-3xl border border-white/10 shadow-lg shadow-black/20 space-y-2">
+        <div className="bg-slate-900 p-5 rounded-3xl border border-white/10 shadow-lg shadow-black/20 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400">Ratio de Sharpe (SR_p)</span>
             <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300">
@@ -207,7 +207,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
         </div>
 
         {/* Volatilidad Muestral (Riesgo) */}
-        <div className="bg-slate-900/80 backdrop-blur-xl p-5 rounded-3xl border border-white/10 shadow-lg shadow-black/20 space-y-2">
+        <div className="bg-slate-900 p-5 rounded-3xl border border-white/10 shadow-lg shadow-black/20 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400">Volatilidad Muestral (σ_p)</span>
             <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300">
@@ -229,7 +229,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
         </div>
 
         {/* Calidad Media de Cartera (Linear Score Promedio) */}
-        <div className="bg-slate-900/80 backdrop-blur-xl p-5 rounded-3xl border border-white/10 shadow-lg shadow-black/20 space-y-2">
+        <div className="bg-slate-900 p-5 rounded-3xl border border-white/10 shadow-lg shadow-black/20 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400">Calidad Media Cartera</span>
             <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300">
@@ -293,7 +293,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
       {/* Grid: Trading Form & Active Holdings */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Trade Execution Panel (iOS Styled Card) */}
-        <div className="lg:col-span-4 bg-slate-900/80 backdrop-blur-xl rounded-3xl p-5 sm:p-6 border border-white/10 shadow-lg shadow-black/20 h-fit space-y-4">
+        <div className="lg:col-span-4 bg-slate-900 rounded-3xl p-5 sm:p-6 border border-white/10 shadow-lg shadow-black/20 h-fit space-y-4">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300">
               <Repeat className="w-4 h-4" />
@@ -305,7 +305,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
 
           <form onSubmit={handleTradeSubmit} className="space-y-4 text-xs">
             {/* iOS Segmented Control for BUY / SELL */}
-            <div className="grid grid-cols-2 gap-1.5 bg-slate-950/80 p-1.5 rounded-2xl border border-white/10 shadow-inner">
+            <div className="grid grid-cols-2 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-white/10 shadow-inner">
               <button
                 type="button"
                 onClick={() => setTradeType('BUY')}
@@ -338,7 +338,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
               <select
                 value={tradeTicker}
                 onChange={e => setTradeTicker(e.target.value)}
-                className="w-full bg-slate-950/80 border border-white/10 rounded-2xl p-3 text-white focus:outline-none focus:border-slate-400 font-mono text-xs shadow-inner"
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl p-3 text-white focus:outline-none focus:border-slate-400 font-mono text-xs shadow-inner"
               >
                 {companies.map(c => (
                   <option key={c.id} value={c.ticker}>
@@ -350,7 +350,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
 
             {/* Selected Stock Mini Summary */}
             {selectedStock && (
-              <div className="p-3.5 bg-slate-950/60 rounded-2xl border border-white/5 space-y-1.5">
+              <div className="p-3.5 bg-slate-950 rounded-2xl border border-white/5 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-400">Precio actual:</span>
                   <span className="font-mono font-bold text-white">
@@ -402,7 +402,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
                       key={amt}
                       type="button"
                       onClick={() => setTradeShares(amt)}
-                      className="px-2 py-0.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-mono border border-white/5"
+                      className="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-mono border border-white/5"
                     >
                       {amt}
                     </button>
@@ -415,12 +415,12 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
                 max={tradeType === 'SELL' && existingHolding ? existingHolding.shares : 5000}
                 value={tradeShares}
                 onChange={e => setTradeShares(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-full bg-slate-950/80 border border-white/10 rounded-2xl p-3 text-white font-mono focus:outline-none focus:border-slate-400 shadow-inner"
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl p-3 text-white font-mono focus:outline-none focus:border-slate-400 shadow-inner"
               />
             </div>
 
             {/* Total Estimated Cost */}
-            <div className="p-3.5 bg-slate-950/80 rounded-2xl border border-white/10 flex justify-between items-center">
+            <div className="p-3.5 bg-slate-950 rounded-2xl border border-white/10 flex justify-between items-center">
               <span className="text-slate-300 font-medium">Importe Total Estimado:</span>
               <span className="text-base font-bold font-mono text-white">
                 ${tradeCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -449,7 +449,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
         {/* Right: Portfolio Holdings Table & Transaction History */}
         <div className="lg:col-span-8 space-y-6">
           {/* Holdings Card */}
-          <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl p-5 sm:p-6 border border-white/10 shadow-lg shadow-black/20">
+          <div className="bg-slate-900 rounded-3xl p-5 sm:p-6 border border-white/10 shadow-lg shadow-black/20">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
                 <PieChart className="w-4 h-4 text-slate-400" />
@@ -516,7 +516,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
           </div>
 
           {/* Transaction History & Bias Flags */}
-          <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl p-5 sm:p-6 border border-white/10 shadow-lg shadow-black/20">
+          <div className="bg-slate-900 rounded-3xl p-5 sm:p-6 border border-white/10 shadow-lg shadow-black/20">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
                 <History className="w-4 h-4 text-slate-400" />
@@ -534,7 +534,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
                 {portfolio.transactions.slice().reverse().map(tx => (
                   <div
                     key={tx.id}
-                    className="p-3 bg-slate-950/60 rounded-2xl border border-white/5 flex items-center justify-between text-xs"
+                    className="p-3 bg-slate-950 rounded-2xl border border-white/5 flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center gap-3">
                       <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${

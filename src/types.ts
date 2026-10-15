@@ -296,6 +296,45 @@ export interface TrackingErrorData {
   error?: string;
 }
 
+/** VaR/CVaR diarios: importe en la divisa de la inversión y fracción del capital */
+export interface VarCvar {
+  var: number;
+  cvar: number;
+  var_pct: number;
+  cvar_pct: number;
+}
+
+export interface RiskMetricsAsset {
+  nombre: string;
+  ticker: string;
+  rendimiento_anual: number;
+  volatilidad_anual: number;
+  sharpe: number | null;
+  beta: number | null;
+  capm: number | null;
+  vol_ewma_diaria: number;
+  normal: VarCvar;
+  ewma: VarCvar;
+  /** null si el cálculo vino del respaldo sin Python (sin Random Forest) */
+  ml: VarCvar | null;
+}
+
+export interface RiskMetricsData {
+  success: boolean;
+  ticker: string;
+  benchmark: string;
+  period: string;
+  monto_inversion: number;
+  confianza: number;
+  horizonte_dias: number;
+  lambda_ewma: number;
+  tasa_libre_riesgo: number;
+  rendimiento_mercado: number;
+  observaciones: number;
+  activos: RiskMetricsAsset[];
+  source: 'yfinance' | 'yahoo-directo';
+}
+
 // Escáner de Superoportunidades (GET /api/analyst/super-opportunities)
 export interface OpportunityCatalyst {
   tipo: 'recompra' | 'sorpresas_bpa' | 'margen_operativo';

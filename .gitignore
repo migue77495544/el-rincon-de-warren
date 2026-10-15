@@ -12,3 +12,6 @@ coverage/
 !.env.example
 python/cache/scan/
 python/cache/super_opportunities.json
+.data/
+.netlify/
+*.zip

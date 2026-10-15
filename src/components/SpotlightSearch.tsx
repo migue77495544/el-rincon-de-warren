@@ -140,19 +140,6 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
       }
     },
     {
-      id: 'app-schemas',
-      title: 'Visualizador de Esquemas SQL, NoSQL & Python',
-      subtitle: 'DDL PostgreSQL, colecciones MongoDB y scripts ejecutables de scoring',
-      category: 'Visualizador DB & Código',
-      icon: Database,
-      iconBg: 'bg-slate-600',
-      section: 'apps',
-      action: () => {
-        onNavigateTab('schemas');
-        onClose();
-      }
-    },
-    {
       id: 'app-custom-calc',
       title: 'Calculadora de Empresa Personalizada',
       subtitle: 'Ingresa estados financieros para calcular los ratios y Score S(a)',

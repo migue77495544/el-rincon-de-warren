@@ -60,7 +60,7 @@ export const MarginOfSafetyGame: React.FC<MarginOfSafetyGameProps> = ({ onAddXP 
         </div>
 
         {/* Deslizador Interactivo de Precio */}
-        <div className="space-y-2 p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+        <div className="space-y-2 p-4 bg-slate-900 rounded-xl border border-slate-800">
           <div className="flex justify-between text-xs text-slate-300">
             <span>Mueve el precio al que estarías dispuesto a comprar:</span>
             <span className="font-mono font-bold text-white">${mosPrice} por acción</span>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { HelpCircle, X, BookOpen, Search, Terminal, Sparkles } from 'lucide-react';
+import { HelpCircle, X, Sparkles } from 'lucide-react';
 
 const FAQ_ITEMS = [
   {
@@ -14,13 +14,9 @@ const FAQ_ITEMS = [
     q: '¿Qué es el Margen de Seguridad?',
     a: 'Regla de Benjamin Graham: compra empresas "en oferta" con al menos 15-30% de descuento respecto a tu valor intrínseco calculado.',
   },
-  {
-    q: '¿Para qué sirve la Consola Python?',
-    a: 'Ejecuta scripts de análisis financiero en vivo (como calcular CAPM, betas de Damodaran o backtests de cartera) sin salir de la app.',
-  },
 ];
 
-export const WarrenFAB: React.FC<{ onOpenPythonConsole?: () => void }> = ({ onOpenPythonConsole }) => {
+export const WarrenFAB: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,20 +76,6 @@ export const WarrenFAB: React.FC<{ onOpenPythonConsole?: () => void }> = ({ onOp
             ))}
           </div>
 
-          {onOpenPythonConsole && (
-            <div className="p-3 border-t border-[var(--color-border)]">
-              <button
-                onClick={() => {
-                  onOpenPythonConsole();
-                  setOpen(false);
-                }}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors"
-              >
-                <Terminal className="w-3.5 h-3.5" />
-                Abrir Consola Python
-              </button>
-            </div>
-          )}
         </div>
       )}
 

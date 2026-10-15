@@ -66,7 +66,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({ concept, text, classNa
       {isOpen && (
         <span
           role="tooltip"
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 sm:w-64 p-2.5 bg-slate-900/95 backdrop-blur-md text-white text-[11px] leading-relaxed rounded-xl shadow-xl border border-slate-700/60 z-50 pointer-events-auto text-left font-normal animate-in fade-in zoom-in-95 duration-150"
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 sm:w-64 p-2.5 bg-slate-900 text-white text-[11px] leading-relaxed rounded-xl shadow-xl border border-slate-700/60 z-50 pointer-events-auto text-left font-normal animate-in fade-in zoom-in-95 duration-150"
         >
           <span className="block font-medium text-slate-100">{message}</span>
           {/* Flechita inferior */}

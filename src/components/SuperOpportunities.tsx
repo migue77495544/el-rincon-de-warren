@@ -259,7 +259,7 @@ export const SuperOpportunities: React.FC<SuperOpportunitiesProps> = ({ onLoadCo
     setError(null);
     try {
       const data = await fetchJson<SuperOpportunitiesScan>(
-        `/api/analyst/super-opportunities${refresh ? '?refresh=true' : ''}`, {}, 30000
+        `/api/analyst/super-opportunities${refresh ? '?refresh=true' : ''}`, {}, 55000
       );
       setScan(data);
       if (data.status === 'escaneando') {
@@ -406,7 +406,7 @@ export const SuperOpportunities: React.FC<SuperOpportunitiesProps> = ({ onLoadCo
 
       {loading && !scan && !error && (
         <div className="grid lg:grid-cols-2 gap-4">
-          {[0, 1].map(i => <div key={i} className="h-80 rounded-2xl bg-slate-100 animate-pulse" />)}
+          {[0, 1].map(i => <div key={i} className="h-80 rounded-2xl skeleton" />)}
         </div>
       )}
 

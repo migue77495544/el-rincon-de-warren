@@ -56,7 +56,7 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
 
   return (
     <div className="border-t border-slate-800 pt-8 space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-5 rounded-3xl border border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 p-5 rounded-3xl border border-slate-800">
         <div>
           <h3 className="text-lg font-bold text-white flex items-center gap-2 font-serif">
             <MessageSquare className="w-5 h-5 text-slate-400" />
@@ -80,7 +80,7 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
         {theses.map(t => (
           <div
             key={t.id}
-            className="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-3.5 shadow-sm hover:border-slate-700 transition-all flex flex-col justify-between"
+            className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3.5 shadow-sm hover:border-slate-700 transition-all flex flex-col justify-between"
           >
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-3">

@@ -100,7 +100,7 @@ export const MoatGame: React.FC<MoatGameProps> = ({ onAddXP }) => {
           </div>
         </div>
 
-        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-900 p-4 rounded-xl border border-slate-800/80">
           {currentMoatCase.description}
         </p>
 
@@ -109,16 +109,16 @@ export const MoatGame: React.FC<MoatGameProps> = ({ onAddXP }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button
               onClick={() => handleMoatAnswer('moat')}
-              className="p-4 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-95"
+              className="p-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-95"
             >
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              <ShieldCheck className="w-5 h-5 text-emerald-700" />
               <span>Foso Económico Sólido (Comprar)</span>
             </button>
             <button
               onClick={() => handleMoatAnswer('trap')}
-              className="p-4 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-95"
+              className="p-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-95"
             >
-              <XCircle className="w-5 h-5 text-rose-400" />
+              <XCircle className="w-5 h-5 text-rose-700" />
               <span>Trampa de Valor / Especulativa (Huir)</span>
             </button>
           </div>
@@ -128,7 +128,7 @@ export const MoatGame: React.FC<MoatGameProps> = ({ onAddXP }) => {
           }`}>
             <div className="flex items-center justify-between">
               <span className="font-bold flex items-center gap-2 text-sm">
-                {moatIsCorrect ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <XCircle className="w-5 h-5 text-rose-400" />}
+                {moatIsCorrect ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <XCircle className="w-5 h-5 text-rose-700" />}
                 {moatIsCorrect ? '¡Decisión Correcta! (+50 XP)' : 'Decisión Incorrecta'}
               </span>
               <button
@@ -142,7 +142,7 @@ export const MoatGame: React.FC<MoatGameProps> = ({ onAddXP }) => {
             <p className="text-xs leading-relaxed text-slate-200">
               {currentMoatCase.explanation}
             </p>
-            <div className="p-3 bg-slate-950/80 rounded-lg text-xs italic text-slate-300 border border-white/5">
+            <div className="p-3 bg-slate-950 rounded-lg text-xs italic text-slate-300 border border-white/5">
               <strong>Cita de Warren:</strong> "{currentMoatCase.buffettWisdom}"
             </div>
           </div>

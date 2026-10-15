@@ -23,7 +23,8 @@ import { ModeloNegocio, identifyCompany } from '../utils/dualAdvisorEngine';
 import { postJson, errorMessage } from '../utils/api';
 
 // Algo por encima del timeout del servidor para los asesores (45 s)
-const ADVISOR_CLIENT_TIMEOUT_MS = 50000;
+// El servidor corta a los 50 s; Netlify, a los 60 s
+const ADVISOR_CLIENT_TIMEOUT_MS = 58000;
 
 interface JairoGuillermoConsultProps {
   companies: CompanyAnalysis[];

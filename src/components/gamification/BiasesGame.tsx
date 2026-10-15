@@ -55,7 +55,7 @@ export const BiasesGame: React.FC<BiasesGameProps> = ({ onAddXP }) => {
 
       <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-5">
         <h4 className="text-lg font-bold text-white font-serif">{currentBiasCase.title}</h4>
-        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-900/70 p-4 rounded-xl border border-slate-800">
+        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-900 p-4 rounded-xl border border-slate-800">
           {currentBiasCase.scenario}
         </p>
 
@@ -84,7 +84,7 @@ export const BiasesGame: React.FC<BiasesGameProps> = ({ onAddXP }) => {
         </div>
 
         {biasAnswered && (
-          <div className="p-4 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2 animate-in fade-in">
+          <div className="p-4 bg-slate-900 rounded-xl border border-slate-800 space-y-2 animate-in fade-in">
             <div className="flex items-center justify-between">
               <span className="font-bold text-xs text-slate-300">Explicación Conductual:</span>
               <button

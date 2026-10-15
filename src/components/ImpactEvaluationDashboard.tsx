@@ -206,22 +206,22 @@ export const ImpactEvaluationDashboard: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 text-[11px] font-mono">
-              <div className="p-2.5 bg-slate-900/90 rounded-xl border border-slate-800">
+              <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
                 <span className="text-slate-400 block text-[10px]">β₀ (Constante / Baseline):</span>
                 <strong className="text-white text-xs">{didResult.beta0.toFixed(2)}</strong>
                 <span className="text-slate-500 block text-[9px] mt-0.5">Control en Pre</span>
               </div>
-              <div className="p-2.5 bg-slate-900/90 rounded-xl border border-slate-800">
+              <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
                 <span className="text-slate-400 block text-[10px]">β₁ (Diferencia Previa):</span>
                 <strong className="text-white text-xs">{didResult.beta1 >= 0 ? `+${didResult.beta1.toFixed(2)}` : didResult.beta1.toFixed(2)}</strong>
                 <span className="text-slate-500 block text-[9px] mt-0.5">Sesgo inicial de selección</span>
               </div>
-              <div className="p-2.5 bg-slate-900/90 rounded-xl border border-slate-800">
+              <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
                 <span className="text-slate-400 block text-[10px]">β₂ (Efecto Temporal):</span>
                 <strong className="text-white text-xs">{didResult.beta2 >= 0 ? `+${didResult.beta2.toFixed(2)}` : didResult.beta2.toFixed(2)}</strong>
                 <span className="text-slate-500 block text-[9px] mt-0.5">Shock macro / maduración</span>
               </div>
-              <div className="p-2.5 bg-slate-900/90 rounded-xl border border-amber-500/30 bg-amber-500/5">
+              <div className="p-2.5 bg-slate-900 rounded-xl border border-amber-500/30 bg-amber-500/5">
                 <span className="text-amber-400 block text-[10px] font-bold">β₃ (Efecto Causal Neto):</span>
                 <strong className="text-amber-300 text-sm font-black">
                   {didResult.beta3 >= 0 ? `+${didResult.beta3.toFixed(2)}` : didResult.beta3.toFixed(2)} {metric.unit}

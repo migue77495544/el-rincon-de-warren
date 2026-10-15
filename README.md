@@ -1,19 +1,20 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# El Rincón de Warren
 
-# Run and deploy your AI Studio app
+Plataforma educativa de inversión en valor para pequeños inversores: análisis fundamental con datos en vivo, asesores con IA (fundamental y técnico), simulador de carteras de Markowitz, escáner de oportunidades del S&P 500, gamificación y evaluación de impacto.
 
-This contains everything you need to run your app locally.
-https://ai.studio/apps/5b4bcbf9-0882-4c75-b6c8-6e938b2572f3
+## Ejecutar en local
 
-## Run Locally
+Requisitos: Node.js 22 o superior.
 
-**Prerequisites:**  Node.js
+1. `npm install`
+2. Copia `.env.example` como `.env` y pon tu `GEMINI_API_KEY`.
+3. `npm run dev` y abre http://localhost:3000
 
+## Publicar
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+La app se despliega en Netlify (frontend estático + API como función serverless, sin Python). Instrucciones paso a paso en [DESPLIEGUE_NETLIFY.md](DESPLIEGUE_NETLIFY.md).
+
+## Documentación
+
+- [DOCUMENTACION_TECNICA_Y_METODOLOGICA.md](DOCUMENTACION_TECNICA_Y_METODOLOGICA.md): fórmulas, scoring y metodología financiera.
+- [CLAUDE.md](CLAUDE.md): arquitectura y reglas de código.

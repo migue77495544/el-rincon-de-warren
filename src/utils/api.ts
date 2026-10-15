@@ -20,7 +20,7 @@ export function errorMessage(err: unknown, fallback = 'Ocurrió un error al cons
 /**
  * fetch + JSON con límite de tiempo. Lanza ApiError si el servidor responde con error
  * (HTTP no 2xx o `success: false`), si se agota el tiempo o si no hay red.
- * El timeout del cliente es algo mayor que el del servidor (25 s datos / 45 s asesores).
+ * El timeout del cliente es algo mayor que el del servidor (45 s datos / 50 s asesores; Netlify corta a los 60 s).
  */
 export async function fetchJson<T = any>(url: string, init: RequestInit = {}, timeoutMs = 35000): Promise<T> {
   let res: Response;

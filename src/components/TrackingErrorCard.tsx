@@ -13,6 +13,7 @@ import {
 import { TrackingErrorData } from '../types';
 import { fetchJson, postJson, errorMessage } from '../utils/api';
 import { InfoTooltip } from './SmartTooltip';
+import { LoadingSkeleton } from './ui/Feedback';
 
 interface TrackingErrorCardProps {
   ticker: string;
@@ -156,10 +157,7 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
 
       {/* Contenido Principal */}
       {loading ? (
-        <div className="py-8 flex flex-col items-center justify-center gap-3 text-slate-400">
-          <RefreshCw className="w-5 h-5 animate-spin text-violet-500" />
-          <span className="text-xs font-medium">Calculando Tracking Error en vivo...</span>
-        </div>
+        <LoadingSkeleton label="Calculando Tracking Error en vivo..." />
       ) : error ? (
         <div className="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-between text-xs text-rose-700">
           <div className="flex items-center gap-2">

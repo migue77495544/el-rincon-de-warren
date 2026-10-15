@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { CompanyAnalysis, FinancialRawData } from '../types';
 import { fetchJson, postJson, errorMessage } from '../utils/api';
 import { useViewMode } from '../context/ViewModeContext';
@@ -23,6 +23,7 @@ import {
   LayoutDashboard,
   LineChart,
   Maximize2,
+  MessagesSquare,
   PieChart,
   PlusCircle,
   Radio,
@@ -36,21 +37,99 @@ import {
   XCircle,
   Zap
 } from 'lucide-react';
-import { FinancialFormulasGuide } from './FinancialFormulasGuide';
 import { CompanyPriceChart } from './CompanyPriceChart';
-import { RatiosDashboard } from './RatiosDashboard';
 import { VitalSigns } from './VitalSigns';
-import { PythonDataConsole } from './PythonDataConsole';
-import { WallStreetConsensus } from './WallStreetConsensus';
-import { CapmValuationCard } from './CapmValuationCard';
-import { TrackingErrorCard } from './TrackingErrorCard';
 import { InfoTooltip } from './SmartTooltip';
-import { JairoGuillermoConsult } from './JairoGuillermoConsult';
 import { SimpleViewMode, SkeletonCard } from './SimpleViewMode';
 import { CustomCompanyModal, INITIAL_CUSTOM_FORM, CustomCompanyFormData } from './fundamental/CustomCompanyModal';
 import { QuickInspectModal } from './fundamental/QuickInspectModal';
-import { BalanceSheetVisualizer } from './fundamental/BalanceSheetVisualizer';
-import { DimensionRatiosPanel } from './fundamental/DimensionRatiosPanel';
+import { AnimatePresence, motion } from 'motion/react';
+import { Reveal, StatusBadge } from './ui/Feedback';
+
+// Paneles del modo Analista: se descargan solo cuando se muestran
+const FinancialFormulasGuide = lazy(() => import('./FinancialFormulasGuide').then(m => ({ default: m.FinancialFormulasGuide })));
+const RatiosDashboard = lazy(() => import('./RatiosDashboard').then(m => ({ default: m.RatiosDashboard })));
+const WallStreetConsensus = lazy(() => import('./WallStreetConsensus').then(m => ({ default: m.WallStreetConsensus })));
+const CapmValuationCard = lazy(() => import('./CapmValuationCard').then(m => ({ default: m.CapmValuationCard })));
+const TrackingErrorCard = lazy(() => import('./TrackingErrorCard').then(m => ({ default: m.TrackingErrorCard })));
+const RiskMetricsCard = lazy(() => import('./RiskMetricsCard').then(m => ({ default: m.RiskMetricsCard })));
+const JairoGuillermoConsult = lazy(() => import('./JairoGuillermoConsult').then(m => ({ default: m.JairoGuillermoConsult })));
+const BalanceSheetVisualizer = lazy(() => import('./fundamental/BalanceSheetVisualizer').then(m => ({ default: m.BalanceSheetVisualizer })));
+const DimensionRatiosPanel = lazy(() => import('./fundamental/DimensionRatiosPanel').then(m => ({ default: m.DimensionRatiosPanel })));
+
+type EngineView = 'dashboard' | 'semaphores' | 'visualizer' | 'chart' | 'valuation' | 'advisors' | 'formulas' | 'all';
+
+interface AnalysisCategory {
+  id: string;
+  label: string;
+  descripcion: string;
+  icon: React.ComponentType<{ className?: string }>;
+  views: { id: EngineView; label: string; icon: React.ComponentType<{ className?: string }> }[];
+}
+
+// Categorías del análisis: agrupan las vistas existentes sin añadir estado nuevo.
+// La categoría activa se deriva de engineViewMode.
+const ANALYSIS_CATEGORIES: AnalysisCategory[] = [
+  {
+    id: 'metricas',
+    label: 'Métricas clave',
+    descripcion: 'Ratios y semáforos por dimensión',
+    icon: LayoutDashboard,
+    views: [
+      { id: 'dashboard', label: 'Ratios', icon: LayoutDashboard },
+      { id: 'semaphores', label: 'Semáforos', icon: Layers }
+    ]
+  },
+  {
+    id: 'estados',
+    label: 'Estados financieros',
+    descripcion: 'Balance, fondo de maniobra y DuPont',
+    icon: BarChart3,
+    views: [{ id: 'visualizer', label: 'Balance y DuPont', icon: BarChart3 }]
+  },
+  {
+    id: 'valoracion',
+    label: 'Valoración y riesgo',
+    descripcion: 'Consenso, CAPM, tracking error, VaR y cotización',
+    icon: Scale,
+    views: [
+      { id: 'valuation', label: 'Valoración y riesgo', icon: Scale },
+      { id: 'chart', label: 'Cotización', icon: TrendingUp }
+    ]
+  },
+  {
+    id: 'asesores',
+    label: 'Asesores IA',
+    descripcion: 'Consulta a Jairo y Guillermo',
+    icon: MessagesSquare,
+    views: [{ id: 'advisors', label: 'Asesores', icon: MessagesSquare }]
+  },
+  {
+    id: 'formulas',
+    label: 'Fórmulas',
+    descripcion: 'Guía de fórmulas y umbrales Value',
+    icon: BookOpen,
+    views: [{ id: 'formulas', label: 'Fórmulas', icon: BookOpen }]
+  },
+  {
+    id: 'todo',
+    label: 'Todo',
+    descripcion: 'Todas las secciones en una sola página',
+    icon: Eye,
+    views: [{ id: 'all', label: 'Todo', icon: Eye }]
+  }
+];
+
+// Rótulo de subsección dentro de una categoría
+const SectionLabel: React.FC<{ icon: React.ComponentType<{ className?: string }>; children: React.ReactNode }> = ({ icon: Icon, children }) => (
+  <div className="flex items-center gap-2 pt-1">
+    <span className="w-6 h-6 rounded-md bg-amber-50 border border-amber-200 flex items-center justify-center">
+      <Icon className="w-3.5 h-3.5 text-amber-700" />
+    </span>
+    <h3 className="m-0 text-[13px] font-semibold text-slate-700">{children}</h3>
+    <span className="flex-1 h-px bg-gradient-to-r from-slate-200 to-transparent" aria-hidden="true" />
+  </div>
+);
 
 interface FundamentalEngineProps {
   companies: CompanyAnalysis[];
@@ -61,7 +140,6 @@ interface FundamentalEngineProps {
   customModalOpen?: boolean;
   onCloseCustomModal?: () => void;
   onUpdateCompanies?: (companies: CompanyAnalysis[]) => void;
-  onOpenPythonConsole?: (ticker?: string) => void;
 }
 
 export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
@@ -73,16 +151,14 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
   customModalOpen,
   onCloseCustomModal,
   onUpdateCompanies,
-  onOpenPythonConsole
 }) => {
   const { mode: viewMode, isAnalystEnabledForSection } = useViewMode();
   const [searchTerm, setSearchTerm] = useState('');
   const [qualityFilter, setQualityFilter] = useState<'all' | 'green' | 'margin' | 'moat' | 'speculative'>('all');
-  const [engineViewMode, setEngineViewMode] = useState<'dashboard' | 'semaphores' | 'visualizer' | 'chart' | 'formulas' | 'all'>('dashboard');
+  const [engineViewMode, setEngineViewMode] = useState<'dashboard' | 'semaphores' | 'visualizer' | 'chart' | 'valuation' | 'advisors' | 'formulas' | 'all'>('dashboard');
   const [activeDimension, setActiveDimension] = useState<'all' | 'liquidez' | 'solvencia' | 'rentabilidad' | 'valoracion'>('all');
   const [internalCustomModal, setInternalCustomModal] = useState(false);
-  const [isLocalPythonOpen, setIsLocalPythonOpen] = useState(false);
-  const [mobileActiveTab, setMobileActiveTab] = useState<'list' | 'detail' | 'both'>('both');
+  const [mobileActiveTab, setMobileActiveTab] = useState<'list' | 'detail' | 'both'>('detail');
   const [showQuickInspectModal, setShowQuickInspectModal] = useState(false);
   const [isPriceChartExpanded, setIsPriceChartExpanded] = useState(true);
 
@@ -153,6 +229,14 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
 
   // Real-time API state & Live search
   const [isSyncingPrices, setIsSyncingPrices] = useState(false);
+
+  // Tasa libre de riesgo real (FRED DGS10) para la cabecera del modo Analista
+  const [tasaLibreRiesgo, setTasaLibreRiesgo] = useState<number | null>(null);
+  useEffect(() => {
+    fetchJson<{ riskFreeRate: number }>('/api/market/macro')
+      .then(d => setTasaLibreRiesgo(d.riskFreeRate))
+      .catch(() => setTasaLibreRiesgo(null));
+  }, []);
   const [syncStatusBanner, setSyncStatusBanner] = useState<string | null>(null);
   const [importTickerInput, setImportTickerInput] = useState('');
   const [isImporting, setIsImporting] = useState(false);
@@ -383,8 +467,8 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
         );
       case 'yellow':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200 shadow-xs">
-            <AlertTriangle className="w-3.5 h-3.5 text-slate-500" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-xs">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
             Precaución (Atención)
           </span>
         );
@@ -455,7 +539,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               }`}
             >
               <Building2 className="w-3.5 h-3.5 text-slate-500" />
-              <span>📋 Catálogo ({filteredCompanies.length})</span>
+              <span>Catálogo ({filteredCompanies.length})</span>
             </button>
 
             <button
@@ -472,7 +556,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               }`}
             >
               <BarChart3 className="w-3.5 h-3.5 text-slate-500" />
-              <span>📊 Ver Análisis: {selectedCompany.ticker}</span>
+              <span>Ficha de {selectedCompany.ticker}</span>
             </button>
           </div>
 
@@ -483,7 +567,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>{syncStatusBanner}</span>
               </div>
-              <button onClick={() => setSyncStatusBanner(null)} className="text-slate-400 hover:text-slate-700 text-xs">
+              <button onClick={() => setSyncStatusBanner(null)} className="text-slate-400 hover:text-slate-700 text-xs" aria-label="Cerrar aviso">
                 ✕
               </button>
             </div>
@@ -493,12 +577,12 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Column: List of Companies */}
             <div className={`lg:col-span-4 space-y-4 ${mobileActiveTab === 'list' || mobileActiveTab === 'both' ? 'block' : 'hidden lg:block'}`}>
-              <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+              <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-card">
                 <div className="flex items-center justify-between mb-3.5">
                   <div className="flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-slate-500" />
-                    <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
-                      Catálogo de Empresas
+                    <h2 className="m-0 font-serif text-lg font-semibold text-slate-900">
+                      Empresas
                     </h2>
                   </div>
                   <button
@@ -507,7 +591,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                     title="Añadir empresa calculando estados financieros"
                   >
                     <PlusCircle className="w-3.5 h-3.5" />
-                    <span>+ Añadir</span>
+                    <span>Añadir</span>
                   </button>
                 </div>
 
@@ -707,7 +791,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                         <div
                           key={c.id}
                           onClick={() => handleSelectAndOpenCompany(c)}
-                          className={`p-3 rounded-xl border transition-all cursor-pointer ${
+                          className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:-translate-y-px hover:shadow-md ${
                             isSelected
                               ? 'bg-slate-900/5 border-slate-900 shadow-xs'
                               : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
@@ -791,156 +875,54 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
 ) : (
           /* Analyst Mode or expanded section: Full complex interface */
           <div className="space-y-6">
-      {/* Top-Down Macro Context Banner (iOS Card Style) */}
-      <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 shrink-0 shadow-xs">
-            <Compass className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 font-mono">
-                Enfoque Top-Down (Contexto Macroeconómico)
-              </span>
-              <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-mono border border-slate-200">
-                Rf: 4.0%
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-              En entornos de tipos reales positivos, el capital deja de ser gratis. Las empresas sin beneficios reales sufren; los balances blindados con <strong>Moat</strong> y caja neta prosperan.
-            </p>
-          </div>
+      {/* Barra de herramientas del Modo Analista */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div>
+          <h1 className="m-0 font-serif text-[28px] leading-tight font-semibold text-slate-900">
+            Análisis fundamental
+            <span className="block h-[3px] w-12 mt-2 rounded-full bg-gradient-to-r from-amber-500 to-amber-300" aria-hidden="true" />
+          </h1>
+          <p className="mt-1 mb-0 text-sm text-slate-600 max-w-[72ch] leading-relaxed">
+            Tasa libre de riesgo{' '}
+            <span className="tabular font-semibold text-slate-800">
+              {tasaLibreRiesgo !== null ? `${(tasaLibreRiesgo * 100).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %` : '…'}
+            </span>{' '}
+            (bono del Tesoro a 10 años). Con tipos reales positivos el capital deja de ser gratis: resisten los balances con foso y caja neta.
+          </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 self-end md:self-auto shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button
-            onClick={() => setEngineViewMode('formulas')}
-            className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs font-medium bg-transparent text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-all border border-slate-200 active:scale-95"
+            type="button"
+            onClick={handleSyncPrices}
+            disabled={isSyncingPrices}
+            className="press flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] font-medium border border-slate-200 bg-white text-slate-700 hover:text-slate-900 hover:border-slate-300 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Actualizar las cotizaciones de todo el catálogo desde Yahoo Finance"
           >
-            <BookOpen className="w-4 h-4 text-slate-500" />
-            <span>Guía de Fórmulas</span>
+            <RefreshCw className={`w-4 h-4 text-slate-500 ${isSyncingPrices ? 'animate-spin' : ''}`} />
+            <span>{isSyncingPrices ? 'Actualizando…' : 'Actualizar cotizaciones'}</span>
           </button>
           <button
+            type="button"
             onClick={() => setShowCustomModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all shadow-sm active:scale-95 ring-2 ring-amber-400/40"
+            className="press flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-[13px] font-semibold bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-glow"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Analizar Mi Empresa</span>
+            <span>Analizar mi empresa</span>
           </button>
         </div>
       </div>
 
-      {/* Live Market & Yahoo Finance Bar (Información Real de Bolsa) */}
-      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-600"></span>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
-                  Datos de Mercado en Tiempo Real
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  Yahoo Finance (yfinance) • Feed Bursátil en Vivo
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Cotizaciones reales de Wall Street vinculadas automáticamente al motor de 11 ratios y modelo DuPont.
-              </p>
-            </div>
+      {syncStatusBanner && (
+        <div role="status" className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between gap-3 animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{syncStatusBanner}</span>
           </div>
-
-          <div className="flex items-center gap-2.5 w-full lg:w-auto flex-wrap sm:flex-nowrap">
-            <button
-              onClick={() => {
-                if (onOpenPythonConsole) {
-                  onOpenPythonConsole(selectedCompany?.ticker);
-                } else {
-                  setIsLocalPythonOpen(true);
-                }
-              }}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-medium transition-all bg-transparent hover:bg-slate-100 text-slate-700 hover:text-slate-950 border border-slate-300 active:scale-95 group cursor-pointer shrink-0"
-              title="Abrir motor Python con pandas, numpy, yfinance y seaborn"
-            >
-              <span className="text-sm transition-transform group-hover:rotate-12">🐍</span>
-              <span>Motor Python (Pandas)</span>
-              <span className="text-[10px] text-emerald-700 font-mono">
-                Live
-              </span>
-            </button>
-
-            <button
-              onClick={handleSyncPrices}
-              disabled={isSyncingPrices}
-              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-medium transition-all bg-transparent border active:scale-95 ${
-                isSyncingPrices
-                  ? 'text-slate-400 border-slate-200 cursor-not-allowed'
-                  : 'text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/60 border-slate-300 hover:border-emerald-300'
-              }`}
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingPrices ? 'animate-spin' : ''}`} />
-              <span>{isSyncingPrices ? 'Sincronizando Bolsa...' : 'Sincronizar Cotizaciones en Vivo'}</span>
-            </button>
-          </div>
+          <button type="button" onClick={() => setSyncStatusBanner(null)} className="text-emerald-800 hover:text-emerald-950 text-xs font-semibold">
+            Cerrar
+          </button>
         </div>
-
-        {/* Quick Ticker Search & Import Real Company */}
-        <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <form onSubmit={handleImportTicker} className="flex-1 flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                placeholder="Buscar e importar ticker o nombre (ej: TSLA, Apple, Santander, NVDA)..."
-                value={importTickerInput}
-                onChange={e => setImportTickerInput(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-9 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 shadow-xs"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={isImporting || !importTickerInput.trim()}
-              className={`px-3.5 py-2 rounded-2xl text-xs font-medium transition-all shrink-0 bg-transparent border active:scale-95 ${
-                isImporting || !importTickerInput.trim()
-                  ? 'text-slate-400 border-slate-200 cursor-not-allowed'
-                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border-slate-300 hover:border-slate-400'
-              }`}
-            >
-              {isImporting ? 'Consultando...' : 'Cargar en Vivo'}
-            </button>
-          </form>
-
-          {/* Quick Click Ticker Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar shrink-0">
-            <span className="text-[11px] text-slate-500 font-medium mr-1 hidden sm:inline">Populares:</span>
-            {['NVDA', 'MSFT', 'TSLA', 'GOOGL', 'META'].map(t => (
-              <button
-                key={t}
-                onClick={() => handleImportTicker(undefined, t)}
-                disabled={isImporting}
-                className="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 transition-all active:scale-95"
-              >
-                +{t}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Live sync notification feedback */}
-        {syncStatusBanner && (
-          <div className="mt-3 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between animate-fadeIn">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>{syncStatusBanner}</span>
-            </div>
-            <button onClick={() => setSyncStatusBanner(null)} className="text-slate-400 hover:text-slate-700 text-xs">
-              ✕
-            </button>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Mobile / Tablet Segmented Control: Lista de Empresas vs Análisis Fundamental vs Ambos */}
       <div className="flex lg:hidden items-center justify-between p-1 bg-slate-200/80 rounded-2xl border border-slate-200 mb-4 gap-1">
@@ -953,7 +935,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
           }`}
         >
           <Building2 className="w-3.5 h-3.5 text-slate-500" />
-          <span>📋 Catálogo ({filteredCompanies.length})</span>
+          <span>Catálogo ({filteredCompanies.length})</span>
         </button>
 
         <button
@@ -970,7 +952,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
           }`}
         >
           <BarChart3 className="w-3.5 h-3.5 text-slate-500" />
-          <span>📊 Ver Análisis: {selectedCompany.ticker}</span>
+          <span>Ficha de {selectedCompany.ticker}</span>
         </button>
 
         <button
@@ -991,49 +973,12 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: List of Companies (Bottom-Up Filter) */}
         <div className={`lg:col-span-4 space-y-4 ${mobileActiveTab === 'list' || mobileActiveTab === 'both' ? 'block' : 'hidden lg:block'}`}>
-          {/* Active Company Quick Access Banner */}
-          <div className="bg-slate-900 text-white p-4 rounded-3xl border border-slate-800 shadow-sm flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 truncate">
-              <div className="w-9 h-9 rounded-2xl bg-slate-800 text-slate-100 border border-slate-700 font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                {selectedCompany.ticker.slice(0, 3)}
-              </div>
-              <div className="truncate">
-                <div className="flex items-center gap-1.5 truncate">
-                  <span className="font-mono font-bold text-xs text-white">
-                    {selectedCompany.ticker}
-                  </span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-bold border border-slate-700">
-                    {selectedCompany.scoreGrade}
-                  </span>
-                </div>
-                <span className="text-[11px] text-slate-400 truncate block">
-                  ${selectedCompany.raw.precioCotizacion.toFixed(2)} · {selectedCompany.nombre}
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setMobileActiveTab('detail');
-                setTimeout(() => {
-                  document.getElementById('company-detail-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 50);
-              }}
-              className="px-3 py-1.5 rounded-xl bg-transparent hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 active:scale-95"
-              title="Ir al análisis detallado de la empresa seleccionada"
-            >
-              <BarChart3 className="w-3.5 h-3.5 text-slate-400" />
-              <span>Ver Análisis →</span>
-            </button>
-          </div>
-
-          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-card">
             <div className="flex items-center justify-between mb-3.5">
               <div className="flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-slate-500" />
-                <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
-                  Filtro Bottom-Up de Empresas
+                <h2 className="m-0 font-serif text-lg font-semibold text-slate-900">
+                  Empresas
                 </h2>
               </div>
               <span className="text-xs text-slate-500 font-medium">
@@ -1213,7 +1158,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
             <div className="flex flex-wrap gap-1.5 mb-3.5 pb-2 border-b border-slate-100">
               <button
                 onClick={() => setQualityFilter('all')}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
+                className={`press px-2.5 py-1 rounded-full text-[11px] font-semibold ${
                   qualityFilter === 'all'
                     ? 'bg-slate-900 text-white font-bold'
                     : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
@@ -1223,7 +1168,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               </button>
               <button
                 onClick={() => setQualityFilter('green')}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
+                className={`press px-2.5 py-1 rounded-full text-[11px] font-semibold ${
                   qualityFilter === 'green'
                     ? 'bg-slate-900 text-white font-bold'
                     : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
@@ -1233,7 +1178,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               </button>
               <button
                 onClick={() => setQualityFilter('margin')}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
+                className={`press px-2.5 py-1 rounded-full text-[11px] font-semibold ${
                   qualityFilter === 'margin'
                     ? 'bg-slate-900 text-white font-bold'
                     : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
@@ -1243,7 +1188,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               </button>
               <button
                 onClick={() => setQualityFilter('speculative')}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
+                className={`press px-2.5 py-1 rounded-full text-[11px] font-semibold ${
                   qualityFilter === 'speculative'
                     ? 'bg-slate-900 text-white font-bold'
                     : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
@@ -1285,7 +1230,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                     <div
                       key={c.id}
                       onClick={() => handleSelectAndOpenCompany(c)}
-                      className={`p-3.5 rounded-2xl border transition-all cursor-pointer group ${
+                      className={`p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer group hover:-translate-y-px hover:shadow-md ${
                         isSelected
                           ? 'bg-slate-100/90 border-slate-900 shadow-xs ring-1 ring-slate-900'
                           : isSpeculative
@@ -1380,152 +1325,138 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
           id="company-detail-panel"
           className={`lg:col-span-8 space-y-6 ${mobileActiveTab === 'detail' || mobileActiveTab === 'both' ? 'block' : 'hidden lg:block'}`}
         >
-          {/* Navegación Móvil de Retorno */}
-          <div className="flex lg:hidden items-center justify-between p-2.5 bg-slate-100 rounded-2xl border border-slate-200">
-            <button
-              onClick={() => setMobileActiveTab('list')}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-950 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs transition-all active:scale-95"
-            >
-              <ChevronLeft className="w-4 h-4 text-slate-600" />
-              <span>← Volver a Lista de Empresas</span>
-            </button>
-            <span className="text-[11px] text-slate-500 font-mono">
-              Ficha: <strong>{selectedCompany.ticker}</strong>
-            </span>
-          </div>
-          {/* Barra de Navegación Rápida de la Empresa Activa */}
-          <div className="bg-white rounded-3xl p-3 sm:p-4 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 flex-1">
-              <span className="text-xs font-bold text-slate-500 font-mono uppercase tracking-wider shrink-0 flex items-center gap-1">
-                <Building2 className="w-3.5 h-3.5 text-slate-500" />
-                Empresa:
-              </span>
-              {/* Dropdown Selector para cambiar al instante de empresa */}
-              <div className="relative flex-1 max-w-sm">
-                <select
-                  value={selectedCompany.id}
-                  onChange={(e) => {
-                    const found = companies.find(c => c.id === e.target.value);
-                    if (found) handleSelectAndOpenCompany(found);
-                  }}
-                  className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 pr-8 text-xs font-bold text-slate-900 focus:outline-none focus:border-slate-400 font-mono cursor-pointer shadow-xs"
-                >
-                  {companies.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.ticker} - {c.nombre} (${c.raw.precioCotizacion.toFixed(2)})
-                    </option>
-                  ))}
-                </select>
-                <ChevronRight className="w-4 h-4 text-slate-400 absolute right-2.5 top-2 pointer-events-none rotate-90" />
-              </div>
-            </div>
+          {/* Volver al catálogo (móvil) */}
+          <button
+            type="button"
+            onClick={() => setMobileActiveTab('list')}
+            className="flex lg:hidden items-center gap-1 text-[13px] font-medium text-slate-600 hover:text-slate-900"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>Volver al catálogo</span>
+          </button>
 
-            <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                <button
-                  onClick={handlePrevCompany}
-                  disabled={companies.length <= 1}
-                  className="p-1 px-2 rounded-lg bg-white hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-30 shadow-2xs"
-                  title="Ver empresa anterior"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Anterior</span>
-                </button>
-                <span className="text-[11px] font-mono text-slate-600 px-1.5 font-bold">
-                  {currentCompanyIndex + 1} / {companies.length}
+          {/* Cabecera de la empresa */}
+          <Reveal key={selectedCompany.id}>
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-card">
+            <div className="ink-panel p-5 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+                <div className="flex items-center gap-2 text-xs text-slate-400 min-w-0">
+                  <span className="font-mono font-semibold text-amber-300">{selectedCompany.ticker}</span>
+                  <span aria-hidden="true">/</span>
+                  <span>{selectedCompany.sector}</span>
+                  <span aria-hidden="true">/</span>
+                  <span className="tabular">${selectedCompany.raw.precioCotizacion.toFixed(2)}</span>
+                </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                <div className="flex items-center h-9 rounded-lg border border-white/15 bg-white/5 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={handlePrevCompany}
+                    disabled={companies.length <= 1}
+                    className="h-full px-2 text-slate-300 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-30"
+                    aria-label="Empresa anterior"
+                    title="Empresa anterior"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <select
+                    value={selectedCompany.id}
+                    onChange={(e) => {
+                      const found = companies.find(c => c.id === e.target.value);
+                      if (found) handleSelectAndOpenCompany(found);
+                    }}
+                    className="h-full max-w-[180px] border-0 border-x border-white/15 rounded-none bg-transparent px-2 text-xs font-semibold text-white cursor-pointer"
+                    aria-label="Cambiar de empresa"
+                  >
+                    {companies.map(c => (
+                      <option key={c.id} value={c.id} className="text-slate-900">
+                        {c.ticker} · {c.nombre}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={handleNextCompany}
+                    disabled={companies.length <= 1}
+                    className="h-full px-2 text-slate-300 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-30"
+                    aria-label="Empresa siguiente"
+                    title="Empresa siguiente"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+                <span className="font-mono text-[11px] text-slate-500 px-1">
+                  {currentCompanyIndex + 1}/{companies.length}
                 </span>
                 <button
-                  onClick={handleNextCompany}
-                  disabled={companies.length <= 1}
-                  className="p-1 px-2 rounded-lg bg-white hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-30 shadow-2xs"
-                  title="Ver empresa siguiente"
+                  type="button"
+                  onClick={() => setShowQuickInspectModal(true)}
+                  className="press h-9 w-9 rounded-lg border border-white/15 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 flex items-center justify-center"
+                  title="Abrir ficha y gráfico en pantalla completa"
+                  aria-label="Ficha ampliada"
                 >
-                  <span className="hidden sm:inline">Siguiente</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <Maximize2 className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectForSimulation(selectedCompany.ticker)}
+                  className="press flex items-center gap-1.5 h-9 px-3 rounded-lg bg-amber-500 text-slate-950 text-[13px] font-semibold hover:bg-amber-400 shadow-glow"
+                >
+                  <LineChart className="w-4 h-4" />
+                  <span>Simular en cartera</span>
                 </button>
               </div>
-
-              <button
-                onClick={() => setShowQuickInspectModal(true)}
-                className="p-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold transition-all flex items-center gap-1.5"
-                title="Abrir ficha y gráfico en pantalla completa"
-              >
-                <Maximize2 className="w-3.5 h-3.5 text-slate-600" />
-                <span>Ficha Ampliada</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Selected Company Header Card (iOS Style) */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-black text-slate-900 font-mono tracking-tight">
-                    {selectedCompany.ticker}
-                  </h1>
-                  <span className="text-base text-slate-700 font-medium">
-                    {selectedCompany.nombre}
-                  </span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                    {selectedCompany.sector}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1 max-w-2xl">
+              </div>
+              <h2 className="mt-2 mb-0 font-serif text-[30px] leading-tight font-semibold text-white">
+                {selectedCompany.nombre}
+              </h2>
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                <StatusBadge
+                  tone={selectedCompany.scoreGrade === 'A+' || selectedCompany.scoreGrade === 'A' ? 'green' : selectedCompany.scoreGrade === 'F' ? 'red' : 'yellow'}
+                  title="Nota del Score lineal S(a)"
+                >
+                  Nota {selectedCompany.scoreGrade}
+                </StatusBadge>
+                {selectedCompany.targetConsensus && (
+                  <StatusBadge
+                    tone={selectedCompany.targetConsensus.upside_potential >= 15 ? 'green' : selectedCompany.targetConsensus.upside_potential >= 0 ? 'yellow' : 'red'}
+                    title="Margen de seguridad estimado frente al precio objetivo medio del consenso"
+                  >
+                    {selectedCompany.targetConsensus.upside_potential >= 15
+                      ? 'Margen de seguridad amplio'
+                      : selectedCompany.targetConsensus.upside_potential >= 0
+                      ? 'Margen de seguridad estrecho'
+                      : 'Sin margen de seguridad'}
+                  </StatusBadge>
+                )}
+              </div>
+              {selectedCompany.descripcion && (
+                <p className="mt-3 mb-0 text-[13px] text-slate-300 max-w-[72ch] leading-relaxed line-clamp-2">
                   {selectedCompany.descripcion}
                 </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  onClick={() => setEngineViewMode('chart')}
-                  className={`px-3 py-2 rounded-2xl font-medium text-xs transition-all flex items-center gap-1.5 border bg-transparent ${
-                    engineViewMode === 'chart'
-                      ? 'border-slate-400 text-slate-900 bg-slate-100 font-semibold'
-                      : 'border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
-                >
-                  <TrendingUp className="w-4 h-4 text-slate-500" />
-                  <span>Gráfica del Precio</span>
-                </button>
-                <button
-                  onClick={() => onSelectForSimulation(selectedCompany.ticker)}
-                  className="px-3.5 py-2 rounded-2xl bg-transparent hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-300 font-medium text-xs transition-all active:scale-95 flex items-center gap-1.5"
-                >
-                  <TrendingUp className="w-4 h-4 text-slate-500" />
-                  <span>Simular en Cartera</span>
-                </button>
-              </div>
+              )}
             </div>
 
-            {/* Core Badges: Scoring Linear S(a), Margen de Seguridad & Moat */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-5">
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-mono">
-                  Scoring Linear Global S(a)
-                </span>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-2xl font-black text-slate-900 font-mono">
-                    {selectedCompany.linearScore}
-                  </span>
-                  <span className="text-xs text-slate-500 font-medium">
-                    /100 (Nota {selectedCompany.scoreGrade})
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 mt-1">
-                  Ponderación de las 4 dimensiones financieras.
-                </p>
+            {/* Cifras clave */}
+            <dl className="m-0 grid grid-cols-1 sm:grid-cols-3 gap-px bg-slate-200 border-t border-slate-200 [&>div]:bg-white">
+              <div className="p-4 sm:px-6">
+                <dt className="text-xs text-slate-500">Score lineal S(a)</dt>
+                <dd className="m-0 mt-1 flex items-baseline gap-2">
+                  <span className="tabular text-2xl font-semibold text-slate-900">{selectedCompany.linearScore}</span>
+                  <span className="text-xs text-slate-500">/100 · nota {selectedCompany.scoreGrade}</span>
+                </dd>
               </div>
-
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center font-mono">
-                  Consenso Wall Street
+              <div className="p-4 sm:px-6">
+                <dt className="text-xs text-slate-500 flex items-center">
+                  Potencial según consenso
                   <InfoTooltip concept="per" />
-                </span>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className={`text-2xl font-black font-mono ${
-                    selectedCompany.targetConsensus?.upside_potential >= 10 ? 'text-emerald-700' :
-                    selectedCompany.targetConsensus?.upside_potential >= 0 ? 'text-slate-800' :
+                </dt>
+                <dd className="m-0 mt-1 flex items-baseline gap-2 flex-wrap">
+                  <span className={`tabular text-2xl font-semibold ${
+                    !selectedCompany.targetConsensus ? 'text-slate-400' :
+                    selectedCompany.targetConsensus.upside_potential >= 10 ? 'text-emerald-700' :
+                    selectedCompany.targetConsensus.upside_potential >= 0 ? 'text-slate-900' :
                     'text-rose-700'
                   }`}>
                     {selectedCompany.targetConsensus
@@ -1534,253 +1465,245 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                   </span>
                   {selectedCompany.targetConsensus && (
                     <span className="text-xs text-slate-500">
-                      vs Cotización (${selectedCompany.targetConsensus.number_of_analysts} analistas)
+                      {selectedCompany.targetConsensus.number_of_analysts} analistas, objetivo ${selectedCompany.targetConsensus.target_mean.toFixed(2)}
                     </span>
                   )}
-                </div>
-                {selectedCompany.targetConsensus ? (
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    {selectedCompany.targetConsensus.recommendation} · Objetivo medio: ${selectedCompany.targetConsensus.target_mean.toFixed(2)}
-                  </p>
-                ) : (
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Cotización actual: ${selectedCompany.raw.precioCotizacion.toFixed(2)}
-                  </p>
-                )}
+                </dd>
               </div>
-
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center font-mono">
-                  Foso Defensivo (Economic Moat)
+              <div className="p-4 sm:px-6">
+                <dt className="text-xs text-slate-500 flex items-center">
+                  Foso defensivo
                   <InfoTooltip concept="foso" />
-                </span>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <Sparkles className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm font-bold text-slate-900">
-                    {selectedCompany.moat}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 mt-1">
-                  Poder de precios y barreras de entrada estructurales.
-                </p>
+                </dt>
+                <dd className="m-0 mt-1 text-sm font-semibold text-slate-900">{selectedCompany.moat}</dd>
               </div>
-            </div>
+            </dl>
 
-            {/* Warren Verdict Heuristic */}
-            <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
-              <div className="flex items-center gap-2 text-slate-800 font-bold mb-1 font-serif">
-                <Sparkles className="w-4 h-4 text-slate-500" />
-                <span>Veredicto de Value Investing de Warren:</span>
-              </div>
-              <p className="text-slate-600 italic">
-                "{selectedCompany.warrenVerdict}"
+            {/* Veredicto */}
+            <div className="relative border-t border-slate-200 px-5 sm:px-6 py-4">
+              <span className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r bg-amber-500" aria-hidden="true" />
+              <p className="m-0 font-serif text-[17px] leading-relaxed text-slate-800">
+                «{selectedCompany.warrenVerdict}»
               </p>
             </div>
-
-            {/* SECCIÓN: Consenso de Wall Street (Precio Objetivo, Recomendaciones, Noticias) */}
-            <WallStreetConsensus
-              ticker={selectedCompany.ticker}
-              currentPrice={selectedCompany.raw.precioCotizacion}
-              consensus={selectedCompany.targetConsensus}
-            />
-
-            {/* SECCIÓN: Costo de Capital Propio (CAPM - Damodaran Betas & FRED DGS10) */}
-            <CapmValuationCard
-              ticker={selectedCompany.ticker}
-              companyName={selectedCompany.nombre}
-              companyRoe={selectedCompany.ratios?.roe?.value ? selectedCompany.ratios.roe.value * 100 : undefined}
-            />
-
-            {/* SECCIÓN: Risk Tracking (Tracking Error vs Benchmark) */}
-            <TrackingErrorCard
-              ticker={selectedCompany.ticker}
-              companyName={selectedCompany.nombre}
-              benchmark="^GSPC"
-              period="1y"
-            />
-
-            {/* SECCIÓN: Consultá a Jairo y Guillermo */}
-            <JairoGuillermoConsult companies={companies} />
           </div>
+          </Reveal>
 
-          {/* Selector de Modo: Dashboard vs Semáforos Contables vs Estructura Gráfica vs Fórmulas vs Todo */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200">
-              <button
-                onClick={() => setEngineViewMode('dashboard')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  engineViewMode === 'dashboard'
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <LayoutDashboard className="w-4 h-4 text-slate-600" />
-                <span>Dashboard de Ratios</span>
-              </button>
-              <button
-                onClick={() => setEngineViewMode('semaphores')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  engineViewMode === 'semaphores'
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Layers className="w-4 h-4 text-slate-600" />
-                <span>Semáforos Contables</span>
-              </button>
-              <button
-                onClick={() => setEngineViewMode('visualizer')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  engineViewMode === 'visualizer'
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <BarChart3 className="w-4 h-4 text-slate-600" />
-                <span>Balance & DuPont</span>
-              </button>
-              <button
-                onClick={() => setEngineViewMode('chart')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  engineViewMode === 'chart'
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <TrendingUp className="w-4 h-4 text-slate-600" />
-                <span>Gráfica de Cotización</span>
-              </button>
-              <button
-                onClick={() => setEngineViewMode('formulas')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  engineViewMode === 'formulas'
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <BookOpen className="w-4 h-4 text-slate-600" />
-                <span>Guía de Fórmulas</span>
-              </button>
-              <button
-                onClick={() => setEngineViewMode('all')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  engineViewMode === 'all'
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60 font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Sparkles className="w-4 h-4 text-slate-600" />
-                <span>Vista Completa</span>
-              </button>
-            </div>
-            <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1.5 px-3">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>
-                {engineViewMode === 'dashboard'
-                  ? 'Dashboard Interactivo de Desglose de Ratios Activo'
-                  : engineViewMode === 'semaphores'
-                  ? 'Semáforos Contables Visibles'
-                  : engineViewMode === 'visualizer'
-                  ? 'Estructura Visual Activa'
-                  : engineViewMode === 'chart'
-                  ? 'Gráfica de Cotización en Vivo Activa'
-                  : engineViewMode === 'formulas'
-                  ? 'Guía de Fórmulas y Umbrales Activa'
-                  : 'Modo Completo Unificado'}
-              </span>
-            </div>
-          </div>
+          {/* Subpestañas del análisis (quedan pegadas bajo la barra superior) */}
+          {(() => {
+            const activeCategory =
+              ANALYSIS_CATEGORIES.find(cat => cat.views.some(v => v.id === engineViewMode)) ?? ANALYSIS_CATEGORIES[0];
+            return (
+              <div className="sticky top-[var(--navbar-h)] z-20 -mx-1 px-1 py-2 bg-papel/90 backdrop-blur-md">
+                <nav
+                  aria-label="Categorías del análisis"
+                  className="glass flex gap-1 p-1 rounded-2xl overflow-x-auto no-scrollbar"
+                >
+                  {ANALYSIS_CATEGORIES.map(cat => {
+                    const Icon = cat.icon;
+                    const isActive = cat.id === activeCategory.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          if (!isActive) setEngineViewMode(cat.views[0].id);
+                        }}
+                        aria-current={isActive ? 'true' : undefined}
+                        title={cat.descripcion}
+                        className={`relative flex items-center gap-1.5 whitespace-nowrap px-3 py-2 rounded-xl text-[13px] transition-colors ${
+                          isActive ? 'font-semibold text-white' : 'font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                        }`}
+                      >
+                        {isActive && (
+                          <motion.span
+                            layoutId="analysis-category-pill"
+                            className="absolute inset-0 rounded-xl ink-panel shadow-md"
+                            transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                            aria-hidden="true"
+                          />
+                        )}
+                        <Icon className={`relative w-4 h-4 ${isActive ? 'text-amber-300' : 'text-slate-400'}`} />
+                        <span className="relative">{cat.label}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
 
-          {/* VISTA: DASHBOARD DE INDICADORES VITALES (Simple) o RATIOS COMPLETO (Analyst) */}
-          {(engineViewMode === 'dashboard' || engineViewMode === 'all') && (
-            <>
-              {viewMode === 'simple' && !isAnalystEnabledForSection('fundamental') ? (
-                <VitalSigns
+                {activeCategory.views.length > 1 && (
+                  <div className="flex items-center gap-1.5 mt-2 px-1 overflow-x-auto no-scrollbar animate-fadeIn">
+                    <span className="text-[11px] text-slate-500 mr-1 shrink-0">{activeCategory.descripcion}:</span>
+                    {activeCategory.views.map(view => {
+                      const Icon = view.icon;
+                      const isActive = engineViewMode === view.id;
+                      return (
+                        <button
+                          key={view.id}
+                          type="button"
+                          onClick={() => setEngineViewMode(view.id)}
+                          aria-current={isActive ? 'true' : undefined}
+                          className={`press flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full text-xs border ${
+                            isActive
+                              ? 'bg-amber-50 border-amber-300 text-amber-900 font-semibold'
+                              : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                          }`}
+                        >
+                          <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-700' : 'text-slate-400'}`} />
+                          {view.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={engineViewMode}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="space-y-6"
+            >
+              <Suspense fallback={<SkeletonCard lines={6} />}>
+              {/* VISTA: DASHBOARD DE INDICADORES VITALES (Simple) o RATIOS COMPLETO (Analyst) */}
+              {(engineViewMode === 'dashboard' || engineViewMode === 'all') && (
+                <>
+                  {viewMode === 'simple' && !isAnalystEnabledForSection('fundamental') ? (
+                    <VitalSigns
+                      company={selectedCompany}
+                      onNavigateToDetail={() => {
+                        window.dispatchEvent(new CustomEvent('warren:toggle-to-analyst'));
+                      }}
+                    />
+                  ) : (
+                    <RatiosDashboard
+                      selectedCompany={selectedCompany}
+                      onSelectRatioForAnalysis={(ratioKey) => handleSelectRatioForAnalysis(ratioKey)}
+                      onNavigateToView={(view) => setEngineViewMode(view)}
+                    />
+                  )}
+                </>
+              )}
+
+              {/* VISTA: GRÁFICA DE COTIZACIÓN EN BOLSA & MARGEN DE SEGURIDAD */}
+              {(engineViewMode === 'chart' || engineViewMode === 'all') && (
+                <div className="space-y-4">
+                  <CompanyPriceChart company={selectedCompany} />
+                </div>
+              )}
+
+              {/* Banner Rápido para Desplegar Gráfica si estás en Semáforos o Visualizador */}
+              {(engineViewMode === 'semaphores' || engineViewMode === 'visualizer') && (
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600">
+                      <TrendingUp className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">
+                        Gráfica de Cotización Histórica: {selectedCompany.ticker}
+                      </h4>
+                      <p className="text-[11px] text-slate-500">
+                        Precio actual: ${selectedCompany.raw.precioCotizacion.toFixed(2)} · Objetivo Medio: ${selectedCompany.targetConsensus?.target_mean.toFixed(2) ?? 'N/D'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsPriceChartExpanded(!isPriceChartExpanded)}
+                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium transition-all shadow-2xs"
+                    >
+                      {isPriceChartExpanded ? 'Ocultar Gráfica' : 'Ver Gráfica Aquí'}
+                    </button>
+                    <button
+                      onClick={() => setEngineViewMode('chart')}
+                      className="px-3 py-1.5 rounded-xl bg-transparent hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-medium transition-all flex items-center gap-1"
+                    >
+                      <span>Pantalla Completa</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-500" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Gráfica desplegable en modo Semáforos/Visualizador si el usuario la tiene expandida */}
+              {(engineViewMode === 'semaphores' || engineViewMode === 'visualizer') && isPriceChartExpanded && (
+                <div className="animate-fadeIn">
+                  <CompanyPriceChart company={selectedCompany} />
+                </div>
+              )}
+
+              {/* VISTA: VALORACIÓN (consenso, CAPM, tracking error y, en modo Analista, VaR/CVaR) */}
+              {(engineViewMode === 'valuation' || engineViewMode === 'all') && (
+                <div className="space-y-6">
+                  <Reveal className="space-y-3">
+                    <SectionLabel icon={Globe}>Consenso de Wall Street</SectionLabel>
+                    <WallStreetConsensus
+                      ticker={selectedCompany.ticker}
+                      currentPrice={selectedCompany.raw.precioCotizacion}
+                      consensus={selectedCompany.targetConsensus}
+                    />
+                  </Reveal>
+                  <Reveal delay={0.06} className="space-y-3">
+                    <SectionLabel icon={DollarSign}>Coste de capital (CAPM)</SectionLabel>
+                    <CapmValuationCard
+                      ticker={selectedCompany.ticker}
+                      companyName={selectedCompany.nombre}
+                      companyRoe={selectedCompany.ratios?.roe?.value ? selectedCompany.ratios.roe.value * 100 : undefined}
+                    />
+                  </Reveal>
+                  <Reveal delay={0.12} className="space-y-3">
+                    <SectionLabel icon={Shield}>Riesgo frente al mercado</SectionLabel>
+                    <TrackingErrorCard
+                      ticker={selectedCompany.ticker}
+                      companyName={selectedCompany.nombre}
+                      benchmark="^GSPC"
+                      period="1y"
+                    />
+                    {!(viewMode === 'simple' && !isAnalystEnabledForSection('fundamental')) && (
+                      <RiskMetricsCard
+                        ticker={selectedCompany.ticker}
+                        companyName={selectedCompany.nombre}
+                      />
+                    )}
+                  </Reveal>
+                </div>
+              )}
+
+              {/* VISTA 1: VISUALIZADOR GRÁFICO INTEGRAL */}
+              {(engineViewMode === 'visualizer' || engineViewMode === 'all') && (
+                <BalanceSheetVisualizer company={selectedCompany} />
+              )}
+
+              {/* VISTA 2: DETALLE DE LOS 11 RATIOS CONTABLES POR DIMENSION CON SEMAFORO */}
+              {(engineViewMode === 'semaphores' || engineViewMode === 'all') && (
+                <DimensionRatiosPanel
                   company={selectedCompany}
-                  onNavigateToDetail={() => {
-                    window.dispatchEvent(new CustomEvent('warren:toggle-to-analyst'));
-                  }}
-                />
-              ) : (
-                <RatiosDashboard
-                  selectedCompany={selectedCompany}
-                  onSelectRatioForAnalysis={(ratioKey) => handleSelectRatioForAnalysis(ratioKey)}
-                  onNavigateToView={(view) => setEngineViewMode(view)}
+                  activeDimension={activeDimension}
+                  onDimensionChange={setActiveDimension}
                 />
               )}
-            </>
-          )}
 
-          {/* VISTA: GRÁFICA DE COTIZACIÓN EN BOLSA & MARGEN DE SEGURIDAD */}
-          {(engineViewMode === 'chart' || engineViewMode === 'all') && (
-            <div className="space-y-4">
-              <CompanyPriceChart company={selectedCompany} />
-            </div>
-          )}
+              {/* VISTA: ASESORES JAIRO Y GUILLERMO */}
+              {(engineViewMode === 'advisors' || engineViewMode === 'all') && (
+                <JairoGuillermoConsult companies={companies} />
+              )}
 
-          {/* Banner Rápido para Desplegar Gráfica si estás en Semáforos o Visualizador */}
-          {(engineViewMode === 'semaphores' || engineViewMode === 'visualizer') && (
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600">
-                  <TrendingUp className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">
-                    Gráfica de Cotización Histórica: {selectedCompany.ticker}
-                  </h4>
-                  <p className="text-[11px] text-slate-500">
-                    Precio actual: ${selectedCompany.raw.precioCotizacion.toFixed(2)} · Objetivo Medio: ${selectedCompany.targetConsensus?.target_mean.toFixed(2) ?? 'N/D'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsPriceChartExpanded(!isPriceChartExpanded)}
-                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium transition-all shadow-2xs"
-                >
-                  {isPriceChartExpanded ? 'Ocultar Gráfica' : 'Ver Gráfica Aquí'}
-                </button>
-                <button
-                  onClick={() => setEngineViewMode('chart')}
-                  className="px-3 py-1.5 rounded-xl bg-transparent hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-medium transition-all flex items-center gap-1"
-                >
-                  <span>Pantalla Completa</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-500" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Gráfica desplegable en modo Semáforos/Visualizador si el usuario la tiene expandida */}
-          {(engineViewMode === 'semaphores' || engineViewMode === 'visualizer') && isPriceChartExpanded && (
-            <div className="animate-fadeIn">
-              <CompanyPriceChart company={selectedCompany} />
-            </div>
-          )}
-
-          {/* VISTA 1: VISUALIZADOR GRÁFICO INTEGRAL */}
-          {(engineViewMode === 'visualizer' || engineViewMode === 'all') && (
-            <BalanceSheetVisualizer company={selectedCompany} />
-          )}
-
-          {/* VISTA 2: DETALLE DE LOS 11 RATIOS CONTABLES POR DIMENSION CON SEMAFORO */}
-          {(engineViewMode === 'semaphores' || engineViewMode === 'all') && (
-            <DimensionRatiosPanel
-              company={selectedCompany}
-              activeDimension={activeDimension}
-              onDimensionChange={setActiveDimension}
-            />
-          )}
-
-          {/* VISTA 3: GUÍA PEDAGÓGICA DE FÓRMULAS & UMBRALES VALUE */}
-          {(engineViewMode === 'formulas' || engineViewMode === 'all') && (
-            <FinancialFormulasGuide
-              selectedCompany={selectedCompany}
-              onSelectRatioForAnalysis={handleSelectRatioForAnalysis}
-            />
-          )}
+              {/* VISTA 3: GUÍA PEDAGÓGICA DE FÓRMULAS & UMBRALES VALUE */}
+              {(engineViewMode === 'formulas' || engineViewMode === 'all') && (
+                <FinancialFormulasGuide
+                  selectedCompany={selectedCompany}
+                  onSelectRatioForAnalysis={handleSelectRatioForAnalysis}
+                />
+              )}
+              </Suspense>
+            </motion.div>
+          </AnimatePresence>
 </div>
        </div>
        </div>
@@ -1804,13 +1727,6 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
         onSelectForSimulation={onSelectForSimulation}
         onOpenSemaphores={() => setEngineViewMode('semaphores')}
         getRatioData={getRatioData}
-      />
-
-            <PythonDataConsole
-        isOpen={isLocalPythonOpen}
-        onClose={() => setIsLocalPythonOpen(false)}
-        initialTicker={selectedCompany?.ticker || 'KO'}
-        onCompanyImported={onAddCustomCompany}
       />
     </div>
   );

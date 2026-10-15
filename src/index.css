@@ -1,2 +1,244 @@
-@import "./styles/tokens.css";
 @import "tailwindcss";
+@import "./styles/tokens.css" layer(base);
+
+/* ============================================================
+   TEMA — una sola paleta para toda la aplicación
+   ============================================================
+   Cinco escalas: tinta (neutros), latón (marca), ganancia,
+   pérdida y azul (información). Las familias de Tailwind que
+   usan los componentes (slate, emerald, rose, amber, indigo…)
+   se reasignan a ellas para que todo hable el mismo idioma.
+   ============================================================ */
+@theme {
+  --font-sans: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+
+  /* Semánticos */
+  --color-accent: #7C5617;
+  --color-accent-hover: #604315;
+  --color-accent-light: #F5E9C9;
+  --color-success: #1F6D46;
+  --color-warning: #9A6D1C;
+  --color-danger: #A0372D;
+  --color-muted: #5C665F;
+  --color-papel: #F5F7F3;
+
+  /* tinta */
+  --color-tinta-50: #F5F7F3;
+  --color-tinta-100: #ECEFEA;
+  --color-tinta-200: #DCE1DA;
+  --color-tinta-300: #C2C9C0;
+  --color-tinta-400: #8F9890;
+  --color-tinta-500: #687169;
+  --color-tinta-600: #4F5851;
+  --color-tinta-700: #3B433D;
+  --color-tinta-800: #28302A;
+  --color-tinta-900: #1B231E;
+  --color-tinta-950: #111713;
+
+  /* laton */
+  --color-laton-50: #FBF6EA;
+  --color-laton-100: #F5E9C9;
+  --color-laton-200: #EBD49A;
+  --color-laton-300: #DDB965;
+  --color-laton-400: #CDA040;
+  --color-laton-500: #B8872A;
+  --color-laton-600: #9A6D1C;
+  --color-laton-700: #7C5617;
+  --color-laton-800: #604315;
+  --color-laton-900: #4A3412;
+  --color-laton-950: #2B1E0A;
+
+  /* ganancia */
+  --color-ganancia-50: #EEF6F0;
+  --color-ganancia-100: #D6EBDC;
+  --color-ganancia-200: #AED6BA;
+  --color-ganancia-300: #7DBB92;
+  --color-ganancia-400: #4C9C6C;
+  --color-ganancia-500: #2A8556;
+  --color-ganancia-600: #1F6D46;
+  --color-ganancia-700: #195A3A;
+  --color-ganancia-800: #154A30;
+  --color-ganancia-900: #123D28;
+  --color-ganancia-950: #0A2317;
+
+  /* perdida */
+  --color-perdida-50: #FBF0EE;
+  --color-perdida-100: #F6DCD8;
+  --color-perdida-200: #ECB9B1;
+  --color-perdida-300: #DE8F84;
+  --color-perdida-400: #CC6457;
+  --color-perdida-500: #B9463A;
+  --color-perdida-600: #A0372D;
+  --color-perdida-700: #852D25;
+  --color-perdida-800: #6C2620;
+  --color-perdida-900: #58211C;
+  --color-perdida-950: #330F0C;
+
+  /* azul */
+  --color-azul-50: #EFF3F8;
+  --color-azul-100: #DCE4EF;
+  --color-azul-200: #B9C9DE;
+  --color-azul-300: #8EA7C8;
+  --color-azul-400: #6383AF;
+  --color-azul-500: #456897;
+  --color-azul-600: #36557F;
+  --color-azul-700: #2C4568;
+  --color-azul-800: #253A55;
+  --color-azul-900: #1F3046;
+  --color-azul-950: #131D2B;
+
+  /* La paleta de Tailwind se reasigna a las cinco escalas del sistema */
+  --color-slate-50: #F5F7F3; --color-slate-100: #ECEFEA; --color-slate-200: #DCE1DA; --color-slate-300: #C2C9C0; --color-slate-400: #8F9890; --color-slate-500: #687169; --color-slate-600: #4F5851; --color-slate-700: #3B433D; --color-slate-800: #28302A; --color-slate-900: #1B231E; --color-slate-950: #111713;
+  --color-gray-50: #F5F7F3; --color-gray-100: #ECEFEA; --color-gray-200: #DCE1DA; --color-gray-300: #C2C9C0; --color-gray-400: #8F9890; --color-gray-500: #687169; --color-gray-600: #4F5851; --color-gray-700: #3B433D; --color-gray-800: #28302A; --color-gray-900: #1B231E; --color-gray-950: #111713;
+  --color-zinc-50: #F5F7F3; --color-zinc-100: #ECEFEA; --color-zinc-200: #DCE1DA; --color-zinc-300: #C2C9C0; --color-zinc-400: #8F9890; --color-zinc-500: #687169; --color-zinc-600: #4F5851; --color-zinc-700: #3B433D; --color-zinc-800: #28302A; --color-zinc-900: #1B231E; --color-zinc-950: #111713;
+  --color-neutral-50: #F5F7F3; --color-neutral-100: #ECEFEA; --color-neutral-200: #DCE1DA; --color-neutral-300: #C2C9C0; --color-neutral-400: #8F9890; --color-neutral-500: #687169; --color-neutral-600: #4F5851; --color-neutral-700: #3B433D; --color-neutral-800: #28302A; --color-neutral-900: #1B231E; --color-neutral-950: #111713;
+  --color-stone-50: #F5F7F3; --color-stone-100: #ECEFEA; --color-stone-200: #DCE1DA; --color-stone-300: #C2C9C0; --color-stone-400: #8F9890; --color-stone-500: #687169; --color-stone-600: #4F5851; --color-stone-700: #3B433D; --color-stone-800: #28302A; --color-stone-900: #1B231E; --color-stone-950: #111713;
+  --color-amber-50: #FBF6EA; --color-amber-100: #F5E9C9; --color-amber-200: #EBD49A; --color-amber-300: #DDB965; --color-amber-400: #CDA040; --color-amber-500: #B8872A; --color-amber-600: #9A6D1C; --color-amber-700: #7C5617; --color-amber-800: #604315; --color-amber-900: #4A3412; --color-amber-950: #2B1E0A;
+  --color-yellow-50: #FBF6EA; --color-yellow-100: #F5E9C9; --color-yellow-200: #EBD49A; --color-yellow-300: #DDB965; --color-yellow-400: #CDA040; --color-yellow-500: #B8872A; --color-yellow-600: #9A6D1C; --color-yellow-700: #7C5617; --color-yellow-800: #604315; --color-yellow-900: #4A3412; --color-yellow-950: #2B1E0A;
+  --color-orange-50: #FBF6EA; --color-orange-100: #F5E9C9; --color-orange-200: #EBD49A; --color-orange-300: #DDB965; --color-orange-400: #CDA040; --color-orange-500: #B8872A; --color-orange-600: #9A6D1C; --color-orange-700: #7C5617; --color-orange-800: #604315; --color-orange-900: #4A3412; --color-orange-950: #2B1E0A;
+  --color-emerald-50: #EEF6F0; --color-emerald-100: #D6EBDC; --color-emerald-200: #AED6BA; --color-emerald-300: #7DBB92; --color-emerald-400: #4C9C6C; --color-emerald-500: #2A8556; --color-emerald-600: #1F6D46; --color-emerald-700: #195A3A; --color-emerald-800: #154A30; --color-emerald-900: #123D28; --color-emerald-950: #0A2317;
+  --color-green-50: #EEF6F0; --color-green-100: #D6EBDC; --color-green-200: #AED6BA; --color-green-300: #7DBB92; --color-green-400: #4C9C6C; --color-green-500: #2A8556; --color-green-600: #1F6D46; --color-green-700: #195A3A; --color-green-800: #154A30; --color-green-900: #123D28; --color-green-950: #0A2317;
+  --color-teal-50: #EEF6F0; --color-teal-100: #D6EBDC; --color-teal-200: #AED6BA; --color-teal-300: #7DBB92; --color-teal-400: #4C9C6C; --color-teal-500: #2A8556; --color-teal-600: #1F6D46; --color-teal-700: #195A3A; --color-teal-800: #154A30; --color-teal-900: #123D28; --color-teal-950: #0A2317;
+  --color-lime-50: #EEF6F0; --color-lime-100: #D6EBDC; --color-lime-200: #AED6BA; --color-lime-300: #7DBB92; --color-lime-400: #4C9C6C; --color-lime-500: #2A8556; --color-lime-600: #1F6D46; --color-lime-700: #195A3A; --color-lime-800: #154A30; --color-lime-900: #123D28; --color-lime-950: #0A2317;
+  --color-rose-50: #FBF0EE; --color-rose-100: #F6DCD8; --color-rose-200: #ECB9B1; --color-rose-300: #DE8F84; --color-rose-400: #CC6457; --color-rose-500: #B9463A; --color-rose-600: #A0372D; --color-rose-700: #852D25; --color-rose-800: #6C2620; --color-rose-900: #58211C; --color-rose-950: #330F0C;
+  --color-red-50: #FBF0EE; --color-red-100: #F6DCD8; --color-red-200: #ECB9B1; --color-red-300: #DE8F84; --color-red-400: #CC6457; --color-red-500: #B9463A; --color-red-600: #A0372D; --color-red-700: #852D25; --color-red-800: #6C2620; --color-red-900: #58211C; --color-red-950: #330F0C;
+  --color-pink-50: #FBF0EE; --color-pink-100: #F6DCD8; --color-pink-200: #ECB9B1; --color-pink-300: #DE8F84; --color-pink-400: #CC6457; --color-pink-500: #B9463A; --color-pink-600: #A0372D; --color-pink-700: #852D25; --color-pink-800: #6C2620; --color-pink-900: #58211C; --color-pink-950: #330F0C;
+  --color-fuchsia-50: #FBF0EE; --color-fuchsia-100: #F6DCD8; --color-fuchsia-200: #ECB9B1; --color-fuchsia-300: #DE8F84; --color-fuchsia-400: #CC6457; --color-fuchsia-500: #B9463A; --color-fuchsia-600: #A0372D; --color-fuchsia-700: #852D25; --color-fuchsia-800: #6C2620; --color-fuchsia-900: #58211C; --color-fuchsia-950: #330F0C;
+  --color-blue-50: #EFF3F8; --color-blue-100: #DCE4EF; --color-blue-200: #B9C9DE; --color-blue-300: #8EA7C8; --color-blue-400: #6383AF; --color-blue-500: #456897; --color-blue-600: #36557F; --color-blue-700: #2C4568; --color-blue-800: #253A55; --color-blue-900: #1F3046; --color-blue-950: #131D2B;
+  --color-indigo-50: #EFF3F8; --color-indigo-100: #DCE4EF; --color-indigo-200: #B9C9DE; --color-indigo-300: #8EA7C8; --color-indigo-400: #6383AF; --color-indigo-500: #456897; --color-indigo-600: #36557F; --color-indigo-700: #2C4568; --color-indigo-800: #253A55; --color-indigo-900: #1F3046; --color-indigo-950: #131D2B;
+  --color-violet-50: #EFF3F8; --color-violet-100: #DCE4EF; --color-violet-200: #B9C9DE; --color-violet-300: #8EA7C8; --color-violet-400: #6383AF; --color-violet-500: #456897; --color-violet-600: #36557F; --color-violet-700: #2C4568; --color-violet-800: #253A55; --color-violet-900: #1F3046; --color-violet-950: #131D2B;
+  --color-purple-50: #EFF3F8; --color-purple-100: #DCE4EF; --color-purple-200: #B9C9DE; --color-purple-300: #8EA7C8; --color-purple-400: #6383AF; --color-purple-500: #456897; --color-purple-600: #36557F; --color-purple-700: #2C4568; --color-purple-800: #253A55; --color-purple-900: #1F3046; --color-purple-950: #131D2B;
+  --color-sky-50: #EFF3F8; --color-sky-100: #DCE4EF; --color-sky-200: #B9C9DE; --color-sky-300: #8EA7C8; --color-sky-400: #6383AF; --color-sky-500: #456897; --color-sky-600: #36557F; --color-sky-700: #2C4568; --color-sky-800: #253A55; --color-sky-900: #1F3046; --color-sky-950: #131D2B;
+  --color-cyan-50: #EFF3F8; --color-cyan-100: #DCE4EF; --color-cyan-200: #B9C9DE; --color-cyan-300: #8EA7C8; --color-cyan-400: #6383AF; --color-cyan-500: #456897; --color-cyan-600: #36557F; --color-cyan-700: #2C4568; --color-cyan-800: #253A55; --color-cyan-900: #1F3046; --color-cyan-950: #131D2B;
+
+  /* Radios: los contenedores grandes no pasan de 14px */
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 14px;
+
+  /* Sombras de tinta, muy contenidas */
+  --shadow-2xs: 0 1px 0 rgb(27 35 30 / 0.04);
+  --shadow-xs: 0 1px 2px rgb(27 35 30 / 0.05);
+  --shadow-sm: 0 1px 2px rgb(27 35 30 / 0.06), 0 1px 1px rgb(27 35 30 / 0.03);
+  --shadow-md: 0 2px 6px rgb(27 35 30 / 0.07), 0 1px 2px rgb(27 35 30 / 0.04);
+  --shadow-lg: 0 8px 20px rgb(27 35 30 / 0.08), 0 2px 6px rgb(27 35 30 / 0.04);
+  --shadow-xl: 0 16px 40px rgb(27 35 30 / 0.12), 0 4px 10px rgb(27 35 30 / 0.05);
+  --shadow-card: 0 1px 2px rgb(27 35 30 / 0.05), 0 4px 14px -6px rgb(27 35 30 / 0.08);
+  --shadow-glow: 0 0 0 1px rgb(184 135 42 / 0.18), 0 8px 24px -8px rgb(184 135 42 / 0.28);
+
+  --animate-fadeIn: fadeIn 180ms ease-out both;
+  --animate-rise: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(2px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+}
+
+/* ============================================================
+   MICROINTERACCIONES
+   ============================================================ */
+
+/* Tarjeta que se eleva levemente al pasar el cursor */
+@utility hover-lift {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, border-color 220ms ease;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+}
+
+/* Botón con escalado sutil al pasar el cursor y al pulsar */
+@utility press {
+  transition: transform 160ms ease, background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  &:hover:not(:disabled) {
+    transform: scale(1.03);
+  }
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+}
+
+/* Superficie translúcida con borde fino y brillo discreto en el canto superior */
+@utility glass {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.92), rgb(255 255 255 / 0.78));
+  backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgb(220 225 218 / 0.9);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), var(--shadow-card);
+}
+
+/* Cabecera oscura con degradado de tinta y reflejo de latón */
+@utility ink-panel {
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgb(184 135 42 / 0.22), transparent 55%),
+    linear-gradient(135deg, #1B231E 0%, #28302A 60%, #1F2A24 100%);
+  color: #F5F7F3;
+}
+
+/* Bloque de carga con barrido de luz */
+@utility skeleton {
+  background: linear-gradient(90deg, var(--color-tinta-100) 25%, var(--color-tinta-50) 50%, var(--color-tinta-100) 75%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+  border-radius: 6px;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Las cifras en monoespaciada siempre alinean */
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Etiquetas: sin mayúsculas forzadas ni monoespaciada.
+   Muchos componentes heredados usan «uppercase tracking-wider font-mono»
+   como rótulo; se normaliza aquí en lugar de en cada archivo. */
+.uppercase.tracking-wider,
+.uppercase.tracking-widest,
+.uppercase.tracking-wide {
+  text-transform: none;
+  letter-spacing: 0;
+}
+.font-mono.uppercase.tracking-wider,
+.font-mono.uppercase.tracking-widest,
+.font-mono.uppercase.tracking-wide {
+  font-family: var(--font-sans);
+}
+
+/* Los títulos nunca van en monoespaciada (componentes heredados) */
+:is(h1, h2, h3, h4, h5, h6).font-mono {
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+/* Respeta la preferencia de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -9,7 +9,6 @@ import {
   MarkowitzAsset,
   PortfolioPoint
 } from '../utils/markowitz';
-import { PythonDataConsole } from './PythonDataConsole';
 import {
   Activity,
   AlertCircle,
@@ -52,7 +51,6 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<'frontier' | 'matrix' | 'theory'>('frontier');
   const [hoveredPoint, setHoveredPoint] = useState<PortfolioPoint | null>(null);
   const [rebalanceSuccess, setRebalanceSuccess] = useState(false);
-  const [isPythonConsoleOpen, setIsPythonConsoleOpen] = useState(false);
 
   // Modo de Universo de Optimización:
   // 'active_portfolio': Activos comprados en la cartera del usuario
@@ -260,7 +258,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
 
           {/* Selector de subpestañas */}
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 shrink-0 self-stretch lg:self-auto justify-between lg:justify-start">
+            <div className="flex items-center bg-slate-900 p-1.5 rounded-2xl border border-slate-800 shrink-0 self-stretch lg:self-auto justify-between lg:justify-start">
               <button
                 onClick={() => setActiveSubTab('frontier')}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
@@ -296,20 +294,12 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
               </button>
             </div>
 
-            <button
-              onClick={() => setIsPythonConsoleOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all text-slate-300 bg-slate-900 hover:bg-slate-800 border border-slate-700 shadow-xs cursor-pointer active:scale-95 shrink-0"
-              title="Calcular covarianza y frontera eficiente con Python (pandas, numpy, yfinance)"
-            >
-              <span className="text-sm">🐍</span>
-              <span>Motor Python (Pandas & cov)</span>
-            </button>
           </div>
         </div>
 
         {/* 4 KPIs Clave de la Cartera Actual de Markowitz */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 mt-6 border-t border-slate-800/80">
-          <div className="bg-slate-900/90 p-3.5 rounded-2xl border border-slate-800">
+          <div className="bg-slate-900 p-3.5 rounded-2xl border border-slate-800">
             <div className="flex items-center justify-between text-slate-400 text-xs">
               <span>Retorno Esperado E(Rp)</span>
               <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
@@ -322,7 +312,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
             </div>
           </div>
 
-          <div className="bg-slate-900/90 p-3.5 rounded-2xl border border-slate-800">
+          <div className="bg-slate-900 p-3.5 rounded-2xl border border-slate-800">
             <div className="flex items-center justify-between text-slate-400 text-xs">
               <span>Volatilidad Cartera (σ_p)</span>
               <Activity className="w-3.5 h-3.5 text-blue-400" />
@@ -335,7 +325,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
             </div>
           </div>
 
-          <div className="bg-slate-900/90 p-3.5 rounded-2xl border border-slate-800">
+          <div className="bg-slate-900 p-3.5 rounded-2xl border border-slate-800">
             <div className="flex items-center justify-between text-slate-400 text-xs">
               <span>Ratio de Sharpe</span>
               <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
@@ -348,7 +338,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
             </div>
           </div>
 
-          <div className="bg-slate-900/90 p-3.5 rounded-2xl border border-slate-800">
+          <div className="bg-slate-900 p-3.5 rounded-2xl border border-slate-800">
             <div className="flex items-center justify-between text-slate-400 text-xs">
               <span>Almuerzo Gratis</span>
               <Sparkles className="w-3.5 h-3.5 text-purple-400" />
@@ -364,7 +354,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
       </div>
 
       {/* Selector de Universo de Activos para la Optimización */}
-      <div className="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-slate-900 rounded-2xl p-4 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-2.5 flex-wrap">
           <span className="text-xs text-slate-400 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
             <Compass className="w-3.5 h-3.5 text-slate-400" />
@@ -457,7 +447,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
 
       {/* Aviso pedagógico si 'active_portfolio' tiene menos de 2 activos */}
       {universeMode === 'active_portfolio' && portfolio.holdings.length < 2 && (
-        <div className="p-4 bg-slate-900/90 border border-slate-800 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
             <Info className="w-5 h-5 text-slate-400 shrink-0" />
             <div className="text-slate-300 leading-relaxed">
@@ -477,7 +467,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
       {activeSubTab === 'frontier' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Lado Izquierdo: Gráfico SVG de la Frontera Eficiente de Markowitz */}
-          <div className="lg:col-span-7 bg-slate-900/90 rounded-3xl p-5 border border-slate-800 shadow-lg space-y-4">
+          <div className="lg:col-span-7 bg-slate-900 rounded-3xl p-5 border border-slate-800 shadow-lg space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <LineChart className="w-4 h-4 text-slate-400" />
@@ -731,7 +721,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
 
               {/* Tooltip de cartera al pasar el cursor */}
               {hoveredPoint && (
-                <div className="absolute top-4 right-4 bg-slate-900/95 border border-slate-700 p-3 rounded-xl shadow-xl text-xs font-mono space-y-1 backdrop-blur-md pointer-events-none">
+                <div className="absolute top-4 right-4 bg-slate-900 border border-slate-700 p-3 rounded-xl shadow-xl text-xs font-mono space-y-1 pointer-events-none">
                   <div className="text-white font-bold">Cartera Simulada</div>
                   <div className="text-slate-300">Retorno: <strong>{(hoveredPoint.expectedReturn * 100).toFixed(2)}%</strong></div>
                   <div className="text-slate-300">Volatilidad: <strong>{(hoveredPoint.volatility * 100).toFixed(2)}%</strong></div>
@@ -775,7 +765,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
           </div>
 
           {/* Lado Derecho: Controles de Asignación de Pesos de Markowitz */}
-          <div className="lg:col-span-5 bg-slate-900/90 rounded-3xl p-5 border border-slate-800 shadow-lg space-y-4 flex flex-col justify-between">
+          <div className="lg:col-span-5 bg-slate-900 rounded-3xl p-5 border border-slate-800 shadow-lg space-y-4 flex flex-col justify-between">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -849,7 +839,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
                       className={`p-3 rounded-2xl border transition-all ${
                         isSpeculative
                           ? 'bg-rose-950/20 border-rose-900/40'
-                          : 'bg-slate-950/80 border-slate-800'
+                          : 'bg-slate-950 border-slate-800'
                       }`}
                     >
                       <div className="flex items-center justify-between text-xs mb-1.5">
@@ -919,7 +909,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
 
       {/* VISTA 2: MATRIZ DE CORRELACIONES TÉRMICA */}
       {activeSubTab === 'matrix' && (
-        <div className="bg-slate-900/90 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-5">
+        <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-5">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div>
               <h3 className="text-base font-bold text-white font-serif flex items-center gap-2">
@@ -1000,7 +990,7 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
 
       {/* VISTA 3: FUNDAMENTO TEÓRICO & FÓRMULAS */}
       {activeSubTab === 'theory' && (
-        <div className="bg-slate-900/90 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-6">
+        <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-6">
           <div>
             <h3 className="text-base font-bold text-white font-serif flex items-center gap-2">
               <Scale className="w-4 h-4 text-slate-400" />
@@ -1067,30 +1057,6 @@ export const MarkowitzOptimizer: React.FC<MarkowitzOptimizerProps> = ({
         </div>
       )}
 
-      {/* Consola de Markowitz y Covarianza con Python */}
-      <PythonDataConsole
-        isOpen={isPythonConsoleOpen}
-        onClose={() => setIsPythonConsoleOpen(false)}
-        onApplyPortfolioWeights={(allocations) => {
-          if (onApplyPortfolioWeights) {
-            const formatted = allocations.map(a => {
-              const comp = companies.find(c => c.ticker === a.ticker);
-              const price = comp?.raw.precioCotizacion || 100;
-              const investedValue = portfolio.totalValue * a.weight;
-              const shares = Math.floor(investedValue / price);
-              return {
-                ticker: a.ticker,
-                weight: a.weight,
-                shares,
-                price
-              };
-            });
-            onApplyPortfolioWeights(formatted);
-            setRebalanceSuccess(true);
-            setTimeout(() => setRebalanceSuccess(false), 4500);
-          }
-        }}
-      />
     </div>
   );
 };

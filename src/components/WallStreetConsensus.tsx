@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { TargetConsensus } from '../types';
 import { fetchJson, postJson, errorMessage } from '../utils/api';
+import { LoadingSkeleton } from './ui/Feedback';
 
 interface AnalystTargetsData {
   success: boolean;
@@ -337,12 +338,7 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
 
       {/* Contenido condicional según estado de carga y pestaña activa */}
       {loading ? (
-        <div className="py-8 flex flex-col items-center justify-center gap-2 text-slate-500">
-          <RefreshCw className="w-5 h-5 animate-spin text-amber-500" />
-          <span className="text-xs font-mono font-medium">
-            Consultando consenso de Wall Street para {ticker} vía yfinance...
-          </span>
-        </div>
+        <LoadingSkeleton label={`Consultando consenso de Wall Street para ${ticker} vía yfinance...`} />
       ) : error ? (
         <div className="py-6 text-center text-xs text-rose-600 flex items-center justify-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />

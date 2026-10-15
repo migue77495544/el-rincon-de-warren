@@ -52,7 +52,7 @@ export const DatabaseAndCodeViewer: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">

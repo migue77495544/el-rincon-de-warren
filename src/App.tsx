@@ -1,19 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Navbar, AppTab } from './components/Navbar';
 import { ViewModeProvider } from './context/ViewModeContext';
 import { useViewMode } from './context/ViewModeContext';
 import { ViewMode } from './types';
 import { FundamentalEngine } from './components/FundamentalEngine';
-import { PortfolioSimulator } from './components/PortfolioSimulator';
-import { GamificationHub } from './components/GamificationHub';
-import { ImpactEvaluationDashboard } from './components/ImpactEvaluationDashboard';
 import { InstantFeedbackModal } from './components/InstantFeedbackModal';
-import { MethodologyDocumentation } from './components/MethodologyDocumentation';
-import { PythonDataConsole } from './components/PythonDataConsole';
-import { SpotlightSearch } from './components/SpotlightSearch';
 import { WarrenFAB } from './components/WarrenFAB';
 import { OnboardingFlow } from './components/OnboardingFlow';
-import { SuperOpportunities } from './components/SuperOpportunities';
 import {
   CompanyAnalysis,
   PortfolioStats,
@@ -37,6 +30,22 @@ import {
   calculateLinearScore
 } from './utils/financialCalculations';
 
+// Secciones que no se ven al entrar: se descargan solo cuando el usuario las abre
+const PortfolioSimulator = lazy(() => import('./components/PortfolioSimulator').then(m => ({ default: m.PortfolioSimulator })));
+const GamificationHub = lazy(() => import('./components/GamificationHub').then(m => ({ default: m.GamificationHub })));
+const ImpactEvaluationDashboard = lazy(() => import('./components/ImpactEvaluationDashboard').then(m => ({ default: m.ImpactEvaluationDashboard })));
+const MethodologyDocumentation = lazy(() => import('./components/MethodologyDocumentation').then(m => ({ default: m.MethodologyDocumentation })));
+const SpotlightSearch = lazy(() => import('./components/SpotlightSearch').then(m => ({ default: m.SpotlightSearch })));
+const SuperOpportunities = lazy(() => import('./components/SuperOpportunities').then(m => ({ default: m.SuperOpportunities })));
+
+function CargandoSeccion() {
+  return (
+    <div className="py-24 flex justify-center" role="status" aria-live="polite">
+      <span className="text-sm text-tinta-500">Cargando sección…</span>
+    </div>
+  );
+}
+
 const INITIAL_COMPUTED_COMPANIES: CompanyAnalysis[] = INITIAL_COMPANIES.map(seed => {
   const ratios = calculateFundamentalRatios(seed.raw);
   const scoreData = calculateLinearScore(ratios);
@@ -59,11 +68,9 @@ const INITIAL_COMPUTED_COMPANIES: CompanyAnalysis[] = INITIAL_COMPANIES.map(seed
 });
 
 function AppContent() {
-  const { mode: viewMode, setMode: setViewMode, toggleMode, flags, enableAnalystForSection } = useViewMode();
+  const { mode: viewMode, setMode: setViewMode } = useViewMode();
   const [activeTab, setActiveTab] = useState<AppTab>('fundamental');
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
-  const [isPythonConsoleOpen, setIsPythonConsoleOpen] = useState(false);
-  const [pythonConsoleTicker, setPythonConsoleTicker] = useState('KO');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Sync default tab based on view mode
@@ -73,22 +80,36 @@ function AppContent() {
     }
   }, [viewMode, activeTab]);
 
-  // Listen for progressive disclosure events from VitalSigns
+  // Aviso breve al cambiar de modo desde un enlace de la propia página
+  const [modeNotice, setModeNotice] = useState<string | null>(null);
+  useEffect(() => {
+    if (!modeNotice) return;
+    const timer = setTimeout(() => setModeNotice(null), 3500);
+    return () => clearTimeout(timer);
+  }, [modeNotice]);
+
+  // «Cambiar a Modo Analista» desde VitalSigns o la ficha simple
   useEffect(() => {
     const handleToggleToAnalyst = () => {
-      enableAnalystForSection('fundamental');
-      // Show a toast-like message
-      const toast = document.createElement('div');
-      toast.className = 'fixed top-4 right-4 z-[var(--z-modal)] bg-white border border-slate-200 rounded-lg px-4 py-3 shadow-[var(--shadow-modal)] text-xs';
-      toast.innerHTML = '<span class="font-semibold text-slate-900">Modo Analista activado</span><br><span class="text-slate-500">Ahora ves todos los ratios y simuladores</span>';
-      document.body.appendChild(toast);
-      setTimeout(() => {
-        if (toast.parentNode) toast.parentNode.removeChild(toast);
-      }, 3000);
+      setViewMode('analyst');
+      setModeNotice('Estás en Modo Analista. Vuelve a Simple desde la barra superior cuando quieras.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
     window.addEventListener('warren:toggle-to-analyst', handleToggleToAnalyst);
     return () => window.removeEventListener('warren:toggle-to-analyst', handleToggleToAnalyst);
-  }, [enableAnalystForSection]);
+  }, [setViewMode]);
+
+  // Ctrl+K / Cmd+K abre el buscador desde cualquier pantalla
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k' && !isSearchOpen) {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSearchOpen]);
 
   // Module 1 Data
   const [companies, setCompanies] = useState<CompanyAnalysis[]>(INITIAL_COMPUTED_COMPANIES);
@@ -159,7 +180,17 @@ function AppContent() {
       })
       .catch(err => {
         console.warn('Utilizando catálogo local precalculado:', err);
-      });
+      })
+      // Cotizaciones y consenso del día: los datos semilla pueden tener semanas de antigüedad
+      .then(() => fetch('/api/market/sync-prices', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }))
+      .then(res => (res && res.ok ? res.json() : null))
+      .then(data => {
+        if (data?.success && Array.isArray(data.companies) && data.companies.length > 0) {
+          setCompanies(data.companies);
+          setSelectedCompany(prev => data.companies.find((c: any) => c.id === prev?.id || c.ticker === prev?.ticker) || prev);
+        }
+      })
+      .catch(err => console.warn('No se pudieron actualizar las cotizaciones al iniciar:', err));
   }, []);
 
   const recalculateMotivation = (addedXP: number = 0) => {
@@ -462,7 +493,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] flex flex-col font-sans selection:bg-blue-50 selection:text-accent">
+    <div data-mode={viewMode} className="min-h-screen bg-papel text-slate-900 flex flex-col font-sans">
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -472,14 +503,29 @@ function AppContent() {
         viewMode={viewMode}
         setViewMode={setViewMode}
         onOpenSearch={() => setIsSearchOpen(true)}
-        onOpenPythonConsole={() => {
-          setPythonConsoleTicker(selectedCompany?.ticker || 'KO');
-          setIsPythonConsoleOpen(true);
-        }}
         showGamificationHUD={true}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {modeNotice && (
+        <div
+          role="status"
+          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[var(--z-modal)] max-w-[calc(100vw-32px)] flex items-center gap-3 bg-slate-900 text-slate-100 rounded-xl px-4 py-3 shadow-xl text-xs animate-fadeIn"
+        >
+          <span>{modeNotice}</span>
+          <button
+            type="button"
+            onClick={() => setModeNotice(null)}
+            className="text-amber-300 font-semibold hover:text-amber-200 shrink-0"
+          >
+            Entendido
+          </button>
+        </div>
+      )}
+
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        {/* La clave reinicia la animación de entrada al cambiar de sección */}
+        <div key={activeTab} className="animate-rise">
+        <Suspense fallback={<CargandoSeccion />}>
         {activeTab === 'fundamental' && (
           <FundamentalEngine
             companies={companies.length > 0 ? companies : INITIAL_COMPUTED_COMPANIES}
@@ -490,10 +536,6 @@ function AppContent() {
             customModalOpen={isCustomModalOpen}
             onCloseCustomModal={() => setIsCustomModalOpen(false)}
             onUpdateCompanies={setCompanies}
-            onOpenPythonConsole={(ticker) => {
-              setPythonConsoleTicker(ticker || selectedCompany?.ticker || 'KO');
-              setIsPythonConsoleOpen(true);
-            }}
           />
         )}
 
@@ -557,10 +599,13 @@ function AppContent() {
         {activeTab === 'methodology' && (
           <MethodologyDocumentation />
         )}
+        </Suspense>
+        </div>
       </main>
 
       {/* Spotlight Search */}
       {isSearchOpen && (
+        <Suspense fallback={null}>
         <SpotlightSearch
           isOpen={isSearchOpen}
           onClose={() => setIsSearchOpen(false)}
@@ -573,21 +618,10 @@ function AppContent() {
           onSelectForSimulation={handleSelectForSimulation}
           onOpenCustomCompanyModal={() => setIsCustomModalOpen(true)}
         />
+        </Suspense>
       )}
 
-      {/* Python Data Console Modal */}
-      <PythonDataConsole
-        isOpen={isPythonConsoleOpen}
-        onClose={() => setIsPythonConsoleOpen(false)}
-        initialTicker={pythonConsoleTicker}
-        onCompanyImported={(comp) => {
-          handleAddCustomCompany(comp);
-          setSelectedCompany(comp);
-        }}
-        onApplyPortfolioWeights={handleApplyMarkowitzAllocations}
-      />
-
-       {/* Instant Feedback Modal */}
+      {/* Instant Feedback Modal */}
       <InstantFeedbackModal
         isOpen={feedbackModal.isOpen}
         onClose={() => setFeedbackModal({ ...feedbackModal, isOpen: false })}
@@ -599,20 +633,20 @@ function AppContent() {
 
       {/* Warren FAB (FAQ + help) - only visible in Analyst mode */}
       {viewMode === 'analyst' && (
-        <WarrenFAB onOpenPythonConsole={() => {
-          setPythonConsoleTicker(selectedCompany?.ticker || 'KO');
-          setIsPythonConsoleOpen(true);
-        }} />
+        <WarrenFAB />
       )}
 
       {/* Onboarding Flow - first visit in Simple mode */}
       <OnboardingFlow />
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-6 text-center text-xs text-slate-500">
-        <p className="max-w-xl mx-auto px-4 leading-relaxed">
-          <strong>El Rincón de Warren</strong> · Prototipo de Educación Financiera en Value Investing y Econometría Conductual.
-        </p>
+      <footer className="border-t border-slate-200 py-6 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+          <p className="m-0">
+            <span className="font-serif font-semibold text-slate-700">El Rincón de Warren</span>
+            {' '}es un prototipo educativo de Value Investing y econometría conductual.
+          </p>
+          <p className="m-0 text-slate-400">No constituye asesoramiento financiero.</p>
+        </div>
       </footer>
     </div>
   );
