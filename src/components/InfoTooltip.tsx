@@ -55,7 +55,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({ concept, text, classNa
           e.stopPropagation();
           setIsOpen(prev => !prev);
         }}
-        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-slate-400 hover:text-amber-600 hover:bg-amber-50 focus:outline-none focus:ring-1 focus:ring-amber-400 transition-colors"
+        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-slate-500 hover:text-amber-600 hover:bg-amber-50 focus:outline-none focus:ring-1 focus:ring-amber-400 transition-colors"
         aria-label="Ayuda y explicación en lenguaje simple"
         title="Clic o pasar mouse para ver explicación sencilla"
       >
@@ -66,7 +66,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({ concept, text, classNa
       {isOpen && (
         <span
           role="tooltip"
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 sm:w-64 p-2.5 bg-slate-900 text-white text-[11px] leading-relaxed rounded-xl shadow-xl border border-slate-700/60 z-50 pointer-events-auto text-left font-normal animate-in fade-in zoom-in-95 duration-150"
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 sm:w-64 p-2.5 bg-slate-900 text-white text-xs leading-relaxed rounded-xl border border-slate-700/60 z-50 pointer-events-auto text-left font-normal animate-in fade-in zoom-in-95 duration-150"
         >
           <span className="block font-medium text-slate-100">{message}</span>
           {/* Flechita inferior */}

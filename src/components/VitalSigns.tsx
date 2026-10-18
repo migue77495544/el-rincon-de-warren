@@ -12,6 +12,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useFeatureFlags } from '../context/ViewModeContext';
+import { deriveVerdict } from '../utils/verdict';
 
 // Helper para generar tooltip dinámico de comparación sectorial
 const getVitalSectorTooltip = (id: string, companyVal: number, sectorVal: number): string => {
@@ -157,9 +158,9 @@ export const VitalSigns: React.FC<VitalSignsProps> = ({
   const verdict = getVerdict();
 
   const statusIcons = {
-    green: '✅',
-    yellow: '⚠️',
-    red: '🛑'
+    green: '',
+    yellow: '',
+    red: ''
   };
 
   return (
@@ -173,15 +174,15 @@ export const VitalSigns: React.FC<VitalSignsProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-bold uppercase text-slate-500">Score S(a) Global</span>
+                <span className="text-xs font-mono font-bold text-slate-500">Score S(a) Global</span>
                 <InfoTooltip conceptId="roe" />
               </div>
               <div className="flex items-baseline gap-3 mt-1">
-                <span className="text-4xl font-black font-mono text-slate-900">
+                <span className="text-4xl font-semibold font-mono text-slate-900">
                   {company.linearScore}
                 </span>
                 <span className="text-xs text-slate-500">/ 100</span>
-                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                   company.scoreGrade === 'A+' ? 'bg-success/10 text-success border border-success/20' :
                   company.scoreGrade === 'A' ? 'bg-success/10 text-success border border-success/20' :
                   company.scoreGrade === 'B' ? 'bg-warning/10 text-warning border border-warning/20' :
@@ -197,7 +198,7 @@ export const VitalSigns: React.FC<VitalSignsProps> = ({
             <span className={`text-sm font-bold ${verdict.color} font-serif`}>
               {verdict.text}
             </span>
-            <div className="text-[10px] text-slate-500 mt-1">
+            <div className="text-xs text-slate-500 mt-1">
               {greenCount}/{totalCount} indicadores saludables
             </div>
           </div>
@@ -216,24 +217,24 @@ export const VitalSigns: React.FC<VitalSignsProps> = ({
               <div className={`w-10 h-10 rounded-lg ${vital.bgClass} flex items-center justify-center ${vital.textClass}`}>
                 {vital.icon}
               </div>
-              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
+              <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${
                 vital.status === 'green' ? 'bg-success/10 text-success border border-success/20' :
                 vital.status === 'yellow' ? 'bg-warning/10 text-warning border border-warning/20' :
                 'bg-danger/10 text-danger border border-danger/20'
               }`}>
-                {statusIcons[vital.status]} {vital.status === 'green' ? 'Saludable' : vital.status === 'yellow' ? 'Vigilancia' : 'Alerta'}
+                {vital.status === 'green' ? 'Saludable' : vital.status === 'yellow' ? 'Vigilancia' : 'Alerta'}
               </span>
             </div>
 
             {/* Nombre y valor */}
             <div className="mb-2">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">
+              <h3 className="text-xs font-bold text-slate-500 font-mono">
                 {vital.name}
               </h3>
-              <p className="text-sm text-slate-400 mt-0.5">
+              <p className="text-sm text-slate-500 mt-0.5">
                 {vital.shortLabel}
               </p>
-              <div className="text-2xl font-black font-mono text-slate-900 mt-1">
+              <div className="text-2xl font-semibold font-mono text-slate-900 mt-1">
                 {vital.value}
               </div>
             </div>
@@ -241,8 +242,8 @@ export const VitalSigns: React.FC<VitalSignsProps> = ({
             {/* Sector Comparison Badge */}
             {vital.sectorValue != null && company.sectorBenchmarks?.industry_name && (
               <div className="mb-2 flex items-center gap-1.5">
-                <span className="text-[10px] text-slate-500">vs Sector:</span>
-                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full border ${
+                <span className="text-xs text-slate-500">vs Sector:</span>
+                <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded-full border ${
                   vital.sectorComparison === 'better' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
                   vital.sectorComparison === 'worse' ? 'text-rose-700 bg-rose-50 border-rose-200' :
                   'text-slate-700 bg-slate-50 border-slate-200'
@@ -257,7 +258,7 @@ export const VitalSigns: React.FC<VitalSignsProps> = ({
 
             {/* Tooltip de explicación solo en analyst mode o al hacer click */}
             {flags.isAnalyst ? (
-              <div className="mt-2 text-[10px] text-slate-500 leading-relaxed">
+              <div className="mt-2 text-xs text-slate-500 leading-relaxed">
                 {vital.explanation}
               </div>
             ) : (
@@ -265,9 +266,9 @@ export const VitalSigns: React.FC<VitalSignsProps> = ({
                 <InfoTooltip conceptId={vital.id === 'liquidez' ? 'liquidezCorriente' : vital.id === 'deuda' ? 'deudaPatrimonio' : vital.id === 'roe' ? 'roe' : 'margenSeguridad'} />
                 <button
                   onClick={onNavigateToDetail}
-                  className="text-[10px] font-semibold text-accent hover:text-accent-hover transition-colors"
+                  className="text-xs font-semibold text-accent hover:text-accent-hover transition-colors"
                 >
-                  Ver análisis completo →
+                  Ver análisis completo
                 </button>
               </div>
             )}
@@ -283,15 +284,15 @@ export const VitalSigns: React.FC<VitalSignsProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">
+              <h3 className="text-xs font-bold text-slate-500 font-mono">
                 Foso Económico
               </h3>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold border border-purple-200">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold border border-purple-200">
                 {company.moat}
               </span>
             </div>
-            <p className="text-sm text-slate-700 italic font-serif leading-relaxed">
-              "{company.warrenVerdict}"
+            <p className="text-sm text-slate-700 font-serif leading-relaxed">
+              {deriveVerdict(company).text}
             </p>
           </div>
         </div>
@@ -309,7 +310,7 @@ export const VitalSigns: React.FC<VitalSignsProps> = ({
             className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-accent hover:text-accent-hover hover:bg-slate-50 border border-[var(--color-border)] rounded-lg transition-all"
           >
             <span>¿Quieres ver todos los ratios y simuladores?</span>
-            <span>→ Cambiar a Modo Analista</span>
+            <span>Cambiar a Modo Analista</span>
           </button>
         </div>
       )}

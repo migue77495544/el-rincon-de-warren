@@ -37,7 +37,7 @@ export const ChartTooltip: React.FC<ChartTooltipProps> = ({
   if (!hoveredPoint) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5 text-[11px] font-mono bg-slate-50 px-3 py-1 rounded-xl border border-slate-200 text-slate-700">
+    <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono bg-slate-50 px-3 py-1 rounded-xl border border-slate-200 text-slate-700">
       {hoveredPoint.time && <span><strong className="text-slate-900">{hoveredPoint.time}</strong></span>}
       {hoveredPoint.open !== undefined && (
         <span>O: <strong className="text-slate-900">${hoveredPoint.open.toFixed(2)}</strong></span>

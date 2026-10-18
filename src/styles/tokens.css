@@ -47,7 +47,7 @@
   --navbar-h: 57px;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1279px) {
   :root { --navbar-h: 97px; }
 }
 

@@ -48,13 +48,13 @@ export const MarkowitzGame: React.FC<MarkowitzGameProps> = ({ onAddXP }) => {
     <div className="bg-white rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-6 sm:p-8 space-y-6">
       <div className="border-b border-[var(--color-border)] pb-5">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-bold text-blue-600 uppercase">Juego 3 de 4</span>
-          <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-700 font-bold">
+          <span className="text-xs font-mono font-bold text-blue-600">Juego 3 de 4</span>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-700 font-bold">
             Harry Markowitz (Premio Nobel)
           </span>
         </div>
         <h3 className="text-xl font-bold text-slate-900 font-serif mt-1">
-          Laboratorio de Covarianza: Caza del "Almuerzo Gratis"
+          Diversificar: el único almuerzo gratis
         </h3>
         <p className="text-xs text-slate-500 mt-0.5">
           Mueve las proporciones de los 3 activos para lograr la magia de la descorrelación: <strong>eliminar al menos un 20% del riesgo</strong> mediante covarianza y conseguir un <strong>Sharpe Ratio ≥ 1.25</strong>.
@@ -64,29 +64,29 @@ export const MarkowitzGame: React.FC<MarkowitzGameProps> = ({ onAddXP }) => {
       {/* Indicadores en Vivo del Laboratorio */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-          <span className="text-[10px] text-slate-400 block font-medium">Retorno Esperado E(Rp)</span>
-          <span className="text-lg font-black text-white font-mono">{(portReturn * 100).toFixed(1)}%</span>
+          <span className="text-xs text-slate-500 block font-medium">Retorno Esperado E(Rp)</span>
+          <span className="text-lg font-semibold text-white font-mono">{(portReturn * 100).toFixed(1)}%</span>
         </div>
         <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-          <span className="text-[10px] text-slate-400 block font-medium">Volatilidad Total σ_p</span>
-          <span className="text-lg font-black text-blue-400 font-mono">{(portVol * 100).toFixed(1)}%</span>
+          <span className="text-xs text-slate-500 block font-medium">Volatilidad Total σ_p</span>
+          <span className="text-lg font-semibold text-blue-400 font-mono">{(portVol * 100).toFixed(1)}%</span>
         </div>
         <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-          <span className="text-[10px] text-slate-400 block font-medium">Ratio de Sharpe</span>
-          <span className={`text-lg font-black font-mono ${sharpeGame >= 1.25 ? 'text-emerald-400' : 'text-slate-300'}`}>
+          <span className="text-xs text-slate-500 block font-medium">Ratio de Sharpe</span>
+          <span className={`text-lg font-semibold font-mono ${sharpeGame >= 1.25 ? 'text-emerald-400' : 'text-slate-300'}`}>
             {sharpeGame.toFixed(2)}
           </span>
         </div>
         <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-          <span className="text-[10px] text-slate-400 block font-medium">Almuerzo Gratis</span>
-          <span className={`text-lg font-black font-mono ${freeLunchPercent >= 20 ? 'text-emerald-400' : 'text-purple-400'}`}>
+          <span className="text-xs text-slate-500 block font-medium">Almuerzo Gratis</span>
+          <span className={`text-lg font-semibold font-mono ${freeLunchPercent >= 20 ? 'text-emerald-400' : 'text-purple-400'}`}>
             -{freeLunchPercent.toFixed(1)}%
           </span>
         </div>
       </div>
 
       {/* Deslizadores de los 3 Activos */}
-      <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-4">
+      <div className="bg-slate-950 p-5 rounded-lg border border-slate-800 space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between text-xs">
             <span className="text-slate-300 font-bold">1. Consumo Básico Defensivo (KO) - σ: 12%</span>
@@ -133,7 +133,7 @@ export const MarkowitzGame: React.FC<MarkowitzGameProps> = ({ onAddXP }) => {
         </div>
 
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-slate-500">
             Objetivo: <strong>Almuerzo Gratis ≥ 20%</strong> y <strong>Sharpe ≥ 1.25</strong>
           </div>
           <button

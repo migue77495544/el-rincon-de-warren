@@ -111,18 +111,18 @@ function AdvisorCard({
   onRetry?: () => void;
 }) {
   return (
-    <div className={`flex-1 min-w-0 rounded-2xl border-2 ${roleColor} bg-white shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md`}>
-      <div className={`flex items-center justify-between px-4 py-3.5 border-b-2 ${roleColor} ${isSimpleView ? 'bg-slate-50' : 'bg-gradient-to-r from-orange-50/70 via-amber-50/60 to-white'}`}>
+    <div className={`flex-1 min-w-0 rounded-lg border-2 ${roleColor} bg-white shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md`}>
+      <div className={`flex items-center justify-between px-4 py-3.5 border-b-2 ${roleColor} ${isSimpleView ? 'bg-slate-50' : 'bg-white'}`}>
         <div className="flex items-center gap-3 min-w-0">
-          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black text-sm shadow-sm shrink-0 ${isSimpleView ? 'bg-slate-700' : 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-amber-500/30'}`}>
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold text-sm shadow-sm shrink-0 ${isSimpleView ? 'bg-slate-700' : 'bg-amber-700 shadow-amber-500/30'}`}>
             {avatar}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-extrabold text-slate-900 truncate">{name}</p>
-            <p className={`text-[11px] font-semibold tracking-wide truncate ${isSimpleView ? 'text-slate-600' : 'text-orange-700'}`}>{role}</p>
+            <p className="text-sm font-semibold text-slate-900 truncate">{name}</p>
+            <p className={`text-xs font-semibold truncate ${isSimpleView ? 'text-slate-600' : 'text-orange-700'}`}>{role}</p>
           </div>
         </div>
-        <span className={`hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs shrink-0 ${isSimpleView ? 'bg-slate-100 text-slate-700 border border-slate-200' : 'bg-white/80 border border-orange-200 text-orange-800'}`}>
+        <span className={`hidden sm:inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full shadow-2xs shrink-0 ${isSimpleView ? 'bg-slate-100 text-slate-700 border border-slate-200' : 'bg-white/80 border border-orange-200 text-orange-800'}`}>
           <Icon className={`w-3 h-3 ${isSimpleView ? 'text-slate-600' : 'text-orange-600'}`} />
           {specialtyTag}
         </span>
@@ -137,11 +137,11 @@ function AdvisorCard({
             {chat.result && !isLoading && (
               <div className="flex flex-wrap items-center gap-1.5">
                 {chat.result.ticker && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-orange-600 text-white font-black font-mono">
+                  <span className="text-xs px-2 py-0.5 rounded-md bg-orange-600 text-white font-semibold font-mono">
                     {chat.result.ticker}
                   </span>
                 )}
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
                   chat.result.source === 'gemini-live'
                     ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                     : 'bg-amber-100 text-amber-800 border border-amber-300'
@@ -167,7 +167,7 @@ function AdvisorCard({
             )}
           </div>
         ) : isLoading ? (
-          <div className="flex flex-col items-center justify-center w-full gap-2.5 py-10 text-slate-400 my-auto">
+          <div className="flex flex-col items-center justify-center w-full gap-2.5 py-10 text-slate-500 my-auto">
             <Loader2 className={`w-7 h-7 animate-spin ${isSimpleView ? 'text-slate-500' : 'text-amber-500'}`} />
             <span className="text-xs font-semibold text-slate-500">
               Consultando perspectiva de {name.split(' ')[0]}...
@@ -181,7 +181,7 @@ function AdvisorCard({
           </div>
         ) : (
           <div className="my-auto py-6 text-center">
-            <p className="text-xs text-slate-400 italic">
+            <p className="text-xs text-slate-500 italic">
               La respuesta aparecerá aquí cuando envíes tu consulta.
             </p>
           </div>
@@ -256,7 +256,7 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
     setViewMode('diagnosis');
 
     const ticker = selectedTicker;
-    const q = 'Diagnóstico General: Evaluación completa del negocio. Jairo analiza el modelo de negocio, estados financieros y creación de valor; Juan Guillermo analiza la acción del precio, tendencias y operativa de trading.';
+    const q = 'Diagnóstico: Evaluación completa del negocio. Jairo analiza el modelo de negocio, estados financieros y creación de valor; Juan Guillermo analiza la acción del precio, tendencias y operativa de trading.';
     const isCurrent = () => requestIds.current.diagnosis === requestId;
 
     try {
@@ -332,19 +332,19 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
   return (
     <section id="jairo-guillermo-consult" className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${isSimpleView ? 'border-slate-200' : 'border-orange-200/90'}`}>
       {/* Encabezado */}
-      <div className={`px-6 py-5 ${isSimpleView ? 'bg-slate-50 border-b border-slate-200' : 'bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border-b border-orange-200/80'}`}>
+      <div className={`px-6 py-5 ${isSimpleView ? 'bg-slate-50 border-b border-slate-200' : 'bg-white border-b border-orange-200/80'}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md shrink-0 text-white ${isSimpleView ? 'bg-slate-800' : 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-amber-500/25'}`}>
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center shadow-md shrink-0 text-white ${isSimpleView ? 'bg-slate-800' : 'bg-amber-700'}`}>
               <Users className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-black text-slate-900 tracking-tight">
+                <h2 className="text-lg font-semibold text-slate-900 tracking-tight">
                   Consulta a Jairo y Juan Guillermo
                 </h2>
                 {!isSimpleView && (
-                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs">
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-semibold flex items-center gap-1 shadow-2xs">
                     <Sparkles className="w-3 h-3 text-orange-600" />
                     Fundamental + Técnico
                   </span>
@@ -352,7 +352,7 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
               </div>
               <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
                 {!isSimpleView
-                  ? 'Dos perspectivas complementarias sobre la misma empresa: <strong className="text-amber-700 font-bold">Jairo Agudelo</strong> desde lo fundamental y <strong className="text-orange-700 font-bold">Juan Guillermo Hernández (Guangui)</strong> desde la operativa técnica de pantalla.'
+                  ? <>Dos perspectivas sobre la misma empresa: <strong className="font-semibold text-slate-900">Jairo Agudelo</strong> desde lo fundamental y <strong className="font-semibold text-slate-900">Juan Guillermo Hernández</strong> desde la operativa técnica.</>
                   : 'Dos asesores analíticos que te explican la empresa en lenguaje claro: Jairo desde lo fundamental y Juan Guillermo desde la operativa técnica.'}
               </p>
             </div>
@@ -372,17 +372,17 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
       </div>
 
         <div className="p-6 space-y-5">
-        {/* SECCIÓN 1: Diagnóstico General del Negocio */}
-        <div className={`rounded-2xl border-2 p-5 shadow-sm space-y-3 ${isSimpleView ? 'border-slate-200 bg-white' : 'border-amber-200/90 bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-white'} ${hasResults && !isSimpleView ? "opacity-30 pointer-events-none" : ""}`}>
+        {/* SECCIÓN 1: Diagnóstico del negocio */}
+        <div className={`rounded-lg border-2 p-5 shadow-sm space-y-3 ${isSimpleView ? 'border-slate-200 bg-white' : 'border-amber-200/90 bg-white'} ${hasResults && !isSimpleView ? "opacity-30 pointer-events-none" : ""}`}>
           <div className="flex items-start gap-3">
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-xs shrink-0 text-white ${isLoading ? "animate-pulse" : ""} ${isSimpleView ? 'bg-slate-700' : 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-amber-500/25'}`}>
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shadow-xs shrink-0 text-white ${isLoading ? "animate-pulse" : ""} ${isSimpleView ? 'bg-slate-700' : 'bg-amber-700'}`}>
               <BarChart3 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-slate-900 flex items-center gap-2 flex-wrap">
-                Diagnóstico General del Negocio
+              <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 flex-wrap">
+                Diagnóstico del negocio
                 {!isSimpleView && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-extrabold uppercase tracking-wider">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-semibold">
                     Doble Visión
                   </span>
                 )}
@@ -398,7 +398,7 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
           <div className="pt-2">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="relative flex-1">
-                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                 <select
                   id="consult-ticker-selector-diagnosis"
                   value={selectedTicker}
@@ -420,12 +420,12 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
                 type="button"
                 onClick={handleDiagnosis}
                 disabled={isLoading || !selectedTicker}
-                className={`flex items-center justify-center gap-2 px-5 py-2.75 rounded-xl text-sm font-extrabold transition-all shadow-sm ${
+                className={`flex items-center justify-center gap-2 px-5 py-2.75 rounded-xl text-sm font-semibold transition-all shadow-sm ${
                   isLoading || !selectedTicker
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                    ? 'bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200'
                     : isSimpleView
                     ? 'bg-slate-900 hover:bg-slate-800 text-white border border-slate-900'
-                    : 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white hover:from-amber-600 hover:via-orange-600 hover:to-amber-700 shadow-amber-500/25 hover:shadow-md active:scale-[0.98] cursor-pointer'
+                    : 'bg-amber-700 text-white hover:bg-amber-800 hover:shadow-md active:scale-[0.98] cursor-pointer'
                 }`}
               >
                 {isLoading ? (
@@ -436,7 +436,7 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>Ver Diagnóstico General</span>
+                    <span>Ver Diagnóstico</span>
                   </>
                 )}
               </button>
@@ -460,7 +460,7 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
               placeholder="¿Qué opinas del ROE de AAPL? ¿El momento es bueno para comprar?"
               rows={3}
               disabled={diagnosisLoading}
-              className="flex-1 text-sm text-slate-800 bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400 resize-none transition-all placeholder:text-slate-400 shadow-2xs disabled:opacity-50"
+              className="flex-1 text-sm text-slate-800 bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400 resize-none transition-all placeholder:text-slate-500 shadow-2xs disabled:opacity-50"
               onKeyDown={e => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                   e.preventDefault();
@@ -477,9 +477,9 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
                 data-advisor="jairo"
                 onClick={() => handleSingleQuestion('jairo')}
                 disabled={jairoBusy || !pregunta.trim()}
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-extrabold transition-all shadow-sm ${
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm ${
                   jairoBusy || !pregunta.trim()
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                    ? 'bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200'
                     : 'border-2 border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 cursor-pointer'
                 }`}
               >
@@ -491,9 +491,9 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
                 data-advisor="guillermo"
                 onClick={() => handleSingleQuestion('guillermo')}
                 disabled={guillermoBusy || !pregunta.trim()}
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-extrabold transition-all shadow-sm ${
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm ${
                   guillermoBusy || !pregunta.trim()
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                    ? 'bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200'
                     : 'border-2 border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-400 cursor-pointer'
                 }`}
               >
@@ -528,9 +528,9 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
           <div className="space-y-4 pt-2">
             {/* Ticker, nombre y fuente */}
             {diagnosis?.ticker && !diagnosisLoading && (
-              <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-2xl bg-orange-50/70 border border-orange-200">
+              <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg bg-orange-50/70 border border-orange-200">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs px-2.5 py-1 rounded-lg bg-orange-600 text-white font-black font-mono shadow-2xs">
+                  <span className="text-xs px-2.5 py-1 rounded-lg bg-orange-600 text-white font-semibold font-mono shadow-2xs">
                     {diagnosis.ticker}
                   </span>
                   {diagnosis.empresaNombre && (
@@ -541,7 +541,7 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-2xs ${
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shadow-2xs ${
                     isGeminiLive
                       ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                       : 'bg-amber-100 text-amber-800 border border-amber-300'
@@ -564,28 +564,28 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
               </div>
             )}
 
-            {/* Modelo de Negocio (solo en Diagnóstico General y no en Simple mode) */}
+            {/* Modelo de Negocio (solo en Diagnóstico y no en Simple mode) */}
             {diagnosis && !isSimpleView && diagnosis.modeloNegocio && !diagnosisLoading && (
-              <div className="rounded-2xl border-2 border-orange-200/90 bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-white p-4.5 shadow-sm space-y-3">
+              <div className="rounded-lg border-2 border-orange-200/90 bg-white p-4.5 shadow-sm space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-orange-200/60 pb-2.5">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-xs shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-amber-700 text-white flex items-center justify-center shadow-xs shrink-0">
                       <Building2 className="w-4 h-4" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-black text-slate-900 tracking-tight flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-slate-900 tracking-tight flex items-center gap-2">
                         Modelo de Negocio: {diagnosis.empresaNombre || diagnosis.ticker || 'Análisis del Emisor'}
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-extrabold uppercase tracking-wider">
-                          Diagnóstico General
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-semibold">
+                          Diagnóstico
                         </span>
                       </h3>
-                      <p className="text-[11px] text-slate-500 font-medium">
+                      <p className="text-xs text-slate-500 font-medium">
                         Regla de oro de Warren Buffett: nunca inviertas en un negocio sin entender primero con claridad meridiana qué vende y de dónde proviene su dinero.
                       </p>
                     </div>
                   </div>
                   {diagnosis.modeloNegocio.sector && (
-                    <span className="text-[11px] font-semibold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-orange-200 shadow-2xs">
+                    <span className="text-xs font-semibold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-orange-200 shadow-2xs">
                       Sector: <strong className="text-slate-900">{diagnosis.modeloNegocio.sector}</strong>
                     </span>
                   )}
@@ -594,7 +594,7 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
                   <div className="bg-white/95 rounded-xl p-3.5 border border-amber-200/80 shadow-2xs space-y-1.5 flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center gap-2 text-xs font-black text-amber-900 mb-1">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-amber-900 mb-1">
                         <HelpCircle className="w-4 h-4 text-amber-600 shrink-0" />
                         <span>1. ¿Qué hace la compañía? (Actividad Principal)</span>
                       </div>
@@ -606,7 +606,7 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
 
                   <div className="bg-white/95 rounded-xl p-3.5 border border-emerald-200/80 shadow-2xs space-y-1.5 flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center gap-2 text-xs font-black text-emerald-900 mb-1">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-emerald-900 mb-1">
                         <Coins className="w-4 h-4 text-emerald-600 shrink-0" />
                         <span>2. ¿Cómo gana dinero? (Fuentes de Monetización)</span>
                       </div>
@@ -652,7 +652,7 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
             {/* Síntesis / Convergencia (solo en diagnóstico general) */}
             {diagnosis && diagnosis.sintesis && !diagnosisLoading && (
               <div
-                className={`rounded-2xl border p-4.5 space-y-2 transition-all shadow-sm ${
+                className={`rounded-lg border p-4.5 space-y-2 transition-all shadow-sm ${
                   diagnosis.convergencia === 'acuerdo'
                     ? 'bg-emerald-50/90 border-emerald-300'
                     : 'bg-amber-50/90 border-amber-300'
@@ -665,7 +665,7 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
                     <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
                   )}
                   <span
-                    className={`text-xs font-black uppercase tracking-wider ${
+                    className={`text-xs font-semibold ${
                       diagnosis.convergencia === 'acuerdo' ? 'text-emerald-800' : 'text-amber-900'
                     }`}
                   >
@@ -686,9 +686,9 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
 
             {/* Nota y Descargo de Responsabilidad */}
             {hasResults && !isLoading && (
-              <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-slate-500 leading-relaxed">
+              <div className="flex items-start gap-2.5 p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+                <Info className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-slate-500 leading-relaxed">
                   <strong className="text-slate-700">Nota metodológica:</strong> Jairo Agudelo y Juan Guillermo Hernández son <em>perfiles analíticos de referencia integrados</em> inspirados en su filosofía divulgativa y operativa. Sus respuestas se basan en datos financieros reales, ratios contables y parámetros técnicos estandarizados con fines estrictamente pedagógicos y formativos. <strong>No constituyen asesoría financiera personalizada ni recomendación vinculante.</strong>
                 </p>
               </div>

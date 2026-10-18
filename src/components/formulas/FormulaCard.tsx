@@ -43,7 +43,7 @@ export const FormulaCard: React.FC<FormulaCardProps> = ({
   return (
     <div
       onClick={() => onSelect(formula)}
-      className={`p-4 rounded-2xl border transition-all cursor-pointer text-left ${
+      className={`p-4 rounded-lg border transition-all cursor-pointer text-left ${
         isSelected
           ? 'bg-slate-100 border-slate-400 shadow-sm ring-2 ring-slate-300'
           : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 shadow-xs'
@@ -62,39 +62,39 @@ export const FormulaCard: React.FC<FormulaCardProps> = ({
               {formula.id === 'roe' && <InfoTooltip concept="roe" />}
               {formula.id === 'margin-of-safety' && <InfoTooltip concept="margenSeguridad" />}
             </h4>
-            <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+            <span className="text-xs text-slate-500 font-mono block mt-0.5">
               {formula.acronym}
             </span>
           </div>
         </div>
 
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${categoryBadge}`}>
+        <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${categoryBadge}`}>
           {formula.category.toUpperCase()}
         </span>
       </div>
 
-      <div className="mt-2.5 p-2 bg-slate-50 rounded-xl border border-slate-200 font-mono text-[11px] text-slate-700 truncate">
+      <div className="mt-2.5 p-2 bg-slate-50 rounded-xl border border-slate-200 font-mono text-xs text-slate-700 truncate">
         {formula.formulaSimple}
       </div>
 
       {/* Estado en la empresa actual si está seleccionada */}
       {companyDiag && selectedCompany && (
-        <div className="mt-2.5 p-2 bg-slate-100/70 rounded-xl border border-slate-200 flex items-center justify-between text-[11px]">
-          <span className="text-slate-600 font-mono text-[10px]">
+        <div className="mt-2.5 p-2 bg-slate-100/70 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+          <span className="text-slate-600 font-mono text-xs">
             {selectedCompany.ticker}: <strong className="text-slate-950 font-bold">{companyDiag.formatted}</strong>
           </span>
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+          <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${
             companyDiag.status === 'green' ? 'bg-emerald-100 text-emerald-800' :
             companyDiag.status === 'yellow' ? 'bg-slate-200 text-slate-800' :
             'bg-rose-100 text-rose-800'
           }`}>
-            {companyDiag.status === 'green' ? '🟢 Value' : companyDiag.status === 'yellow' ? '🟡 Neutro' : '🔴 Peligro'}
+            {companyDiag.status === 'green' ? 'Value' : companyDiag.status === 'yellow' ? 'Neutro' : 'Peligro'}
           </span>
         </div>
       )}
 
       <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
-        <span className="text-[11px] text-slate-500 truncate max-w-[190px]">
+        <span className="text-xs text-slate-500 truncate max-w-[190px]">
           {formula.thresholds.green.range} ({formula.thresholds.green.label})
         </span>
 
@@ -106,7 +106,7 @@ export const FormulaCard: React.FC<FormulaCardProps> = ({
                 e.stopPropagation();
                 onSelectRatioForAnalysis(formula.id, formula.category);
               }}
-              className="px-2 py-1.5 rounded-xl text-[10px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 hover:text-slate-950 border border-slate-200 transition-all active:scale-95 flex items-center gap-1"
+              className="px-2 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 hover:text-slate-950 border border-slate-200 transition-all active:scale-95 flex items-center gap-1"
               title={`Ver en los Semáforos Contables de ${selectedCompany.ticker}`}
             >
               <BarChart3 className="w-3 h-3 text-slate-600" />
@@ -127,7 +127,7 @@ export const FormulaCard: React.FC<FormulaCardProps> = ({
             }`}
             title="Ver fórmula, umbrales y simulador"
           >
-            <span>{isSelected ? '✓ Viendo Fórmula' : 'Ver análisis'}</span>
+            <span>{isSelected ? 'Viendo Fórmula' : 'Ver análisis'}</span>
             <ArrowRight className="w-3 h-3" />
           </button>
         </div>

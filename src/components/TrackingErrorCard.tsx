@@ -100,7 +100,7 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
 
   if (compact) {
     return (
-      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-xs">
+      <div className="p-4 rounded-lg bg-slate-50 border border-slate-200/80 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-indigo-500" />
@@ -108,7 +108,7 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
             <InfoTooltip concept="trackingError" />
           </div>
           {loading ? (
-            <RefreshCw className="w-4 h-4 animate-spin text-slate-400" />
+            <RefreshCw className="w-4 h-4 animate-spin text-slate-500" />
           ) : error ? (
             <AlertCircle className="w-4 h-4 text-rose-500" />
           ) : (
@@ -120,19 +120,19 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
   }
 
   return (
-    <div className="mt-5 p-5 bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-300">
+    <div className="mt-5 p-5 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-300">
       {/* Encabezado Principal */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-600 shadow-2xs">
+          <div className="w-10 h-10 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-600 shadow-2xs">
             <Activity className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                Risk Tracking (Tracking Error)
+                Tracking error frente al S&P 500
               </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-50 text-violet-700 border border-violet-100">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-violet-50 text-violet-700 border border-violet-100">
                 Riesgo Activo
               </span>
             </div>
@@ -159,7 +159,7 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
       {loading ? (
         <LoadingSkeleton label="Calculando Tracking Error en vivo..." />
       ) : error ? (
-        <div className="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-between text-xs text-rose-700">
+        <div className="mt-4 p-4 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-between text-xs text-rose-700">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-rose-500" />
             <span>{error}</span>
@@ -174,17 +174,16 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
       ) : data && (
         <div className="mt-5 space-y-5">
           {/* Hero Card: TE Anualizado + Gestión Style Badge */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-violet-950 text-white shadow-md relative overflow-hidden">
-            <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-44 h-44 bg-violet-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="p-5 rounded-lg bg-slate-900 text-white relative overflow-hidden">
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-violet-300 font-mono flex items-center gap-1.5">
+                <span className="text-xs font-bold text-violet-300 font-mono flex items-center gap-1.5">
                   <Target className="w-3.5 h-3.5 text-violet-400" />
                   Tracking Error Anualizado
                 </span>
                 <div className="flex items-baseline gap-3 mt-1.5">
-                  <span className="text-4xl sm:text-5xl font-black font-mono tracking-tight text-white">
+                  <span className="text-4xl sm:text-5xl font-semibold font-mono tracking-tight text-white">
                     {teAnnual.toFixed(2)}%
                   </span>
                   <span className="text-xs text-slate-300 font-medium">
@@ -199,7 +198,7 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
               {/* Management Style Badge */}
               {styleConfig && (
                 <div className="flex flex-col items-end gap-2">
-                  <span className={`px-3 py-1.5 rounded-full text-[11px] font-bold border ${
+                  <span className={`px-3 py-1.5 rounded-full text-xs font-bold border ${
                     styleConfig.color === 'emerald'
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
                       : styleConfig.color === 'amber'
@@ -208,7 +207,7 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
                   }`}>
                     {styleConfig.label}
                   </span>
-                  <span className={`text-[10px] text-slate-300/80 ${
+                  <span className={`text-xs text-slate-300/80 ${
                     styleConfig.color === 'emerald'
                       ? 'text-emerald-300/80'
                       : styleConfig.color === 'amber'
@@ -225,7 +224,7 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
           {/* Desglose: Active Return, IR, Observaciones */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col">
-              <span className="text-[10px] uppercase font-bold text-slate-500 font-mono flex items-center gap-1 mb-1.5">
+              <span className="text-xs font-bold text-slate-500 font-mono flex items-center gap-1 mb-1.5">
                 <TrendingUp className="w-3 h-3 text-blue-500" />
                 Retorno Activo Anual
               </span>
@@ -238,7 +237,7 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
             </div>
 
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col">
-              <span className="text-[10px] uppercase font-bold text-slate-500 font-mono flex items-center gap-1 mb-1.5">
+              <span className="text-xs font-bold text-slate-500 font-mono flex items-center gap-1 mb-1.5">
                 <Zap className="w-3 h-3 text-amber-500" />
                 Ratio de Información
               </span>
@@ -247,27 +246,27 @@ export const TrackingErrorCard: React.FC<TrackingErrorCardProps> = ({
               }`}>
                 {ir.toFixed(2)}
               </span>
-              <span className="text-[10px] text-slate-400 mt-0.5">
+              <span className="text-xs text-slate-500 mt-0.5">
                 {ir >= 0.5 ? 'Excelente ratio riesgo-eficiencia' : ir >= 0 ? 'Moderado' : 'Alpha negativo'}
               </span>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col">
-              <span className="text-[10px] uppercase font-bold text-slate-500 font-mono flex items-center gap-1 mb-1.5">
+              <span className="text-xs font-bold text-slate-500 font-mono flex items-center gap-1 mb-1.5">
                 <Shield className="w-3 h-3 text-violet-500" />
                 Observaciones
               </span>
               <span className="text-sm font-mono font-bold text-slate-800">
                 {data?.observations ?? 252}
               </span>
-              <span className="text-[10px] text-slate-400 mt-0.5">
+              <span className="text-xs text-slate-500 mt-0.5">
                 días de datos
               </span>
             </div>
           </div>
 
           {/* Explicación Pedagógica */}
-          <div className="p-4 rounded-2xl bg-violet-50/70 border border-violet-100 text-xs text-slate-700 animate-in fade-in duration-200">
+          <div className="p-4 rounded-lg bg-violet-50/70 border border-violet-100 text-xs text-slate-700 animate-in fade-in duration-200">
             <div className="flex items-center gap-2 font-bold text-violet-900 mb-1.5">
               <HelpCircle className="w-4 h-4 text-violet-600" />
               <span>¿Cómo interpretar el Risk Tracking?</span>

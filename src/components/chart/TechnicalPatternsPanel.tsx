@@ -41,7 +41,7 @@ export const TechnicalPatternsPanel: React.FC<TechnicalPatternsPanelProps> = ({
     patternsData?.summary.includes('CONTRADICCIÓN');
 
   return (
-    <div className={`rounded-2xl border overflow-hidden transition-all ${
+    <div className={`rounded-lg border overflow-hidden transition-all ${
       isContradictory
         ? 'border-amber-300 bg-amber-50/30 ring-1 ring-amber-400/20 shadow-sm'
         : 'border-violet-200 bg-violet-50/50'
@@ -62,7 +62,7 @@ export const TechnicalPatternsPanel: React.FC<TechnicalPatternsPanelProps> = ({
             Análisis de Patrones Técnicos · {ticker}
           </span>
           {patternsData && (
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
+            <span className={`text-xs px-2 py-0.5 rounded-full font-mono font-bold ${
               isContradictory
                 ? 'bg-amber-200 text-amber-900'
                 : 'bg-violet-200 text-violet-800'
@@ -73,7 +73,7 @@ export const TechnicalPatternsPanel: React.FC<TechnicalPatternsPanelProps> = ({
         </div>
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-lg hover:bg-black/5"
+          className="text-slate-500 hover:text-slate-700 transition-colors p-1 rounded-lg hover:bg-black/5"
           title="Cerrar análisis"
         >
           <X className="w-4 h-4" />
@@ -94,7 +94,7 @@ export const TechnicalPatternsPanel: React.FC<TechnicalPatternsPanelProps> = ({
             {/* Tendencia dominante y resumen */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 p-3 rounded-xl bg-white border border-violet-100">
-                <p className="text-[10px] font-mono font-bold uppercase text-violet-500 mb-1 flex items-center gap-1">
+                <p className="text-xs font-mono font-bold text-violet-500 mb-1 flex items-center gap-1">
                   <BarChart3 className="w-3 h-3" />
                   Tendencia Dominante
                 </p>
@@ -102,17 +102,17 @@ export const TechnicalPatternsPanel: React.FC<TechnicalPatternsPanelProps> = ({
               </div>
               <div className="flex-[2] p-3 rounded-xl bg-white border border-violet-100 space-y-1.5">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <p className="text-[10px] font-mono font-bold uppercase text-violet-500 flex items-center gap-1">
+                  <p className="text-xs font-mono font-bold text-violet-500 flex items-center gap-1">
                     <Info className="w-3 h-3" />
                     Resumen Técnico · Convergencia de Guillermo
                   </p>
                   {patternsData.summary.includes('CONTRADICCIÓN') || patternsData.convergenceStatus === 'contradictorio' ? (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-bold flex items-center gap-1 font-mono">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-bold flex items-center gap-1 font-mono">
                       <AlertTriangle className="w-3 h-3 text-amber-600" />
                       Contradicción Técnica Detectada
                     </span>
                   ) : (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold flex items-center gap-1 font-mono">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold flex items-center gap-1 font-mono">
                       <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                       Convergencia Técnica Confirmada
                     </span>
@@ -125,7 +125,7 @@ export const TechnicalPatternsPanel: React.FC<TechnicalPatternsPanelProps> = ({
             {/* Lista de patrones */}
             {patternsData.patterns.length > 0 && (
               <div className="space-y-2">
-                <p className="text-[10px] font-mono font-bold uppercase text-violet-500 px-1">Niveles Identificados</p>
+                <p className="text-xs font-mono font-bold text-violet-500 px-1">Niveles Identificados</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {patternsData.patterns.map((pattern, idx) => (
                     <div
@@ -143,16 +143,16 @@ export const TechnicalPatternsPanel: React.FC<TechnicalPatternsPanelProps> = ({
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <span className="text-xs font-bold text-slate-800 truncate">{pattern.name}</span>
                           <span
-                            className="text-[10px] px-1.5 py-0.5 rounded-md font-mono font-bold flex-shrink-0"
+                            className="text-xs px-1.5 py-0.5 rounded-md font-mono font-bold flex-shrink-0"
                             style={{ backgroundColor: patternColor(pattern.type) + '15', color: patternColor(pattern.type) }}
                           >
                             ${pattern.price.toFixed(2)}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{pattern.explanation}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{pattern.explanation}</p>
                         {pattern.indicatorConfirmation && (
                           <div className="mt-2 p-2 rounded-xl bg-violet-50/80 border border-violet-200/80 space-y-1">
-                            <span className="text-[10px] font-mono font-bold uppercase text-violet-800 flex items-center gap-1">
+                            <span className="text-xs font-mono font-bold text-violet-800 flex items-center gap-1">
                               <Sliders className="w-3 h-3 text-violet-600" />
                               Confirmación de Indicadores (EMA 200 · RSI · MACD):
                             </span>
@@ -162,16 +162,16 @@ export const TechnicalPatternsPanel: React.FC<TechnicalPatternsPanelProps> = ({
                           </div>
                         )}
                         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md ${
+                          <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded-md ${
                             pattern.significance === 'alta'
                               ? 'bg-rose-50 text-rose-700'
                               : pattern.significance === 'media'
                               ? 'bg-amber-50 text-amber-700'
                               : 'bg-slate-100 text-slate-500'
                           }`}>
-                            {pattern.significance === 'alta' ? '⚡ Alta' : pattern.significance === 'media' ? '● Media' : '○ Baja'} significancia
+                            {pattern.significance === 'alta' ? 'Alta' : pattern.significance === 'media' ? '● Media' : '○ Baja'} significancia
                           </span>
-                          <span className="text-[10px] text-slate-400 font-mono">{pattern.startDate} → {pattern.endDate}</span>
+                          <span className="text-xs text-slate-500 font-mono">{pattern.startDate} → {pattern.endDate}</span>
                         </div>
                       </div>
                     </div>

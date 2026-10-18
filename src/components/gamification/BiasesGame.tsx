@@ -38,13 +38,13 @@ export const BiasesGame: React.FC<BiasesGameProps> = ({ onAddXP }) => {
       <div className="border-b border-[var(--color-border)] pb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold text-purple-600 uppercase">Juego 4 de 4</span>
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-700 font-bold">
+            <span className="text-xs font-mono font-bold text-purple-600">Juego 4 de 4</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-700 font-bold">
               Psicología del Inversor · Aciertos: {biasScore} / {BIAS_GAME_CASES.length}
             </span>
           </div>
           <h3 className="text-xl font-bold text-slate-900 font-serif mt-1">
-            Detector de Sesgos Conductuales del Inversor
+            Detecta tus sesgos
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
             Identifica las trampas psicológicas que destruyen el patrimonio de los inversores minoristas.
@@ -53,7 +53,7 @@ export const BiasesGame: React.FC<BiasesGameProps> = ({ onAddXP }) => {
         <span className="text-xs font-mono text-slate-500">Dilema {biasIndex + 1} de {BIAS_GAME_CASES.length}</span>
       </div>
 
-      <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-5">
+      <div className="bg-slate-950 p-6 rounded-lg border border-slate-800 space-y-5">
         <h4 className="text-lg font-bold text-white font-serif">{currentBiasCase.title}</h4>
         <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-900 p-4 rounded-xl border border-slate-800">
           {currentBiasCase.scenario}
@@ -91,7 +91,7 @@ export const BiasesGame: React.FC<BiasesGameProps> = ({ onAddXP }) => {
                 onClick={handleNextBiasCase}
                 className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold text-xs transition-all active:scale-95"
               >
-                Siguiente Dilema →
+                Siguiente dilema
               </button>
             </div>
             <p className="text-xs text-slate-300">{currentBiasCase.explanation}</p>

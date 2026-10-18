@@ -95,7 +95,7 @@ export const SmartTooltip: React.FC<SmartTooltipProps> = ({
           if (!isOpen) handleOpen();
           else setIsOpen(false);
         }}
-        className={`inline-flex items-center justify-center rounded-full text-slate-400 hover:text-accent hover:bg-accent-light focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 transition-colors ${iconBtnSizeClass}`}
+        className={`inline-flex items-center justify-center rounded-full text-slate-500 hover:text-accent hover:bg-accent-light focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 transition-colors ${iconBtnSizeClass}`}
         aria-label={conceptData?.term ? `Explicación de ${conceptData.term}` : 'Ayuda y explicación en lenguaje simple'}
         title={conceptData?.term ? `¿Qué es ${conceptData.term}?` : 'Explicación sencilla'}
       >
@@ -111,11 +111,11 @@ export const SmartTooltip: React.FC<SmartTooltipProps> = ({
           <div className="flex items-start justify-between gap-2 mb-2">
             <div>
               <span className="font-semibold text-slate-900">{conceptData.term}</span>
-              <span className="block text-[10px] text-slate-500 font-mono uppercase tracking-wider mt-0.5">
+              <span className="block text-xs text-slate-500 font-mono mt-0.5">
                 {conceptData.simpleAlias}
               </span>
             </div>
-            <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full border ${
+            <span className={`text-xs font-mono px-1.5 py-0.5 rounded-full border ${
               conceptData.category === 'rentabilidad' ? 'bg-green-50 text-success border border-green-200' :
               conceptData.category === 'valoracion' ? 'bg-orange-50 text-warning border border-orange-200' :
               conceptData.category === 'solvencia' ? 'bg-rose-50 text-danger border border-rose-200' :
@@ -134,7 +134,7 @@ export const SmartTooltip: React.FC<SmartTooltipProps> = ({
           {/* Analogía si está disponible y es primera vez */}
           {!hasBeenSeen && conceptData.analogy && (
             <div className="mb-2 p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-              <span className="text-[10px] font-semibold text-slate-500 block mb-1">💡 Analogía</span>
+              <span className="text-xs font-semibold text-slate-500 block mb-1">Analogía</span>
               <p className="text-xs text-slate-600 leading-relaxed italic">
                 {conceptData.analogy}
               </p>

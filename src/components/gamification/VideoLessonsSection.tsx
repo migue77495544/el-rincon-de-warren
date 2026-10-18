@@ -25,10 +25,10 @@ export const VideoLessonsSection: React.FC<VideoLessonsSectionProps> = ({ onAddX
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Reproductor de Video Activo */}
-        <div className="lg:col-span-8 bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-4">
+        <div className="lg:col-span-8 bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-[10px] font-mono uppercase font-bold text-slate-400">
+              <span className="text-xs font-mono font-bold text-slate-500">
                 Video Lección Activa · {currentVideo.duration}
               </span>
               <h3 className="text-lg font-bold text-white font-serif mt-0.5">
@@ -41,7 +41,7 @@ export const VideoLessonsSection: React.FC<VideoLessonsSectionProps> = ({ onAddX
           </div>
 
           {/* Contenedor del Reproductor de Video */}
-          <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black border border-slate-800 relative shadow-2xl">
+          <div className="aspect-video w-full rounded-lg overflow-hidden bg-black border border-slate-800 relative shadow-2xl">
             <iframe
               className="w-full h-full"
               src={`https://www.youtube.com/embed/${currentVideo.youtubeId}?rel=0&modestbranding=1`}
@@ -54,9 +54,9 @@ export const VideoLessonsSection: React.FC<VideoLessonsSectionProps> = ({ onAddX
           {/* Conceptos Clave y Resumen */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-slate-400 font-medium">Conceptos evaluados:</span>
+              <span className="text-xs text-slate-500 font-medium">Conceptos evaluados:</span>
               {currentVideo.concepts.map((c, i) => (
-                <span key={i} className="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-bold">
+                <span key={i} className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-bold">
                   {c}
                 </span>
               ))}
@@ -67,7 +67,7 @@ export const VideoLessonsSection: React.FC<VideoLessonsSectionProps> = ({ onAddX
             </p>
 
             <div className="flex items-center justify-between pt-2">
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-500">
                 Recompensa por asimilar el concepto: <strong className="text-emerald-400">+{currentVideo.xpReward} XP</strong>
               </span>
               <button
@@ -87,8 +87,8 @@ export const VideoLessonsSection: React.FC<VideoLessonsSectionProps> = ({ onAddX
 
         {/* Lista de Reproducción Lateral */}
         <div className="lg:col-span-4 space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1 font-mono">
-            Catálogo de Lecciones en Video ({EDUCATIONAL_VIDEOS.length})
+          <h4 className="text-xs font-bold text-slate-500 px-1 font-mono">
+            Lecciones en vídeo ({EDUCATIONAL_VIDEOS.length})
           </h4>
           <div className="space-y-2">
             {EDUCATIONAL_VIDEOS.map(v => {
@@ -98,16 +98,16 @@ export const VideoLessonsSection: React.FC<VideoLessonsSectionProps> = ({ onAddX
                 <div
                   key={v.id}
                   onClick={() => setActiveVideoId(v.id)}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                  className={`p-4 rounded-lg border cursor-pointer transition-all ${
                     isPlaying
-                      ? 'bg-slate-900 border-white/20 shadow-md'
+                      ? 'bg-slate-900 border-white/20'
                       : 'bg-slate-950 border-slate-800 hover:border-slate-700'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="text-[10px] font-mono text-slate-500">{v.duration}</span>
+                    <span className="text-xs font-mono text-slate-500">{v.duration}</span>
                     {isDone && (
-                      <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                      <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" /> Visto
                       </span>
                     )}
@@ -115,7 +115,7 @@ export const VideoLessonsSection: React.FC<VideoLessonsSectionProps> = ({ onAddX
                   <h5 className={`text-xs font-bold mt-1 ${isPlaying ? 'text-white' : 'text-slate-200'}`}>
                     {v.title}
                   </h5>
-                  <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                  <p className="text-xs text-slate-500 mt-1 line-clamp-2">
                     {v.subtitle}
                   </p>
                 </div>

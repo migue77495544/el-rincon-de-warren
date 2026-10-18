@@ -1,22 +1,12 @@
 import React from 'react';
-import { motion } from 'motion/react';
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 
-// Entrada suave de tarjetas y gráficos (respeta prefers-reduced-motion vía CSS global)
+// Contenedor de bloque. Antes animaba la entrada de cada tarjeta; ahora el contenido
+// aparece sin cascada (el movimiento queda para las respuestas a acciones del usuario).
 export const Reveal: React.FC<{ children: React.ReactNode; delay?: number; className?: string }> = ({
   children,
-  delay = 0,
   className
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.4, delay, ease: [0.22, 1, 0.36, 1] }}
-    className={className}
-  >
-    {children}
-  </motion.div>
-);
+}) => <div className={className}>{children}</div>;
 
 // Estado de carga elegante: barras con barrido de luz y un rótulo discreto
 export const LoadingSkeleton: React.FC<{ label?: string; rows?: number; className?: string }> = ({
@@ -39,7 +29,7 @@ export const LoadingSkeleton: React.FC<{ label?: string; rows?: number; classNam
       ))}
     </div>
     {label && (
-      <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500">
+      <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60 animate-ping" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
@@ -53,9 +43,9 @@ export const LoadingSkeleton: React.FC<{ label?: string; rows?: number; classNam
 export type StatusTone = 'green' | 'yellow' | 'red';
 
 const TONE_STYLES: Record<StatusTone, { cls: string; Icon: typeof CheckCircle2 }> = {
-  green: { cls: 'bg-emerald-50 text-emerald-800 border-emerald-200 ring-emerald-500/10', Icon: CheckCircle2 },
-  yellow: { cls: 'bg-amber-50 text-amber-800 border-amber-200 ring-amber-500/10', Icon: AlertTriangle },
-  red: { cls: 'bg-rose-50 text-rose-800 border-rose-200 ring-rose-500/10', Icon: XCircle }
+  green: { cls: 'bg-emerald-50 text-emerald-800 border-emerald-200', Icon: CheckCircle2 },
+  yellow: { cls: 'bg-amber-50 text-amber-800 border-amber-200', Icon: AlertTriangle },
+  red: { cls: 'bg-rose-50 text-rose-800 border-rose-200', Icon: XCircle }
 };
 
 // Badge de estado con color semántico (verde = sano, ámbar = atención, rojo = riesgo)
@@ -68,7 +58,7 @@ export const StatusBadge: React.FC<{ tone: StatusTone; children: React.ReactNode
   return (
     <span
       title={title}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ring-4 ${cls}`}
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border ${cls}`}
     >
       <Icon className="w-3.5 h-3.5" />
       {children}

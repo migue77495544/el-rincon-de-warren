@@ -87,24 +87,24 @@ export const RiskMetricsCard: React.FC<RiskMetricsCardProps> = ({ ticker, compan
     v ? (
       <>
         <span className="font-mono font-bold text-slate-800">{money(v[campo])}</span>
-        <span className="block text-[10px] font-mono text-slate-400">{pct(v[`${campo}_pct`])}</span>
+        <span className="block text-xs font-mono text-slate-500">{pct(v[`${campo}_pct`])}</span>
       </>
     ) : (
-      <span className="text-[10px] text-slate-400">No disponible</span>
+      <span className="text-xs text-slate-500">No disponible</span>
     );
 
   return (
-    <div className="mt-5 p-5 bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-300">
+    <div className="mt-5 p-5 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-300">
       {/* Encabezado */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shadow-2xs">
+          <div className="w-10 h-10 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shadow-2xs">
             <ShieldAlert className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-slate-900 tracking-tight">Medidas de Riesgo (VaR y CVaR)</h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-100">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100">
                 Analista
               </span>
               <InfoTooltip concept="valueAtRisk" />
@@ -163,7 +163,7 @@ export const RiskMetricsCard: React.FC<RiskMetricsCardProps> = ({ ticker, compan
       {loading && !data ? (
         <LoadingSkeleton label="Calculando VaR y CVaR (Normal, EWMA y Random Forest)..." />
       ) : error ? (
-        <div className="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-between gap-3 text-xs text-rose-700">
+        <div className="mt-4 p-4 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-between gap-3 text-xs text-rose-700">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
             <span>{error}</span>
@@ -183,38 +183,38 @@ export const RiskMetricsCard: React.FC<RiskMetricsCardProps> = ({ ticker, compan
               const v = accion[key];
               return (
                 <div key={key} className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 font-mono flex items-center gap-1 mb-1.5">
+                  <span className="text-xs font-bold text-slate-500 font-mono flex items-center gap-1 mb-1.5">
                     <Icon className="w-3 h-3 text-rose-500" />
                     {label}
                   </span>
                   {v ? (
                     <>
                       <div className="flex items-baseline justify-between gap-2">
-                        <span className="text-[10px] font-bold text-slate-400">VaR {nivel}</span>
+                        <span className="text-xs font-bold text-slate-500">VaR {nivel}</span>
                         <span className="text-lg font-mono font-bold text-rose-600">{money(v.var)}</span>
                       </div>
                       <div className="flex items-baseline justify-between gap-2">
-                        <span className="text-[10px] font-bold text-slate-400">CVaR</span>
+                        <span className="text-xs font-bold text-slate-500">CVaR</span>
                         <span className="text-lg font-mono font-bold text-rose-800">{money(v.cvar)}</span>
                       </div>
                     </>
                   ) : (
                     <span className="text-xs text-slate-500">No disponible sin el motor Python</span>
                   )}
-                  <span className="text-[10px] text-slate-400 mt-1">{descripcion}</span>
+                  <span className="text-xs text-slate-500 mt-1">{descripcion}</span>
                 </div>
               );
             })}
           </div>
 
           {/* Tabla comparativa acción vs benchmark */}
-          <div className="overflow-x-auto rounded-2xl border border-slate-200">
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
             <table className="w-full text-xs">
               <thead className="bg-slate-50 text-slate-500">
                 <tr>
-                  <th className="text-left font-bold uppercase tracking-wide text-[10px] px-4 py-2.5">Métrica</th>
+                  <th className="text-left font-bold text-xs px-4 py-2.5">Métrica</th>
                   {data.activos.map(a => (
-                    <th key={a.ticker} className="text-right font-bold uppercase tracking-wide text-[10px] px-4 py-2.5">{a.nombre}</th>
+                    <th key={a.ticker} className="text-right font-bold text-xs px-4 py-2.5">{a.nombre}</th>
                   ))}
                 </tr>
               </thead>
@@ -243,14 +243,14 @@ export const RiskMetricsCard: React.FC<RiskMetricsCardProps> = ({ ticker, compan
             </table>
           </div>
 
-          <p className="text-[10px] text-slate-400">
+          <p className="text-xs text-slate-500">
             {data.observaciones} retornos logarítmicos diarios · tasa libre de riesgo {pct(data.tasa_libre_riesgo)}
             {data.source === 'yfinance' ? ' (FRED DGS10)' : ' (supuesta)'} · rendimiento de mercado {pct(data.rendimiento_mercado)} ·
             fuente: {data.source === 'yfinance' ? 'motor Python (yfinance)' : 'Yahoo Finance directo'}
           </p>
 
           {/* Explicación pedagógica */}
-          <div className="p-4 rounded-2xl bg-rose-50/60 border border-rose-100 text-xs text-slate-700">
+          <div className="p-4 rounded-lg bg-rose-50/60 border border-rose-100 text-xs text-slate-700">
             <div className="flex items-center gap-2 font-bold text-rose-900 mb-1.5">
               <HelpCircle className="w-4 h-4 text-rose-600" />
               <span>¿Cómo leer esta tabla?</span>
@@ -260,7 +260,7 @@ export const RiskMetricsCard: React.FC<RiskMetricsCardProps> = ({ ticker, compan
               El <strong>CVaR</strong> es la pérdida media en los días que sí lo superan. Si los tres métodos discrepan mucho,
               el riesgo reciente (EWMA) o las colas gruesas (Random Forest) cuentan una historia distinta a la campana normal.
             </p>
-            <div className="font-mono text-center p-2 bg-white/80 rounded-lg border border-rose-200/60 text-[11px] font-bold text-slate-800">
+            <div className="font-mono text-center p-2 bg-white/80 rounded-lg border border-rose-200/60 text-xs font-bold text-slate-800">
               VaR = −σ·z · CVaR = σ·φ(z)/(1−c) · σ²ₜ (EWMA) = λσ²ₜ₋₁ + (1−λ)r²ₜ₋₁ · CAPM = r_f + β(R_m − r_f)
             </div>
           </div>

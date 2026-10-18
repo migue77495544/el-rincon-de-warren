@@ -82,7 +82,7 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
       {/* Barra superior de controles */}
       <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
         {/* SWITCH NATIVO: CandlestickSeries vs LineSeries */}
-        <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 shadow-2xs">
           <button
             onClick={() => onToggleChartType('candlestick')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
@@ -111,8 +111,8 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
         </div>
 
         {/* Selector de Temporalidad de Velas (Intervalo: 1D, 1S, 1M) */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase px-1 font-mono flex items-center gap-1">
+        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg border border-slate-200 shadow-2xs">
+          <span className="text-xs font-bold text-slate-500 px-1 font-mono flex items-center gap-1">
             <Clock className="w-3 h-3 text-slate-500" />
             <span className="hidden lg:inline">Velas:</span>
           </span>
@@ -129,7 +129,7 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
                 onClick={() => onSelectInterval(item.id as ChartInterval)}
                 className={`px-2.5 py-1 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
                   selectedInterval === item.id
-                    ? 'bg-white text-indigo-700 shadow-xs border border-slate-200 font-extrabold ring-1 ring-indigo-500/20'
+                    ? 'bg-white text-indigo-700 shadow-xs border border-slate-200 font-semibold ring-1 ring-indigo-500/20'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                 }`}
                 title={item.title}
@@ -141,8 +141,8 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
         </div>
 
         {/* Selector de Período Histórico (Rango: 1M, 3M, 6M, 1A, 5A, MAX) */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase px-1 font-mono flex items-center gap-1">
+        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg border border-slate-200 shadow-2xs">
+          <span className="text-xs font-bold text-slate-500 px-1 font-mono flex items-center gap-1">
             <Calendar className="w-3 h-3 text-slate-500" />
             <span className="hidden lg:inline">Rango:</span>
           </span>
@@ -162,7 +162,7 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
                 onClick={() => onSelectPeriod(tab.id as ChartPeriod)}
                 className={`px-2 py-1 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
                   selectedPeriod === tab.id
-                    ? 'bg-white text-indigo-700 shadow-xs border border-slate-200 font-extrabold ring-1 ring-indigo-500/20'
+                    ? 'bg-white text-indigo-700 shadow-xs border border-slate-200 font-semibold ring-1 ring-indigo-500/20'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                 }`}
                 title={tab.title}
@@ -174,7 +174,7 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
         </div>
 
         {/* Botones de Zoom y Navegación */}
-        <div className="flex items-center gap-0.5 bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="flex items-center gap-0.5 bg-slate-100 p-1 rounded-lg border border-slate-200 shadow-2xs">
           <button
             onClick={onZoomIn}
             className="p-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white transition-all cursor-pointer"
@@ -236,7 +236,7 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-mono font-medium border transition-all cursor-pointer ${
               showEma20
                 ? 'bg-cyan-50 text-cyan-900 border-cyan-300 font-bold shadow-2xs ring-1 ring-cyan-400/20'
-                : 'bg-slate-50 text-slate-400 border-slate-200 line-through opacity-60'
+                : 'bg-slate-50 text-slate-500 border-slate-200 line-through opacity-60'
             }`}
             title="Mostrar / Ocultar Media Móvil Exponencial rápida (EMA 20 períodos)"
           >
@@ -250,7 +250,7 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-mono font-medium border transition-all cursor-pointer ${
               showEma50
                 ? 'bg-amber-50 text-amber-900 border-amber-300 font-bold shadow-2xs ring-1 ring-amber-400/20'
-                : 'bg-slate-50 text-slate-400 border-slate-200 line-through opacity-60'
+                : 'bg-slate-50 text-slate-500 border-slate-200 line-through opacity-60'
             }`}
             title="Mostrar / Ocultar Media Móvil Exponencial intermedia (EMA 50 períodos)"
           >
@@ -264,7 +264,7 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-mono font-medium border transition-all cursor-pointer ${
               showEma200
                 ? 'bg-purple-50 text-purple-900 border-purple-300 font-bold shadow-2xs ring-1 ring-purple-400/20'
-                : 'bg-slate-50 text-slate-400 border-slate-200 line-through opacity-60'
+                : 'bg-slate-50 text-slate-500 border-slate-200 line-through opacity-60'
             }`}
             title="Mostrar / Ocultar Media Móvil Exponencial de largo plazo (EMA 200 períodos)"
           >
@@ -277,7 +277,7 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-medium border transition-all cursor-pointer ${
               showVolume
                 ? 'bg-slate-100 text-slate-800 border-slate-300 font-bold'
-                : 'bg-slate-50 text-slate-400 border-slate-200 line-through opacity-60'
+                : 'bg-slate-50 text-slate-500 border-slate-200 line-through opacity-60'
             }`}
           >
             <Layers className="w-3.5 h-3.5 text-slate-500" />
@@ -290,7 +290,7 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-medium border transition-all cursor-pointer ${
                 showTargetLine
                   ? 'bg-indigo-50 text-indigo-900 border-indigo-300 font-bold shadow-2xs'
-                  : 'bg-slate-50 text-slate-400 border-slate-200 line-through opacity-60'
+                  : 'bg-slate-50 text-slate-500 border-slate-200 line-through opacity-60'
               }`}
               title="Mostrar/Ocultar línea de Precio Objetivo Promedio de analistas"
             >
@@ -304,7 +304,7 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-medium border transition-all cursor-pointer ${
               showConsensusLine
                 ? 'bg-indigo-50 text-indigo-900 border-indigo-300 font-bold shadow-2xs'
-                : 'bg-slate-50 text-slate-400 border-slate-200 line-through opacity-60'
+                : 'bg-slate-50 text-slate-500 border-slate-200 line-through opacity-60'
             }`}
             title="Mostrar/Ocultar línea de Precio Objetivo de Wall Street"
           >

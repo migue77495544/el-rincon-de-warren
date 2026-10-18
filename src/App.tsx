@@ -1,4 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { MotionConfig } from 'motion/react';
 import { Navbar, AppTab } from './components/Navbar';
 import { ViewModeProvider } from './context/ViewModeContext';
 import { useViewMode } from './context/ViewModeContext';
@@ -6,7 +7,6 @@ import { ViewMode } from './types';
 import { FundamentalEngine } from './components/FundamentalEngine';
 import { InstantFeedbackModal } from './components/InstantFeedbackModal';
 import { WarrenFAB } from './components/WarrenFAB';
-import { OnboardingFlow } from './components/OnboardingFlow';
 import {
   CompanyAnalysis,
   PortfolioStats,
@@ -523,8 +523,7 @@ function AppContent() {
       )}
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-        {/* La clave reinicia la animación de entrada al cambiar de sección */}
-        <div key={activeTab} className="animate-rise">
+        <div key={activeTab}>
         <Suspense fallback={<CargandoSeccion />}>
         {activeTab === 'fundamental' && (
           <FundamentalEngine
@@ -636,8 +635,6 @@ function AppContent() {
         <WarrenFAB />
       )}
 
-      {/* Onboarding Flow - first visit in Simple mode */}
-      <OnboardingFlow />
 
       <footer className="border-t border-slate-200 py-6 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
@@ -645,7 +642,7 @@ function AppContent() {
             <span className="font-serif font-semibold text-slate-700">El Rincón de Warren</span>
             {' '}es un prototipo educativo de Value Investing y econometría conductual.
           </p>
-          <p className="m-0 text-slate-400">No constituye asesoramiento financiero.</p>
+          <p className="m-0 text-slate-500">No constituye asesoramiento financiero.</p>
         </div>
       </footer>
     </div>
@@ -654,8 +651,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ViewModeProvider>
-      <AppContent />
-    </ViewModeProvider>
+    <MotionConfig reducedMotion="user">
+      <ViewModeProvider>
+        <AppContent />
+      </ViewModeProvider>
+    </MotionConfig>
   );
 }

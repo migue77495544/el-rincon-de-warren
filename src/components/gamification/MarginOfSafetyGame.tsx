@@ -28,32 +28,32 @@ export const MarginOfSafetyGame: React.FC<MarginOfSafetyGameProps> = ({ onAddXP 
     <div className="bg-white rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-6 sm:p-8 space-y-6">
       <div className="border-b border-[var(--color-border)] pb-5">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 font-mono uppercase">Juego 2 · Margen de Seguridad</span>
-          <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 font-bold">
+          <span className="text-xs text-slate-500 font-mono">Juego 2 · Margen de Seguridad</span>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 font-bold">
             Principio Fundamental de Benjamin Graham
           </span>
         </div>
         <h3 className="text-xl font-bold text-slate-900 font-serif mt-1">
-          El Desafío del Consenso de Analistas
+          El desafío del consenso de analistas
         </h3>
         <p className="text-xs text-slate-500 mt-0.5">
           El Precio Objetivo de consenso de analistas es de <strong>$100.00</strong>. Ajusta tu precio máximo de compra para asegurarte un descuento suficiente que te proteja ante caídas de Mr. Market.
         </p>
       </div>
 
-      <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6">
+      <div className="bg-slate-950 p-6 rounded-lg border border-slate-800 space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div className="p-4 bg-slate-900 rounded-xl border border-slate-800">
-            <span className="text-xs text-slate-400 block font-medium">Consenso de Analistas (Precio Objetivo)</span>
-            <span className="text-2xl font-black text-white font-mono">$100.00</span>
+            <span className="text-xs text-slate-500 block font-medium">Consenso de Analistas (Precio Objetivo)</span>
+            <span className="text-2xl font-semibold text-white font-mono">$100.00</span>
           </div>
           <div className="p-4 bg-slate-900 rounded-xl border border-slate-800">
-            <span className="text-xs text-slate-400 block font-medium">Tu Precio Límite de Entrada</span>
-            <span className="text-2xl font-black text-white font-mono">${mosPrice}.00</span>
+            <span className="text-xs text-slate-500 block font-medium">Tu Precio Límite de Entrada</span>
+            <span className="text-2xl font-semibold text-white font-mono">${mosPrice}.00</span>
           </div>
           <div className="p-4 bg-slate-900 rounded-xl border border-slate-800">
-            <span className="text-xs text-slate-400 block font-medium">Descuento vs Consenso</span>
-            <span className={`text-2xl font-black font-mono ${currentMosPercent >= 20 ? 'text-emerald-400' : 'text-slate-300'}`}>
+            <span className="text-xs text-slate-500 block font-medium">Descuento vs Consenso</span>
+            <span className={`text-2xl font-semibold font-mono ${currentMosPercent >= 20 ? 'text-emerald-400' : 'text-slate-300'}`}>
               {currentMosPercent > 0 ? `${currentMosPercent}%` : '0%'}
             </span>
           </div>
@@ -78,7 +78,7 @@ export const MarginOfSafetyGame: React.FC<MarginOfSafetyGameProps> = ({ onAddXP 
             }}
             className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-slate-400"
           />
-          <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+          <div className="flex justify-between text-xs text-slate-500 font-mono">
             <span>$40 (60% Dto - Ganga)</span>
             <span>$75 (25% Dto - Graham)</span>
             <span>$100 (0% Dto)</span>
@@ -89,7 +89,7 @@ export const MarginOfSafetyGame: React.FC<MarginOfSafetyGameProps> = ({ onAddXP 
         {!mosSubmitted ? (
           <button
             onClick={handleExecuteMosOrder}
-            className="w-full py-3.5 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs sm:text-sm rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
           >
             <Target className="w-4 h-4" />
             <span>Lanzar Orden y Comprobar Precio vs Consenso</span>

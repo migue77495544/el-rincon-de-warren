@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { InvestmentThesis } from '../../types';
-import { MessageSquare, Plus, ThumbsUp, MessageSquareShare } from 'lucide-react';
+import { MessageSquare, Plus, ThumbsUp, MessageSquareShare, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { InfoTooltip } from '../SmartTooltip';
 
@@ -56,13 +56,13 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
 
   return (
     <div className="border-t border-slate-800 pt-8 space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 p-5 rounded-3xl border border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 p-5 rounded-2xl border border-slate-800">
         <div>
           <h3 className="text-lg font-bold text-white flex items-center gap-2 font-serif">
-            <MessageSquare className="w-5 h-5 text-slate-400" />
-            Foro Social de Tesis de Inversión y Comunidad
+            <MessageSquare className="w-5 h-5 text-slate-500" />
+            Tesis de la comunidad
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Comparte tus análisis fundamentales (Bottom-Up), evalúa los fosos de las empresas y delibera colectivamente con otros inversores disciplinados.
           </p>
         </div>
@@ -80,7 +80,7 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
         {theses.map(t => (
           <div
             key={t.id}
-            className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3.5 shadow-sm hover:border-slate-700 transition-all flex flex-col justify-between"
+            className="bg-slate-900 rounded-lg p-5 border border-slate-800 space-y-3.5 shadow-sm hover:border-slate-700 transition-all flex flex-col justify-between"
           >
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-3">
@@ -94,7 +94,7 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
                     <span className="text-xs font-bold text-white block">
                       {t.author}
                     </span>
-                    <span className="text-[10px] text-slate-500 font-mono">
+                    <span className="text-xs text-slate-500 font-mono">
                       {t.createdAt}
                     </span>
                   </div>
@@ -113,14 +113,14 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
               </p>
 
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1 text-xs">
-                <span className="font-semibold text-slate-300 text-[11px] flex items-center">
+                <span className="font-semibold text-slate-300 text-xs flex items-center">
                   Foso Defensivo (Economic Moat):
                   <InfoTooltip concept="foso" />
                 </span>
-                <p className="text-slate-400 text-[11px]">
+                <p className="text-slate-500 text-xs">
                   {t.moatAnalysis}
                 </p>
-                <div className="flex justify-between items-center pt-2 mt-1 text-[10px] text-slate-400 border-t border-slate-800/60 font-mono">
+                <div className="flex justify-between items-center pt-2 mt-1 text-xs text-slate-500 border-t border-slate-800/60 font-mono">
                   <span className="flex items-center">
                     Margen de Seguridad:
                     <InfoTooltip concept="margenSeguridad" />
@@ -134,7 +134,7 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
             <div className="flex items-center justify-between pt-3 border-t border-slate-800/80 text-xs">
               <div className="flex items-center gap-1.5 flex-wrap">
                 {t.badges.map((b, i) => (
-                  <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                  <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
                     {b}
                   </span>
                 ))}
@@ -157,23 +157,24 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
       {/* Modal para Publicar Nueva Tesis */}
       {showThesisModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div className="flex justify-between items-center pb-3 border-b border-slate-800">
               <h3 className="text-base font-bold text-white flex items-center gap-2 font-serif">
-                <MessageSquareShare className="w-4 h-4 text-slate-400" />
-                Publicar Tesis de Inversión Fundamental
+                <MessageSquareShare className="w-4 h-4 text-slate-500" />
+                Publicar una tesis
               </h3>
               <button
                 onClick={() => setShowThesisModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-500 hover:text-white"
               >
-                ✕
+                <X className="w-4 h-4" aria-hidden="true" />
+                <span className="sr-only">Cerrar</span>
               </button>
             </div>
 
             <form onSubmit={handleCreateThesisSubmit} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1">Ticker / Empresa</label>
+                <label className="block text-slate-500 mb-1">Ticker / Empresa</label>
                 <select
                   value={newThesisForm.ticker}
                   onChange={e => setNewThesisForm({ ...newThesisForm, ticker: e.target.value })}
@@ -188,7 +189,7 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Título de la Tesis</label>
+                <label className="block text-slate-500 mb-1">Título de la Tesis</label>
                 <input
                   type="text"
                   required
@@ -200,7 +201,7 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Argumento Fundamental (Bottom-Up)</label>
+                <label className="block text-slate-500 mb-1">Argumento Fundamental (Bottom-Up)</label>
                 <textarea
                   required
                   rows={3}
@@ -212,7 +213,7 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Análisis de Foso Competitivo (Economic Moat)</label>
+                <label className="block text-slate-500 mb-1">Análisis de Foso Competitivo (Economic Moat)</label>
                 <input
                   type="text"
                   placeholder="ej: Marca global imbatible + poder de fijación de precios"
@@ -224,7 +225,7 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1">Margen de Seguridad Deseado (%)</label>
+                  <label className="block text-slate-500 mb-1">Margen de Seguridad Deseado (%)</label>
                   <input
                     type="number"
                     value={newThesisForm.upsideTarget}
@@ -233,7 +234,7 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1">Horizonte Mínimo (Años)</label>
+                  <label className="block text-slate-500 mb-1">Horizonte Mínimo (Años)</label>
                   <input
                     type="number"
                     value={newThesisForm.recommendedHorizonYears}
@@ -247,13 +248,13 @@ export const ThesisFeed: React.FC<ThesisFeedProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowThesisModal(false)}
-                  className="px-4 py-2 text-slate-400 hover:text-white font-bold"
+                  className="px-4 py-2 text-slate-500 hover:text-white font-bold"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl shadow-md transition-all active:scale-95"
+                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold rounded-xl shadow-md transition-all active:scale-95"
                 >
                   Publicar y Ganar 200 XP
                 </button>

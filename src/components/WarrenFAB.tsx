@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { HelpCircle, X, Sparkles } from 'lucide-react';
+import { ChevronDown, HelpCircle, X } from 'lucide-react';
 
 const FAQ_ITEMS = [
   {
@@ -16,75 +16,102 @@ const FAQ_ITEMS = [
   },
 ];
 
+/** Evento que abre la ayuda desde otro control (botón de la barra superior en móvil) */
+export const OPEN_HELP_EVENT = 'warren:open-help';
+
 export const WarrenFAB: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    const handleOpen = () => setOpen(true);
+    window.addEventListener(OPEN_HELP_EVENT, handleOpen);
+    return () => window.removeEventListener(OPEN_HELP_EVENT, handleOpen);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
         setActiveFaq(null);
       }
     };
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKey);
+    };
   }, [open]);
 
   return (
     <div
       ref={containerRef}
-      className="fixed bottom-6 right-6 z-[var(--z-tooltip)] flex flex-col items-end gap-4"
+      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[var(--z-tooltip)] flex flex-col items-end gap-3"
     >
-      {/* FAQ Panel */}
       {open && (
-        <div className="w-80 max-w-[calc(100vw-48px)] bg-white rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-modal)] animate-in slide-in-from-bottom-2 duration-200">
-          <div className="p-4 border-b border-[var(--color-border)] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-indigo-600" />
-              <h4 className="font-bold text-slate-900 text-sm">Centro de Ayuda</h4>
-            </div>
+        <div
+          id="panel-ayuda"
+          role="dialog"
+          aria-label="Preguntas frecuentes"
+          className="w-80 max-w-[calc(100vw-32px)] bg-white rounded-lg border border-slate-200 shadow-xl animate-fadeIn"
+        >
+          <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+            <h4 className="m-0 font-serif font-semibold text-slate-900 text-base">Preguntas frecuentes</h4>
             <button
+              type="button"
               onClick={() => setOpen(false)}
-              className="w-6 h-6 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500 transition-colors"
+              className="w-8 h-8 rounded-md hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors"
+              aria-label="Cerrar ayuda"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           <div className="max-h-80 overflow-y-auto p-2">
-            {FAQ_ITEMS.map((item, i) => (
-              <div key={i} className="border-b border-slate-100 last:border-0">
-                <button
-                  onClick={() => setActiveFaq(activeFaq === i ? null : i)}
-                  className="w-full px-3 py-2.5 text-left flex items-center justify-between gap-2 transition-colors"
-                >
-                  <span className="text-xs font-medium text-slate-800">{item.q}</span>
-                  <span className={`text-slate-400 transition-transform ${activeFaq === i ? 'rotate-180' : ''}`}>
-                    ▼
-                  </span>
-                </button>
-                {activeFaq === i && (
-                  <div className="px-3 pb-2.5">
-                    <p className="text-xs text-slate-600 leading-relaxed">{item.a}</p>
-                  </div>
-                )}
-              </div>
-            ))}
+            {FAQ_ITEMS.map((item, i) => {
+              const expanded = activeFaq === i;
+              return (
+                <div key={i} className="border-b border-slate-100 last:border-0">
+                  <button
+                    type="button"
+                    onClick={() => setActiveFaq(expanded ? null : i)}
+                    aria-expanded={expanded}
+                    className="w-full px-3 py-2.5 text-left flex items-center justify-between gap-2 rounded-md"
+                  >
+                    <span className="text-sm font-medium text-slate-800">{item.q}</span>
+                    <ChevronDown className={`w-4 h-4 shrink-0 text-slate-500 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                  </button>
+                  {expanded && (
+                    <p className="px-3 pb-3 m-0 text-sm text-slate-600 leading-relaxed">{item.a}</p>
+                  )}
+                </div>
+              );
+            })}
           </div>
-
         </div>
       )}
 
-      {/* Trigger Button */}
+      {/* En móvil el botón flotante tapaba contenido: allí la ayuda se abre desde la barra superior */}
       <button
+        ref={triggerRef}
+        type="button"
         onClick={() => setOpen(!open)}
-        className="w-14 h-14 rounded-full bg-accent hover:bg-accent/90 text-white shadow-[var(--shadow-card)] flex items-center justify-center transition-all duration-200 hover:scale-105"
+        aria-expanded={open}
+        aria-controls="panel-ayuda"
+        aria-label={open ? 'Cerrar ayuda' : 'Abrir preguntas frecuentes'}
+        className="hidden sm:flex w-11 h-11 rounded-full bg-white border border-slate-300 text-slate-700 hover:text-slate-900 hover:border-slate-400 shadow-md items-center justify-center transition-colors"
       >
-        <HelpCircle className="w-6 h-6" />
+        <HelpCircle className="w-5 h-5" />
       </button>
     </div>
   );

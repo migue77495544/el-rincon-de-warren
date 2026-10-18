@@ -79,17 +79,17 @@ const PriceVsValueChart: React.FC<{ op: SuperOpportunity }> = ({ op }) => {
     <div className="space-y-2" role="img" aria-label={`Precio ${fmtUsd(op.precio)} frente a valor intrínseco ${fmtUsd(valor)}`}>
       {rows.map(r => (
         <div key={r.label} className="grid grid-cols-[96px_1fr_auto] items-center gap-2" title={`${r.label}: ${fmtUsd(r.value)}`}>
-          <span className="text-[11px] text-slate-500">{r.label}</span>
+          <span className="text-xs text-slate-500">{r.label}</span>
           <div className="h-3 rounded-r bg-slate-100 overflow-hidden">
             <div className={`h-full rounded-r ${r.bar}`} style={{ width: `${(r.value / max) * 100}%` }} />
           </div>
           <span className="text-xs font-mono font-semibold text-slate-900 w-20 text-right">{fmtUsd(r.value)}</span>
         </div>
       ))}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-500">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-slate-500">
         <span>
           DCF {fmtUsd(op.valorDcf)} · Graham {fmtUsd(op.valorGraham)}
-          {op.metodoValoracion && <span className="text-slate-400"> · se usa {op.metodoValoracion}</span>}
+          {op.metodoValoracion && <span className="text-slate-500"> · se usa {op.metodoValoracion}</span>}
         </span>
         <span className="font-semibold text-[var(--color-success)]">
           Upside {fmtPct(op.upsidePct, 0)} · descuento {fmtPct(op.descuentoPct, 0)}
@@ -101,9 +101,9 @@ const PriceVsValueChart: React.FC<{ op: SuperOpportunity }> = ({ op }) => {
 
 const Metric: React.FC<{ label: string; value: string; ok: boolean; hint: string }> = ({ label, value, ok, hint }) => (
   <div className="p-2.5 rounded-xl border border-[var(--color-border)] bg-slate-50" title={hint}>
-    <div className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">{label}</div>
+    <div className="text-xs text-slate-500 font-semibold">{label}</div>
     <div className="flex items-center gap-1 mt-0.5">
-      {ok ? <CheckCircle2 className="w-3.5 h-3.5 text-[var(--color-success)]" /> : <XCircle className="w-3.5 h-3.5 text-slate-400" />}
+      {ok ? <CheckCircle2 className="w-3.5 h-3.5 text-[var(--color-success)]" /> : <XCircle className="w-3.5 h-3.5 text-slate-500" />}
       <span className="text-sm font-bold font-mono text-slate-900">{value}</span>
     </div>
   </div>
@@ -123,17 +123,17 @@ const OpportunityCard: React.FC<{
   const activos = op.catalizadores.filter(c => c.activo);
 
   return (
-    <article className="p-5 bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)] flex flex-col gap-4">
+    <article className="p-5 bg-[var(--color-bg-elevated)] rounded-lg border border-[var(--color-border)] flex flex-col gap-4">
       {/* Cabecera: identidad + score */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-11 h-11 shrink-0 rounded-xl bg-slate-900 text-white flex flex-col items-center justify-center">
             <SectorIcon className="w-4 h-4 opacity-80" />
-            <span className="text-[9px] font-bold font-mono leading-tight">{op.ticker}</span>
+            <span className="text-xs font-bold font-mono leading-tight">{op.ticker}</span>
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-slate-400">#{rank}</span>
+              <span className="text-xs font-mono text-slate-500">#{rank}</span>
               <h3 className="font-bold text-slate-900 truncate">{op.nombre}</h3>
             </div>
             <p className="text-xs text-slate-500 truncate">
@@ -142,8 +142,8 @@ const OpportunityCard: React.FC<{
           </div>
         </div>
         <div className={`shrink-0 flex flex-col items-center px-3 py-1.5 rounded-xl border ${tone.ring}`} title="Opportunity Score (1-100)">
-          <span className="text-xl font-black leading-none font-mono">{op.score}</span>
-          <span className="text-[9px] font-semibold uppercase tracking-wide">{tone.label}</span>
+          <span className="text-xl font-semibold leading-none font-mono">{op.score}</span>
+          <span className="text-xs font-semibold">{tone.label}</span>
         </div>
       </div>
 
@@ -151,12 +151,12 @@ const OpportunityCard: React.FC<{
 
       {/* Tesis del catalizador */}
       <div className="p-3 rounded-xl bg-[var(--color-success-light)] border border-emerald-100">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-emerald-800 mb-1">Tesis del catalizador</div>
+        <div className="text-xs font-bold text-emerald-800 mb-1">Tesis del catalizador</div>
         <p className="text-xs text-slate-800 leading-relaxed">{op.tesis}</p>
       </div>
 
       {op.alertaDatos && (
-        <div className="flex gap-2 p-2.5 rounded-xl bg-[var(--color-warning-light)] border border-amber-200 text-[11px] text-amber-900">
+        <div className="flex gap-2 p-2.5 rounded-xl bg-[var(--color-warning-light)] border border-amber-200 text-xs text-amber-900">
           <AlertTriangle className="w-4 h-4 shrink-0 text-[var(--color-warning)]" />
           <span>{op.alertaDatos}</span>
         </div>
@@ -182,7 +182,7 @@ const OpportunityCard: React.FC<{
             {c.activo
               ? <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[var(--color-success)]" />
               : <XCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-slate-300" />}
-            <span className={c.activo ? 'text-slate-800' : 'text-slate-400'}>
+            <span className={c.activo ? 'text-slate-800' : 'text-slate-500'}>
               <strong className="font-semibold">{c.nombre}:</strong> {c.detalle}
             </span>
           </li>
@@ -190,7 +190,7 @@ const OpportunityCard: React.FC<{
       </ul>
 
       {expanded && (
-        <div className="grid sm:grid-cols-2 gap-3 text-[11px] text-slate-600 border-t border-[var(--color-border)] pt-3">
+        <div className="grid sm:grid-cols-2 gap-3 text-xs text-slate-600 border-t border-[var(--color-border)] pt-3">
           <div>
             <div className="font-bold text-slate-800 mb-1">Piotroski F-Score</div>
             <ul className="space-y-0.5">
@@ -239,7 +239,7 @@ const OpportunityCard: React.FC<{
           {loading ? 'Cargando datos reales...' : 'Cargar en el DCF'}
         </button>
       </div>
-      {error && <p className="text-[11px] text-[var(--color-danger)]">{error}</p>}
+      {error && <p className="text-xs text-[var(--color-danger)]">{error}</p>}
     </article>
   );
 };
@@ -300,7 +300,7 @@ export const SuperOpportunities: React.FC<SuperOpportunitiesProps> = ({ onLoadCo
   return (
     <div className="space-y-5">
       {/* Cabecera */}
-      <section className="p-5 bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)]">
+      <section className="p-5 bg-[var(--color-bg-elevated)] rounded-lg border border-[var(--color-border)]">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
@@ -309,7 +309,7 @@ export const SuperOpportunities: React.FC<SuperOpportunitiesProps> = ({ onLoadCo
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-slate-900">Superoportunidades</h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
                   Deep Value + Catalizadores
                 </span>
               </div>
@@ -339,7 +339,7 @@ export const SuperOpportunities: React.FC<SuperOpportunitiesProps> = ({ onLoadCo
         </div>
 
         {view?.generadoEn && (
-          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-slate-500">
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500">
             <span>Universo: <strong className="text-slate-800">{view.universo}</strong></span>
             <span>Analizadas: <strong className="text-slate-800">{view.analizadas}</strong></span>
             <span>Líquidas: <strong className="text-slate-800">{view.liquidas}</strong></span>
@@ -381,7 +381,7 @@ export const SuperOpportunities: React.FC<SuperOpportunitiesProps> = ({ onLoadCo
       </section>
 
       {isScanning && (
-        <div className="flex items-center gap-3 p-4 rounded-2xl border border-blue-200 bg-[var(--color-accent-light)] text-xs text-slate-800">
+        <div className="flex items-center gap-3 p-4 rounded-lg border border-blue-200 bg-[var(--color-accent-light)] text-xs text-slate-800">
           <Loader2 className="w-4 h-4 animate-spin text-accent shrink-0" />
           <span>
             {scan?.message}
@@ -391,14 +391,14 @@ export const SuperOpportunities: React.FC<SuperOpportunitiesProps> = ({ onLoadCo
       )}
 
       {scan?.stale && scan.aviso && (
-        <div className="flex items-center gap-2 p-3 rounded-2xl border border-amber-200 bg-[var(--color-warning-light)] text-xs text-amber-900">
+        <div className="flex items-center gap-2 p-3 rounded-lg border border-amber-200 bg-[var(--color-warning-light)] text-xs text-amber-900">
           <AlertTriangle className="w-4 h-4 shrink-0 text-[var(--color-warning)]" />
           <span>{scan.aviso} Se muestra el último escaneo guardado.</span>
         </div>
       )}
 
       {error && (
-        <div className="flex items-center justify-between gap-3 p-4 rounded-2xl border border-red-200 bg-[var(--color-danger-light)] text-xs text-red-900">
+        <div className="flex items-center justify-between gap-3 p-4 rounded-lg border border-red-200 bg-[var(--color-danger-light)] text-xs text-red-900">
           <span>{error}</span>
           <button onClick={() => fetchScan()} className="font-semibold underline shrink-0">Reintentar</button>
         </div>
@@ -406,12 +406,12 @@ export const SuperOpportunities: React.FC<SuperOpportunitiesProps> = ({ onLoadCo
 
       {loading && !scan && !error && (
         <div className="grid lg:grid-cols-2 gap-4">
-          {[0, 1].map(i => <div key={i} className="h-80 rounded-2xl skeleton" />)}
+          {[0, 1].map(i => <div key={i} className="h-80 rounded-lg skeleton" />)}
         </div>
       )}
 
       {view && oportunidades.length === 0 && (
-        <div className="p-6 rounded-2xl border border-dashed border-[var(--color-border-strong)] text-center text-sm text-slate-600">
+        <div className="p-6 rounded-lg border border-dashed border-[var(--color-border-strong)] text-center text-sm text-slate-600">
           Hoy ninguna empresa del universo supera los cinco filtros a la vez. Es un resultado válido: el mercado no siempre ofrece superoportunidades.
         </div>
       )}
@@ -432,13 +432,13 @@ export const SuperOpportunities: React.FC<SuperOpportunitiesProps> = ({ onLoadCo
       )}
 
       {cercanas.length > 0 && (
-        <section className="p-5 bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border)]">
+        <section className="p-5 bg-[var(--color-bg-elevated)] rounded-lg border border-[var(--color-border)]">
           <h3 className="text-sm font-bold text-slate-900">En vigilancia: fallan un solo filtro</h3>
           <p className="text-xs text-slate-500 mb-3">No son superoportunidades; se listan para seguirlas de cerca.</p>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-left text-[10px] uppercase tracking-wide text-slate-500 border-b border-[var(--color-border)]">
+                <tr className="text-left text-xs text-slate-500 border-b border-[var(--color-border)]">
                   <th className="py-2 pr-3">Empresa</th>
                   <th className="py-2 pr-3 text-right">Score</th>
                   <th className="py-2 pr-3 text-right">Upside</th>
@@ -468,7 +468,7 @@ export const SuperOpportunities: React.FC<SuperOpportunitiesProps> = ({ onLoadCo
                       >
                         {loadingTicker === op.ticker ? 'Cargando...' : 'Cargar en el DCF'}
                       </button>
-                      {loadErrors[op.ticker] && <div className="text-[10px] text-[var(--color-danger)]">{loadErrors[op.ticker]}</div>}
+                      {loadErrors[op.ticker] && <div className="text-xs text-[var(--color-danger)]">{loadErrors[op.ticker]}</div>}
                     </td>
                   </tr>
                 ))}

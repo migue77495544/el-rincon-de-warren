@@ -76,7 +76,7 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
   const allApps = [
     {
       id: 'app-fundamental',
-      title: '1. Motor & Visualizador Fundamental',
+      title: 'Análisis fundamental',
       subtitle: 'Visualizador de balance, DuPont, semáforos de liquidez, solvencia, rentabilidad y valoración',
       category: 'Visualizador & Módulo 1',
       icon: BarChart3,
@@ -230,7 +230,7 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-start justify-center pt-16 sm:pt-24 px-4 animate-in fade-in duration-150">
       <div
-        className="bg-white border border-slate-200 rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col transition-all"
+        className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col transition-all"
         onClick={e => e.stopPropagation()}
       >
         {/* iOS Spotlight Search Input Bar */}
@@ -242,7 +242,7 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
             placeholder="Buscar aplicaciones, empresas (AAPL, KO...), heurísticas o acciones..."
             value={query}
             onChange={e => setQuery(e.target.value)}
-            className="w-full bg-transparent text-slate-900 text-sm sm:text-base placeholder-slate-400 focus:outline-none font-sans"
+            className="w-full bg-transparent text-slate-900 text-sm sm:text-base placeholder-slate-500 focus:outline-none font-sans"
           />
           {query && (
             <button
@@ -309,7 +309,7 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
           {/* Section: Aplicaciones y Módulos */}
           {(filterCategory === 'all' || filterCategory === 'apps') && filteredApps.length > 0 && (
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 block font-mono">
+              <span className="text-xs font-bold text-slate-500 px-2 block font-mono">
                 Aplicaciones & Módulos
               </span>
               <div className="grid grid-cols-1 gap-1">
@@ -319,7 +319,7 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
                     <button
                       key={app.id}
                       onClick={app.action}
-                      className="w-full flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 transition-all text-left group border border-transparent hover:border-slate-200"
+                      className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-50 transition-all text-left group border border-transparent hover:border-slate-200"
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-xl ${app.iconBg} flex items-center justify-center text-white shadow-xs shrink-0`}>
@@ -330,16 +330,16 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
                             <span className="font-bold text-slate-900 text-xs sm:text-sm group-hover:text-amber-600 transition-colors">
                               {app.title}
                             </span>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
                               {app.category}
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">
+                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
                             {app.subtitle}
                           </p>
                         </div>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-800 group-hover:translate-x-0.5 transition-all shrink-0" />
+                      <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-slate-800 group-hover:translate-x-0.5 transition-all shrink-0" />
                     </button>
                   );
                 })}
@@ -350,14 +350,14 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
           {/* Section: Empresas & Tickers */}
           {(filterCategory === 'all' || filterCategory === 'companies') && filteredCompanies.length > 0 && (
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 block font-mono">
+              <span className="text-xs font-bold text-slate-500 px-2 block font-mono">
                 Empresas Cotizadas & Análisis Fundamental
               </span>
               <div className="grid grid-cols-1 gap-1">
                 {filteredCompanies.map(comp => (
                   <div
                     key={comp.id}
-                    className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 transition-all text-left group border border-transparent hover:border-slate-200"
+                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-50 transition-all text-left group border border-transparent hover:border-slate-200"
                   >
                     <button
                       onClick={() => {
@@ -378,7 +378,7 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
                           <span className="text-slate-600 font-medium text-xs">
                             {comp.nombre}
                           </span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
                             comp.linearScore >= 80 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
                             comp.linearScore >= 60 ? 'bg-amber-50 text-amber-800 border border-amber-200' :
                             'bg-rose-50 text-rose-800 border border-rose-200'
@@ -386,10 +386,10 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
                             Score: {comp.linearScore} ({comp.scoreGrade})
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] text-slate-500 mt-0.5">
+                        <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
                           <span>Precio: <strong className="text-slate-900 font-mono">${comp.raw.precioCotizacion.toFixed(2)}</strong></span>
                           <span>Margen de Seg.: <strong className={comp.targetConsensus?.upside_potential > 0 ? 'text-emerald-700' : 'text-rose-700'}>{comp.targetConsensus ? `${comp.targetConsensus.upside_potential > 0 ? '+' : ''}${Math.round(comp.targetConsensus.upside_potential * 10) / 10}%` : 'N/D'}</strong></span>
-                          <span className="hidden sm:inline text-slate-400 truncate max-w-[220px]">Foso: {comp.moat}</span>
+                          <span className="hidden sm:inline text-slate-500 truncate max-w-[220px]">Foso: {comp.moat}</span>
                         </div>
                       </div>
                     </button>
@@ -399,7 +399,7 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
                         onSelectForSimulation(comp.ticker);
                         onClose();
                       }}
-                      className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-amber-50 hover:bg-amber-500 text-amber-800 hover:text-slate-950 border border-amber-200 transition-all shrink-0 ml-2 shadow-xs"
+                      className="px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-500 text-amber-800 hover:text-slate-950 border border-amber-200 transition-all shrink-0 ml-2 shadow-xs"
                     >
                       Simular
                     </button>
@@ -412,7 +412,7 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
           {/* Section: Heurísticas & Principios de Warren */}
           {(filterCategory === 'all' || filterCategory === 'heuristics') && filteredHeuristics.length > 0 && (
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 block font-mono">
+              <span className="text-xs font-bold text-slate-500 px-2 block font-mono">
                 Heurísticas & Principios de Inversión
               </span>
               <div className="grid grid-cols-1 gap-1">
@@ -422,7 +422,7 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
                     <button
                       key={h.id}
                       onClick={h.action}
-                      className="w-full flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 transition-all text-left group border border-transparent hover:border-slate-200"
+                      className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-50 transition-all text-left group border border-transparent hover:border-slate-200"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
@@ -433,16 +433,16 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
                             <span className="font-bold text-slate-900 text-xs group-hover:text-amber-700 transition-colors">
                               {h.title}
                             </span>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
                               {h.tag}
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">
+                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
                             {h.subtitle}
                           </p>
                         </div>
                       </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-800 transition-all shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-800 transition-all shrink-0" />
                     </button>
                   );
                 })}
@@ -453,11 +453,11 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
           {/* Empty State */}
           {filteredApps.length === 0 && filteredCompanies.length === 0 && filteredHeuristics.length === 0 && (
             <div className="text-center py-10 space-y-2">
-              <HelpCircle className="w-8 h-8 text-slate-400 mx-auto" />
+              <HelpCircle className="w-8 h-8 text-slate-500 mx-auto" />
               <p className="text-xs text-slate-600">
                 No se encontraron resultados para "<span className="text-slate-900 font-semibold">{query}</span>".
               </p>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-xs text-slate-500">
                 Prueba buscando "Apple", "Sharpe", "DiD", "Simulador" o "Margen".
               </p>
             </div>
@@ -465,11 +465,11 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
         </div>
 
         {/* iOS Spotlight Footer info */}
-        <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+        <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1 font-mono">
-              <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[10px] text-slate-700 shadow-xs">⌘</kbd>
-              <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[10px] text-slate-700 shadow-xs">K</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-xs text-slate-700 shadow-xs">⌘</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-xs text-slate-700 shadow-xs">K</kbd>
               para buscar en cualquier momento
             </span>
           </div>

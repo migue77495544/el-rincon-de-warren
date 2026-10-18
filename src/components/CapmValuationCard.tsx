@@ -82,19 +82,19 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
   const createsEconomicValue = roeValue !== null ? roeValue >= dynamicCostOfEquity : null;
 
   return (
-    <div className="mt-5 p-5 bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-300">
+    <div className="mt-5 p-5 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-300">
       {/* Encabezado Principal */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-2xs">
+          <div className="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-2xs">
             <Calculator className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                Costo de Capital Propio (CAPM)
+                Coste del capital propio (CAPM)
               </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
                 Damodaran & FRED
               </span>
             </div>
@@ -128,7 +128,7 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
 
       {/* Explicación Pedagógica Desplegable */}
       {showExplanation && (
-        <div className="mt-4 p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 text-xs text-indigo-950 space-y-2 animate-in fade-in duration-200">
+        <div className="mt-4 p-4 rounded-lg bg-indigo-50/70 border border-indigo-100 text-xs text-indigo-950 space-y-2 animate-in fade-in duration-200">
           <div className="flex items-center gap-2 font-bold text-indigo-900">
             <Sparkles className="w-4 h-4 text-indigo-600" />
             <span>El Costo de Capital en el Value Investing de Warren Buffett</span>
@@ -152,7 +152,7 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
       {loading ? (
         <LoadingSkeleton label="Calculando CAPM en vivo..." />
       ) : error ? (
-        <div className="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-between text-xs text-rose-700">
+        <div className="mt-4 p-4 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-between text-xs text-rose-700">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-rose-500" />
             <span>{error}</span>
@@ -171,11 +171,11 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
             <div className="flex items-center gap-3">
               <Calculator className="w-5 h-5 text-indigo-600" />
               <div>
-                <span className="text-xs font-mono font-bold text-indigo-700 uppercase">
+                <span className="text-xs font-mono font-bold text-indigo-700">
                   Costo de Capital (K_e)
                 </span>
                 <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="text-2xl font-black font-mono text-indigo-700">
+                  <span className="text-2xl font-semibold font-mono text-indigo-700">
                     {dynamicCostOfEquity.toFixed(1)}%
                   </span>
                   <span className="text-xs text-slate-500">anual</span>
@@ -212,7 +212,7 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
 
           <button
             onClick={() => setShowExplanation(!showExplanation)}
-            className="mt-2 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1"
+            className="mt-2 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1"
           >
             <span>{showExplanation ? 'Ocultar' : '¿Cómo funciona?'}</span>
             <HelpCircle className="w-3.5 h-3.5" />
@@ -222,10 +222,10 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
             <div className="mt-2 p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 text-xs text-indigo-900 space-y-1 animate-in fade-in duration-200">
               <div className="flex items-center gap-2 font-bold">
                 <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Costo de Capital Propio (CAPM)</span>
+                <span>Coste del capital propio (CAPM)</span>
               </div>
               <p>K_e = R_f + β × ERP</p>
-              <p className="text-[10px] text-indigo-800/80">
+              <p className="text-xs text-indigo-800/80">
                 La tasa mínima que debe rendir {ticker} para compensar el riesgo. Warren Buffett usa esta "gravedad" para valorar empresas.
               </p>
             </div>
@@ -234,17 +234,16 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
       ) : (
         <div className="mt-5 space-y-5">
           {/* Card Hero: Costo de Capital Resultante + Fórmula Visual */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white shadow-md relative overflow-hidden">
-            <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-44 h-44 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="p-5 rounded-lg bg-slate-900 text-white relative overflow-hidden">
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-300 font-mono flex items-center gap-1.5">
+                <span className="text-xs font-bold text-indigo-300 font-mono flex items-center gap-1.5">
                   <Percent className="w-3.5 h-3.5 text-indigo-400" />
                   Costo del Capital Propio Estimado (K_e)
                 </span>
                 <div className="flex items-baseline gap-3 mt-1.5">
-                  <span className="text-4xl sm:text-5xl font-black font-mono tracking-tight text-white">
+                  <span className="text-4xl sm:text-5xl font-semibold font-mono tracking-tight text-white">
                     {dynamicCostOfEquity.toFixed(2)}%
                   </span>
                   <span className="text-xs text-slate-300 font-medium">
@@ -274,14 +273,14 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
                     {createsEconomicValue ? (
                       <>
                         <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <span className="text-[11px] font-bold text-emerald-300">
+                        <span className="text-xs font-bold text-emerald-300">
                           Crea Valor Económico (ROE &gt; K_e)
                         </span>
                       </>
                     ) : (
                       <>
                         <AlertCircle className="w-4 h-4 text-amber-300 shrink-0" />
-                        <span className="text-[11px] font-bold text-amber-200">
+                        <span className="text-xs font-bold text-amber-200">
                           Exigente (ROE &lt; K_e)
                         </span>
                       </>
@@ -294,38 +293,38 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
             {/* Desglose Matemático Interactivo */}
             <div className="mt-5 pt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-slate-400 font-mono">
+                <span className="text-xs font-bold text-slate-500 font-mono">
                   1. Tasa Libre Riesgo (R_f)
                 </span>
                 <span className="text-lg font-mono font-bold text-emerald-400 mt-0.5">
                   {rf.toFixed(2)}%
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-xs text-slate-500">
                   Tesoro 10Y EE.UU. (FRED DGS10)
                 </span>
               </div>
 
               <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-slate-400 font-mono flex items-center">
+                <span className="text-xs font-bold text-slate-500 font-mono flex items-center">
                   2. Beta Sectorial ({useUnlevered ? 'β Desap.' : 'β Apal.'})
                   <InfoTooltip concept="beta" />
                 </span>
                 <span className="text-lg font-mono font-bold text-cyan-400 mt-0.5">
                   {baseBeta.toFixed(2)}
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-xs text-slate-500">
                   {data?.matched_damodaran_industry || 'Damodaran 2026'}
                 </span>
               </div>
 
               <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-slate-400 font-mono">
+                <span className="text-xs font-bold text-slate-500 font-mono">
                   3. Prima de Riesgo (ERP)
                 </span>
                 <span className="text-lg font-mono font-bold text-amber-400 mt-0.5">
                   {currentErp.toFixed(1)}%
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-xs text-slate-500">
                   Premio sobre el bono soberano
                 </span>
               </div>
@@ -333,20 +332,20 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
           </div>
 
           {/* Mapeo de Industria Damodaran */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-slate-200/70 flex items-center justify-center text-slate-700">
                 <Building2 className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                <span className="text-xs font-bold text-slate-500 font-mono">
                   Emparejamiento de Industria
                 </span>
                 <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                   <span className="font-semibold text-slate-800">
                     {data?.yfinance_industry || 'Industria YFinance'}
                   </span>
-                  <ArrowRight className="w-3 h-3 text-slate-400" />
+                  <ArrowRight className="w-3 h-3 text-slate-500" />
                   <span className="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
                     {data?.matched_damodaran_industry || 'Damodaran'}
                   </span>
@@ -356,7 +355,7 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
 
             <div className="flex items-center gap-4 text-slate-600">
               <div>
-                <span className="text-[10px] text-slate-400 font-mono flex items-center">
+                <span className="text-xs text-slate-500 font-mono flex items-center">
                   Beta Apalancado
                   <InfoTooltip concept="beta" />
                 </span>
@@ -364,7 +363,7 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
               </div>
               {data?.unlevered_beta !== undefined && (
                 <div>
-                  <span className="text-[10px] text-slate-400 font-mono flex items-center">
+                  <span className="text-xs text-slate-500 font-mono flex items-center">
                     Beta Desapalancado
                     <InfoTooltip concept="beta" />
                   </span>
@@ -375,7 +374,7 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
           </div>
 
           {/* Controles de Simulación Interactiva */}
-          <div className="p-4 rounded-2xl bg-slate-50/60 border border-slate-200 space-y-4">
+          <div className="p-4 rounded-lg bg-slate-50/60 border border-slate-200 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-slate-600" />
@@ -388,7 +387,7 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
                   setCustomMrp(5.5);
                   setUseUnlevered(false);
                 }}
-                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+                className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
               >
                 Restablecer Valores Base
               </button>
@@ -413,7 +412,7 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
                 onChange={(e) => setCustomMrp(parseFloat(e.target.value))}
                 className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
               />
-              <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+              <div className="flex justify-between text-xs text-slate-500 mt-1 font-mono">
                 <span>3.0% (Mínimo histórico)</span>
                 <span>5.5% (Base Damodaran)</span>
                 <span>9.0% (Crisis / Alta prima)</span>
@@ -427,7 +426,7 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
                   <span className="text-xs font-semibold text-slate-700 block">
                     Usar Beta Desapalancado (Unlevered Beta)
                   </span>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-xs text-slate-500">
                     Aísla el riesgo puro del negocio eliminando el efecto de la deuda financiera (β = {data.unlevered_beta.toFixed(2)})
                   </span>
                 </div>
@@ -448,7 +447,7 @@ export const CapmValuationCard: React.FC<CapmValuationCardProps> = ({
           </div>
 
           {/* Enlaces de Fuentes Oficiales */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 text-[11px] text-slate-400">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-slate-500">
             <span className="flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
               Datos integrados en tiempo real sin descarga manual.

@@ -4,13 +4,15 @@ import {
   BarChart3,
   BookOpen,
   GraduationCap,
+  HelpCircle,
   LineChart,
   Rocket,
   Scale,
   Search
 } from 'lucide-react';
-import { motion } from 'motion/react';
 import { ViewMode } from '../types';
+import { OPEN_HELP_EVENT } from './WarrenFAB';
+import { ScrollRail } from './ui/ScrollRail';
 
 export type AppTab = 'fundamental' | 'opportunities' | 'simulator' | 'gamification' | 'impact' | 'methodology';
 
@@ -59,7 +61,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const isSimple = viewMode === 'simple';
   const visibleModules = isSimple ? MODULES.filter(m => m.simple) : MODULES;
-
   const renderTab = (mod: ModuleDef, compact = false) => {
     const Icon = mod.icon;
     const isActive = activeTab === mod.id;
@@ -71,74 +72,78 @@ export const Navbar: React.FC<NavbarProps> = ({
         onClick={() => setActiveTab(mod.id)}
         aria-current={isActive ? 'page' : undefined}
         title={mod.descripcion}
-        className={`group relative flex items-center gap-1.5 whitespace-nowrap px-2.5 text-[13px] transition-colors ${
+        className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 text-sm transition-colors ${
           compact ? 'py-2.5' : 'h-14'
         } ${
           isActive
             ? 'font-semibold text-slate-900'
-            : 'font-medium text-slate-500 hover:text-slate-900'
+            : 'font-medium text-slate-600 hover:text-slate-900'
         }`}
       >
-        <Icon className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-amber-700' : 'text-slate-400'}`} />
+        {compact && <Icon className={`w-4 h-4 ${isActive ? 'text-amber-700' : 'text-slate-500'}`} />}
         <span>{isSimple && mod.simpleLabel ? mod.simpleLabel : mod.label}</span>
-        {isActive && (
-          <motion.span
-            layoutId={compact ? 'nav-underline-compact' : 'nav-underline'}
-            className="absolute inset-x-3 bottom-0 h-[2px] rounded-full bg-gradient-to-r from-amber-500 to-amber-300"
-            transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-            aria-hidden="true"
-          />
-        )}
+        {isActive && <span className="absolute inset-x-3 bottom-0 h-[2px] bg-amber-700" aria-hidden="true" />}
       </button>
     );
   };
 
   return (
-    <header className="sticky top-0 z-[var(--z-sticky)] bg-white/85 backdrop-blur-md border-b border-slate-200/80 shadow-[0_1px_0_rgb(255_255_255/0.8)_inset,0_4px_16px_-12px_rgb(27_35_30/0.25)]">
+    <header className="sticky top-0 z-[var(--z-sticky)] bg-papel/95 backdrop-blur border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 gap-4">
+        <div className="flex items-center justify-between h-14 gap-3">
           {/* Marca */}
           <button
             type="button"
-            className="flex items-center gap-2.5 shrink-0 text-left"
+            className="flex items-center gap-2.5 shrink-0 text-left rounded-md"
             onClick={() => setActiveTab('fundamental')}
             aria-label="El Rincón de Warren, ir al inicio"
           >
-            <span className="w-8 h-8 rounded-lg ink-panel shadow-md transition-transform duration-300 hover:rotate-[-6deg] hover:scale-105 flex items-center justify-center font-serif text-[19px] font-semibold text-amber-300 leading-none">
+            <span className="w-8 h-8 rounded-md bg-slate-900 flex items-center justify-center font-serif text-[19px] font-semibold text-amber-300 leading-none">
               W
             </span>
-            <span className="font-serif text-[17px] font-semibold text-slate-900 tracking-tight hidden sm:inline">
+            <span className="font-serif text-[17px] font-semibold text-slate-900 hidden sm:inline">
               El Rincón de Warren
             </span>
           </button>
 
-          {/* Pestañas (escritorio) */}
-          <nav className="hidden lg:flex items-stretch -mb-px" aria-label="Secciones">
+          {/* Pestañas en la misma fila solo cuando caben todas */}
+          <nav className="hidden xl:flex items-stretch -mb-px" aria-label="Secciones">
             {visibleModules.map(mod => renderTab(mod))}
           </nav>
 
-          {/* Controles */}
+          {/* Controles: nunca se encogen, así el selector de modo no se corta */}
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={onOpenSearch}
-              className="press flex items-center gap-2 h-8 px-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 hover:shadow-sm border border-slate-200 rounded-lg text-xs font-medium"
-              title="Buscar empresas, conceptos o secciones"
+              className="flex items-center gap-2 h-9 px-2.5 text-slate-600 hover:text-slate-900 hover:bg-white border border-slate-200 rounded-md text-sm transition-colors"
+              title="Buscar empresas, conceptos o secciones (Ctrl K)"
+              aria-label="Buscar empresas, conceptos o secciones"
             >
-              <Search className="w-3.5 h-3.5" />
-              <span className="hidden xl:inline">Buscar</span>
-              <kbd className="hidden xl:inline font-sans text-[10px] text-slate-400 border border-slate-200 rounded px-1">Ctrl K</kbd>
+              <Search className="w-4 h-4" />
+              <span className="hidden md:inline">Buscar</span>
+              <kbd className="hidden md:inline font-sans text-xs text-slate-500 border border-slate-200 rounded px-1">Ctrl K</kbd>
             </button>
 
+            {!isSimple && (
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent(OPEN_HELP_EVENT))}
+                className="sm:hidden flex items-center justify-center w-9 h-9 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-md"
+                aria-label="Abrir preguntas frecuentes"
+              >
+                <HelpCircle className="w-4 h-4" />
+              </button>
+            )}
 
             {showGamificationHUD && !isSimple && (
               <div
-                className="hidden 2xl:flex items-center gap-2 h-8 px-2.5 rounded-lg border border-slate-200 text-xs"
+                className="hidden 2xl:flex items-center gap-2 h-9 px-2.5 text-sm text-slate-600"
                 title={`Motivación estimada: ${motivationIndex}%`}
               >
-                <Award className="w-3.5 h-3.5 text-amber-600" />
+                <Award className="w-4 h-4 text-amber-700" />
                 <span className="font-semibold text-slate-900">Nivel {userLevel}</span>
-                <span className="font-mono text-slate-500">{userXP} XP</span>
+                <span className="tabular">{userXP} XP</span>
               </div>
             )}
 
@@ -146,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div
               role="radiogroup"
               aria-label="Modo de vista"
-              className="flex items-center h-8 p-0.5 rounded-lg bg-slate-100 border border-slate-200"
+              className="flex items-center h-9 p-0.5 rounded-md bg-slate-100 border border-slate-200"
             >
               {([
                 { id: 'simple', label: 'Simple', title: 'Modo Simple: lo esencial de cada empresa, explicado' },
@@ -162,21 +167,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                     aria-checked={active}
                     onClick={() => setViewMode(opt.id)}
                     title={opt.title}
-                    className={`relative h-full px-2.5 sm:px-3 rounded-md text-xs transition-colors ${
+                    className={`h-full px-3 rounded text-sm transition-colors ${
                       active
-                        ? 'text-slate-900 font-semibold'
-                        : 'text-slate-500 font-medium hover:text-slate-900'
+                        ? 'bg-white text-slate-900 font-semibold border border-slate-200'
+                        : 'text-slate-600 font-medium hover:text-slate-900'
                     }`}
                   >
-                    {active && (
-                      <motion.span
-                        layoutId="view-mode-pill"
-                        className="absolute inset-0 rounded-md bg-white shadow-sm ring-1 ring-amber-200"
-                        transition={{ type: 'spring', stiffness: 500, damping: 36 }}
-                        aria-hidden="true"
-                      />
-                    )}
-                    <span className="relative">{opt.label}</span>
+                    {opt.label}
                   </button>
                 );
               })}
@@ -184,13 +181,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Pestañas (móvil y tableta) */}
-        <nav
-          className="flex lg:hidden overflow-x-auto no-scrollbar -mx-4 px-2 sm:-mx-6 sm:px-4 border-t border-slate-100"
-          aria-label="Secciones"
+        {/* Pestañas en segunda fila (móvil, tableta y portátil estrecho) */}
+        <ScrollRail
+          label="Secciones"
+          activeKey={`${activeTab}-${viewMode}`}
+          className="xl:hidden -mx-4 sm:-mx-6 border-t border-slate-200"
+          innerClassName="px-2 sm:px-4"
         >
           {visibleModules.map(mod => renderTab(mod, true))}
-        </nav>
+        </ScrollRail>
       </div>
     </header>
   );

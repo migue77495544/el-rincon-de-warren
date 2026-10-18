@@ -26,6 +26,7 @@ import {
   Gauge
 } from 'lucide-react';
 import { InfoTooltip } from './SmartTooltip';
+import { ScrollRail } from './ui/ScrollRail';
 
 interface RatiosDashboardProps {
   selectedCompany: CompanyAnalysis;
@@ -547,588 +548,329 @@ export const RatiosDashboard: React.FC<RatiosDashboardProps> = ({
     };
   };
 
+  const STATUS_META: Record<TrafficLight, { label: string; dot: string; text: string }> = {
+    green: { label: 'Sano', dot: 'bg-emerald-600', text: 'text-emerald-800' },
+    yellow: { label: 'Vigilar', dot: 'bg-amber-500', text: 'text-amber-800' },
+    red: { label: 'Alerta', dot: 'bg-rose-600', text: 'text-rose-800' }
+  };
+
+  const DIMENSION_TABS: { id: DimensionFilter; label: string }[] = [
+    { id: 'all', label: 'Todos' },
+    { id: 'liquidez', label: 'Liquidez' },
+    { id: 'solvencia', label: 'Solvencia' },
+    { id: 'rentabilidad', label: 'Rentabilidad' },
+    { id: 'valoracion', label: 'Valoración' }
+  ];
+  const dimensionCount = (id: DimensionFilter) =>
+    id === 'all' ? ratioDefinitions.length : ratioDefinitions.filter(r => r.dimension === id).length;
+
   return (
-    <div className="space-y-6" id="ratios-dashboard-root">
-      {/* 1. TOP DASHBOARD HERO: RESUMEN EJECUTIVO Y AUDITORÍA */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+    <div className="space-y-5" id="ratios-dashboard-root">
+      {/* Resumen y filtros */}
+      <section aria-labelledby="ratios-titulo" className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="p-2 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
-                <Gauge className="w-5 h-5" />
-              </span>
-              <div>
-                <h2 className="text-xl font-black text-slate-900 font-mono tracking-tight flex items-center gap-2">
-                  Dashboard de Desglose de Ratios Financieros
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-sans font-semibold">
-                    Motor Graham & Buffett
-                  </span>
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Desglose interactivo de las 4 dimensiones contables de{' '}
-                  <span className="font-bold text-slate-800">{selectedCompany.ticker}</span> ({selectedCompany.nombre}), explicando fórmulas, variables del balance y umbrales de seguridad.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setShowAuditPanel(!showAuditPanel)}
-              className={`px-3.5 py-2 rounded-2xl font-medium text-xs transition-all flex items-center gap-1.5 border ${
-                showAuditPanel
-                  ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                  : 'bg-transparent text-slate-700 hover:bg-slate-100 border-slate-300'
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4 text-slate-500" />
-              <span>Auditoría de Fidelidad de Cálculo</span>
-              <span className="ml-1 px-1.5 py-0.2 bg-slate-200 text-slate-700 rounded-md text-[10px]">100% Conforme</span>
-            </button>
-
-            {Object.keys(simulatorOverrides).length > 0 && (
-              <button
-                onClick={resetAllSimulators}
-                className="px-3 py-2 rounded-2xl bg-transparent hover:bg-slate-100 text-slate-700 text-xs font-medium transition-all flex items-center gap-1.5 border border-slate-300"
-                title="Restaurar todos los ratios a los datos contables reales"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Resetear Simuladores</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* METRICS HUD: Scoring Linear, Semáforos y Distribución de Calidad */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Score Linear Global S(a) */}
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col justify-between">
-            <div>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-mono">
-                Función S(a) Scoring Linear
-              </span>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-3xl font-black text-slate-900 font-mono">
-                  {selectedCompany.linearScore}
-                </span>
-                <span className="text-xs text-slate-500 font-medium">/ 100</span>
-                <span className={`text-xs px-2 py-0.5 rounded-md font-bold font-mono ml-auto ${
-                  selectedCompany.linearScore >= 80 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
-                  selectedCompany.linearScore >= 60 ? 'bg-slate-100 text-slate-700 border border-slate-200' :
-                  'bg-rose-50 text-rose-800 border border-rose-200'
-                }`}>
-                  Grado {selectedCompany.scoreGrade}
-                </span>
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-500 mt-2">
-              Ponderación normalizada: Liquidez 20%, Solvencia 25%, Rentabilidad 25%, Valoración 30%.
+            <h2 id="ratios-titulo" className="m-0 font-serif text-[22px] font-semibold text-slate-900">
+              Los 11 ratios de {selectedCompany.ticker}
+            </h2>
+            <p className="mt-1 mb-0 text-sm text-slate-600 max-w-[64ch]">
+              Liquidez, solvencia, rentabilidad y valoración frente a los umbrales de Graham y Buffett. Despliega un ratio para ver su fórmula y simular escenarios.
             </p>
           </div>
-
-          {/* Card 2: Consenso Wall Street */}
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col justify-between">
-            <div>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center font-mono">
-                Consenso Wall Street
-                <InfoTooltip concept="per" />
-              </span>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className={`text-3xl font-black font-mono ${
-                  selectedCompany.targetConsensus
-                    ? selectedCompany.targetConsensus.upside_potential >= 10 ? 'text-emerald-700' :
-                      selectedCompany.targetConsensus.upside_potential >= 0 ? 'text-slate-800' :
-                      'text-rose-700'
-                    : 'text-slate-400'
-                }`}>
-                  {selectedCompany.targetConsensus
-                    ? `${selectedCompany.targetConsensus.upside_potential > 0 ? '+' : ''}${Math.round(selectedCompany.targetConsensus.upside_potential * 10) / 10}%`
-                    : 'N/D'}
-                </span>
-                {selectedCompany.targetConsensus && (
-                  <span className="text-xs text-slate-500 font-medium">
-                    vs Cotización
-                  </span>
-                )}
-              </div>
-            </div>
-            {selectedCompany.targetConsensus ? (
-              <div className="text-[11px] text-slate-600 mt-2 flex justify-between">
-                <span>Tgt. Medio: ${selectedCompany.targetConsensus.target_mean.toFixed(2)}</span>
-                <span className="font-bold">
-                  {selectedCompany.targetConsensus.number_of_analysts} analistas · {selectedCompany.targetConsensus.recommendation}
-                </span>
-              </div>
-            ) : (
-              <div className="text-[11px] text-slate-400 mt-2">
-                Cotización: ${raw.precioCotizacion}
-              </div>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {Object.keys(simulatorOverrides).length > 0 && (
+              <button
+                type="button"
+                onClick={resetAllSimulators}
+                className="h-9 px-3 rounded-md text-sm font-medium text-slate-700 hover:text-slate-900 border border-slate-300 hover:border-slate-400 flex items-center gap-1.5 transition-colors"
+                title="Restaurar todos los ratios a los datos contables reales"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Restaurar datos reales</span>
+              </button>
             )}
-          </div>
-
-          {/* Card 3: Distribución Semafórica */}
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col justify-between">
-            <div>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-mono">
-                Semáforo de los 11 Ratios
-              </span>
-              <div className="flex items-center gap-3 mt-1.5">
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
-                  <span className="text-sm font-bold font-mono text-emerald-800">{counts.green}</span>
-                  <span className="text-[10px] text-slate-400">seguros</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-slate-400"></span>
-                  <span className="text-sm font-bold font-mono text-slate-700">{counts.yellow}</span>
-                  <span className="text-[10px] text-slate-400">neutros</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-rose-500"></span>
-                  <span className="text-sm font-bold font-mono text-rose-800">{counts.red}</span>
-                  <span className="text-[10px] text-slate-400">alertas</span>
-                </div>
-              </div>
-            </div>
-            {/* Barra de progreso apilada */}
-            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden flex mt-2">
-              <div style={{ width: `${(counts.green / counts.total) * 100}%` }} className="bg-emerald-500 h-full"></div>
-              <div style={{ width: `${(counts.yellow / counts.total) * 100}%` }} className="bg-slate-400 h-full"></div>
-              <div style={{ width: `${(counts.red / counts.total) * 100}%` }} className="bg-rose-500 h-full"></div>
-            </div>
-          </div>
-
-          {/* Card 4: Calidad del Foso y Veredicto */}
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-mono">
-                  Foso Económico (Moat)
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold">
-                  {selectedCompany.moat}
-                </span>
-              </div>
-              <p className="text-xs text-slate-800 font-serif italic line-clamp-2 mt-1">
-                "{selectedCompany.warrenVerdict}"
-              </p>
-            </div>
-            <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-200/60 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-slate-400" />
-              <span>Filosofía Berkshire Hathaway</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowAuditPanel(!showAuditPanel)}
+              aria-expanded={showAuditPanel}
+              aria-controls="ratios-calculo"
+              className={`h-9 px-3 rounded-md text-sm font-medium border flex items-center gap-1.5 transition-colors ${
+                showAuditPanel
+                  ? 'bg-slate-900 text-white border-slate-900'
+                  : 'text-slate-700 hover:text-slate-900 border-slate-300 hover:border-slate-400'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>{showAuditPanel ? 'Ocultar cálculos' : 'Ver cálculos'}</span>
+            </button>
           </div>
         </div>
 
-        {/* 2. FILTROS Y CONTROLES DEL DASHBOARD */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
-          {/* Dimension Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-            <button
-              onClick={() => setSelectedDimension('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                selectedDimension === 'all'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-              }`}
-            >
-              Todos ({ratioDefinitions.length})
-            </button>
-            <button
-              onClick={() => setSelectedDimension('liquidez')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                selectedDimension === 'liquidez'
-                  ? 'bg-slate-900 text-white font-bold shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-              }`}
-            >
-              <span>Liquidez</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${selectedDimension === 'liquidez' ? 'bg-white/20' : 'bg-slate-200 text-slate-700'}`}>3</span>
-            </button>
-            <button
-              onClick={() => setSelectedDimension('solvencia')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                selectedDimension === 'solvencia'
-                  ? 'bg-slate-900 text-white font-bold shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-              }`}
-            >
-              <span>Solvencia</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${selectedDimension === 'solvencia' ? 'bg-white/20' : 'bg-slate-200 text-slate-700'}`}>2</span>
-            </button>
-            <button
-              onClick={() => setSelectedDimension('rentabilidad')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                selectedDimension === 'rentabilidad'
-                  ? 'bg-slate-900 text-white font-bold shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-              }`}
-            >
-              <span>Rentabilidad</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${selectedDimension === 'rentabilidad' ? 'bg-white/20' : 'bg-slate-200 text-slate-700'}`}>2</span>
-            </button>
-            <button
-              onClick={() => setSelectedDimension('valoracion')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                selectedDimension === 'valoracion'
-                  ? 'bg-slate-900 text-white font-bold shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-              }`}
-            >
-              <span>Valoración</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${selectedDimension === 'valoracion' ? 'bg-white/20' : 'bg-slate-200 text-slate-700'}`}>4</span>
-            </button>
+        {/* Semáforo agregado */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-4 text-sm">
+            {(['green', 'yellow', 'red'] as TrafficLight[]).map(st => (
+              <span key={st} className="flex items-center gap-1.5">
+                <span className={`w-2.5 h-2.5 rounded-full ${STATUS_META[st].dot}`} aria-hidden="true" />
+                <span className="tabular font-semibold text-slate-900">{counts[st]}</span>
+                <span className="text-slate-600">{STATUS_META[st].label.toLowerCase()}</span>
+              </span>
+            ))}
           </div>
+          <div className="flex-1 h-2 rounded-full overflow-hidden flex bg-slate-100" aria-hidden="true">
+            <div style={{ width: `${(counts.green / counts.total) * 100}%` }} className="bg-emerald-600" />
+            <div style={{ width: `${(counts.yellow / counts.total) * 100}%` }} className="bg-amber-500" />
+            <div style={{ width: `${(counts.red / counts.total) * 100}%` }} className="bg-rose-600" />
+          </div>
+        </div>
 
-          {/* Status filter + Search */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
-              <button
-                onClick={() => setStatusFilter('all')}
-                className={`px-2 py-1 rounded-lg font-bold transition-all ${
-                  statusFilter === 'all' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500'
-                }`}
-              >
-                Todos
-              </button>
-              <button
-                onClick={() => setStatusFilter('green')}
-                className={`px-2 py-1 rounded-lg font-bold transition-all flex items-center gap-1 ${
-                  statusFilter === 'green' ? 'bg-emerald-500 text-white shadow-2xs' : 'text-slate-600'
-                }`}
-                title="Solo ratios en zona verde"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                <span>{counts.green}</span>
-              </button>
-              <button
-                onClick={() => setStatusFilter('yellow')}
-                className={`px-2 py-1 rounded-lg font-bold transition-all flex items-center gap-1 ${
-                  statusFilter === 'yellow' ? 'bg-slate-800 text-white shadow-2xs' : 'text-slate-600'
-                }`}
-                title="Solo ratios en zona neutral"
-              >
-                <span className="w-2 h-2 rounded-full bg-slate-400"></span>
-                <span>{counts.yellow}</span>
-              </button>
-              <button
-                onClick={() => setStatusFilter('red')}
-                className={`px-2 py-1 rounded-lg font-bold transition-all flex items-center gap-1 ${
-                  statusFilter === 'red' ? 'bg-rose-500 text-white shadow-2xs' : 'text-slate-600'
-                }`}
-                title="Solo ratios en zona roja de alerta"
-              >
-                <span className="w-2 h-2 rounded-full bg-rose-400"></span>
-                <span>{counts.red}</span>
-              </button>
+        {/* Filtros */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200">
+          <ScrollRail as="div" label="Filtrar por dimensión" fadeFrom="from-white" activeKey={selectedDimension} className="min-w-0 max-w-full" innerClassName="gap-1">
+            {DIMENSION_TABS.map(tab => {
+              const active = selectedDimension === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setSelectedDimension(tab.id)}
+                  aria-pressed={active}
+                  aria-current={active ? 'true' : undefined}
+                  className={`shrink-0 h-8 px-3 rounded-md text-sm whitespace-nowrap transition-colors ${
+                    active ? 'bg-slate-900 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  {tab.label} <span className={`tabular ${active ? 'text-slate-300' : 'text-slate-500'}`}>{dimensionCount(tab.id)}</span>
+                </button>
+              );
+            })}
+          </ScrollRail>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div role="group" aria-label="Filtrar por semáforo" className="flex items-center p-0.5 rounded-md bg-slate-100 border border-slate-200">
+              {(['all', 'green', 'yellow', 'red'] as StatusFilter[]).map(st => {
+                const active = statusFilter === st;
+                return (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => setStatusFilter(st)}
+                    aria-pressed={active}
+                    aria-label={st === 'all' ? 'Todos los estados' : `Solo ${STATUS_META[st as TrafficLight].label.toLowerCase()}`}
+                    className={`h-7 px-2.5 rounded text-sm flex items-center gap-1.5 transition-colors ${
+                      active ? 'bg-white border border-slate-200 text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {st === 'all' ? 'Todos' : (
+                      <>
+                        <span className={`w-2 h-2 rounded-full ${STATUS_META[st as TrafficLight].dot}`} aria-hidden="true" />
+                        <span className="tabular">{counts[st as TrafficLight]}</span>
+                      </>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
               <input
-                type="text"
+                type="search"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Buscar ratio o fórmula..."
-                className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:border-slate-400 w-36 sm:w-48 transition-all"
+                placeholder="Buscar ratio"
+                aria-label="Buscar ratio o fórmula"
+                className="h-9 w-40 pl-8 pr-3 rounded-md border border-slate-300 bg-white text-sm text-slate-800 placeholder-slate-500"
               />
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* 3. AUDITORÍA DE FIDELIDAD DE CÁLCULO Y METODOLOGÍA (Panel Colapsable) */}
+      {/* Cálculo de cada ratio con los datos del balance */}
       {showAuditPanel && (
-        <div className="bg-white rounded-3xl p-6 border-2 border-indigo-200 shadow-md space-y-5 animate-in fade-in duration-200">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-indigo-100">
-            <div className="flex items-center gap-2.5">
-              <span className="p-2 rounded-xl bg-indigo-600 text-white font-bold">
-                <ShieldCheck className="w-5 h-5" />
-              </span>
-              <div>
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 font-serif">
-                  Informe de Auditoría de Fidelidad de Ratios
-                  <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 font-mono font-bold">
-                    ✓ 11 de 11 Ratios Auditados
-                  </span>
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Verificación de correspondencia matemática con los estados financieros oficiales (Form 10-K / 10-Q de la SEC y normativas GAAP / IFRS).
-                </p>
-              </div>
+        <section id="ratios-calculo" aria-labelledby="ratios-calculo-titulo" className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 id="ratios-calculo-titulo" className="m-0 font-serif text-lg font-semibold text-slate-900">Cómo se calcula cada ratio</h3>
+              <p className="mt-1 mb-0 text-sm text-slate-600 max-w-[68ch]">
+                Fórmula contable, cifras de {selectedCompany.ticker} que intervienen y resultado. Las cifras proceden de los estados financieros publicados (10-K y 10-Q).
+              </p>
             </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  setAuditTestRun(true);
-                  setTimeout(() => setAuditTestRun(false), 2500);
-                }}
-                className="px-3.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition-all border border-indigo-200 flex items-center gap-1.5 shadow-2xs"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                <span>{auditTestRun ? '✓ Verificación Exitosa (0ms error)' : 'Re-ejecutar Test Matemático'}</span>
-              </button>
-              <button
-                onClick={() => setShowAuditPanel(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-              >
-                <ChevronUp className="w-5 h-5" />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowAuditPanel(false)}
+              className="w-8 h-8 shrink-0 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center"
+              aria-label="Cerrar cálculos"
+            >
+              <ChevronUp className="w-5 h-5" />
+            </button>
           </div>
 
-          {/* Tabla de Auditoría Contable */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+          <div className="overflow-x-auto -mx-5 sm:mx-0">
+            <table className="w-full min-w-[640px] text-left text-sm border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-mono text-[11px]">
-                  <th className="py-2.5 px-3 font-bold">Indicador / Símbolo</th>
-                  <th className="py-2.5 px-3 font-bold">Fórmula Contable Estándar</th>
-                  <th className="py-2.5 px-3 font-bold">Variables {selectedCompany.ticker}</th>
-                  <th className="py-2.5 px-3 font-bold">Cálculo del Motor</th>
-                  <th className="py-2.5 px-3 font-bold">Estado</th>
-                  <th className="py-2.5 px-3 font-bold">Rigor Contable</th>
+                <tr className="border-b border-slate-300 text-slate-600">
+                  <th scope="col" className="py-2 px-3 font-semibold">Ratio</th>
+                  <th scope="col" className="py-2 px-3 font-semibold">Fórmula</th>
+                  <th scope="col" className="py-2 px-3 font-semibold text-right">Numerador / denominador</th>
+                  <th scope="col" className="py-2 px-3 font-semibold text-right">Resultado</th>
+                  <th scope="col" className="py-2 px-3 font-semibold">Nota</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-slate-200 text-slate-700">
                 {ratioDefinitions.map(r => (
-                  <tr key={r.key} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-2.5 px-3 font-semibold text-slate-900 flex items-center gap-1.5">
-                      <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
-                        {r.shortSymbol}
-                      </span>
-                      <span>{r.name}</span>
+                  <tr key={r.key}>
+                    <th scope="row" className="py-2.5 px-3 font-medium text-slate-900">{r.name}</th>
+                    <td className="py-2.5 px-3 text-slate-600">{r.formulaTex}</td>
+                    <td className="py-2.5 px-3 tabular text-right whitespace-nowrap">
+                      {r.numValue.toLocaleString('es-ES')} / {r.denValue.toLocaleString('es-ES')}
                     </td>
-                    <td className="py-2.5 px-3 font-mono text-slate-600 text-[11px]">
-                      {r.formulaTex}
-                    </td>
-                    <td className="py-2.5 px-3 font-mono text-[11px] text-slate-500">
-                      {r.numValue.toLocaleString()} / {r.denValue.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-3 font-mono font-bold text-slate-900">
-                      {r.formatted}
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                        <Check className="w-3 h-3" /> Exacto
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 text-[11px] text-slate-500">
-                      {r.fidelityNote}
-                    </td>
+                    <td className="py-2.5 px-3 tabular text-right font-semibold text-slate-900">{r.formatted}</td>
+                    <td className="py-2.5 px-3 text-slate-600">{r.fidelityNote.replace(/^Fidelidad[^:]*:\s*/, '')}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <div className="p-3.5 bg-indigo-50/70 rounded-2xl border border-indigo-100 text-xs text-indigo-900 space-y-1.5">
-            <div className="font-bold flex items-center gap-1.5">
-              <Info className="w-4 h-4 text-indigo-600" />
-              <span>Conclusiones de la Auditoría Contable para {selectedCompany.ticker}:</span>
-            </div>
-            <ul className="list-disc pl-5 space-y-0.5 text-[11px] text-slate-600">
-              <li><strong>Prueba Ácida (Quick Ratio)</strong>: Se ajustó la fórmula para excluir estrictamente los inventarios del activo circulante preservando cuentas a cobrar y efectivo, conforme a los principios de contabilidad generalmente aceptados (GAAP).</li>
-              <li><strong>Cobertura de Intereses</strong>: Cuando una empresa opera con caja neta o cero gasto por intereses (como Berkshire en filiales con tesorería positiva), el motor declara <em>Libre de Deuda / Cobertura Máxima (&gt;100x)</em> en lugar de dividir por cero.</li>
-              <li><strong>Múltiplos con BPA Negativo</strong>: En caso de pérdidas netas, el PER se marca como <em>N/D (Pérdidas)</em> con semáforo rojo de advertencia para evitar mostrar múltiplos engañosos.</li>
-            </ul>
-          </div>
-        </div>
+          <ul className="m-0 pl-5 space-y-1 text-sm text-slate-600 list-disc max-w-[80ch]">
+            <li>La prueba ácida excluye los inventarios y conserva efectivo y cuentas a cobrar (criterio GAAP).</li>
+            <li>Sin gasto por intereses, la cobertura se muestra como «sin deuda» en lugar de dividir por cero.</li>
+            <li>Con beneficio negativo, el PER se marca como no disponible y en rojo para no enseñar un múltiplo engañoso.</li>
+          </ul>
+        </section>
       )}
 
-      {/* 4. TARJETAS INTERACTIVAS DE DESGLOSE DE RATIOS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {filteredRatios.map(ratio => {
-          const cardState = getCardValues(ratio);
-          const isExpanded = !!expandedCards[ratio.key];
+      {/* Ratios: valor, semáforo y umbral; el detalle al desplegar */}
+      {filteredRatios.length === 0 ? (
+        <p className="m-0 py-10 text-center text-sm text-slate-600">
+          Ningún ratio coincide con los filtros. Cambia la dimensión, el semáforo o la búsqueda.
+        </p>
+      ) : (
+        <ul className="m-0 p-0 list-none grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          {filteredRatios.map(ratio => {
+            const cardState = getCardValues(ratio);
+            const isExpanded = !!expandedCards[ratio.key];
+            const meta = STATUS_META[cardState.status];
+            const detailId = `ratio-detalle-${ratio.key}`;
+            const better = ratio.sectorBenchmark != null && isBetterThanSector(ratio.key, cardState.value, ratio.sectorBenchmark);
 
-          const dimensionBg =
-            ratio.dimension === 'liquidez' ? 'bg-blue-50 text-blue-800 border-blue-200' :
-            ratio.dimension === 'solvencia' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' :
-            ratio.dimension === 'rentabilidad' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-            'bg-slate-100 text-slate-800 border-slate-200';
-
-          const statusBadge =
-            cardState.status === 'green' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-            cardState.status === 'yellow' ? 'bg-slate-100 text-slate-700 border-slate-200' :
-            'bg-rose-50 text-rose-800 border-rose-200';
-
-          const statusText =
-            cardState.status === 'green' ? '🟢 Zona Segura / Value' :
-            cardState.status === 'yellow' ? '⚪ Zona Neutral / Vigilancia' :
-            '🔴 Zona de Alerta / Peligro';
-
-          return (
-            <div
-              key={ratio.key}
-              className={`bg-white rounded-3xl border transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between ${
-                cardState.isSimulated ? 'border-slate-400 ring-2 ring-slate-400/20' : 'border-slate-200'
-              }`}
-            >
-              {/* Card Header */}
-              <div className="p-5 pb-4 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-black px-2 py-0.5 rounded-md bg-slate-900 text-white">
-                        {ratio.shortSymbol}
-                      </span>
-                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${dimensionBg}`}>
-                        {ratio.dimensionLabel}
-                      </span>
-                    </div>
-                    <h4 className="text-base font-bold text-slate-900 tracking-tight flex items-center">
-                      <span>{ratio.name}</span>
+            return (
+              <li
+                key={ratio.key}
+                className={`bg-white rounded-lg border ${cardState.isSimulated ? 'border-amber-400' : 'border-slate-200'} ${isExpanded ? 'sm:col-span-2 xl:col-span-3' : ''}`}
+              >
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <h4 className="m-0 text-[15px] font-semibold text-slate-900 leading-snug flex items-center">
+                      {ratio.name}
                       {ratio.key === 'roe' && <InfoTooltip concept="roe" />}
                     </h4>
-                  </div>
-
-                  <span className={`text-[11px] font-mono font-bold px-2.5 py-1 rounded-full border shrink-0 ${statusBadge}`}>
-                    {statusText}
-                  </span>
-                </div>
-
-                {/* Hero Metric & Benchmark */}
-                <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-baseline justify-between">
-                  <div>
-                    <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
-                      {cardState.isSimulated ? 'Valor Simulado' : 'Valor Actual'}
-                    </span>
-                    <div className="text-3xl font-black font-mono text-slate-900 tracking-tight">
-                      {cardState.formatted}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
-                      Umbral de Seguridad
-                    </span>
-                    <span className="text-xs font-mono font-bold text-slate-700 bg-white px-2 py-1 rounded-lg border border-slate-200 inline-block mt-0.5">
-                      {ratio.benchmark}
+                    <span className={`shrink-0 flex items-center gap-1.5 text-sm font-medium ${meta.text}`}>
+                      <span className={`w-2.5 h-2.5 rounded-full ${meta.dot}`} aria-hidden="true" />
+                      {meta.label}
                     </span>
                   </div>
+
+                  <div className="mt-2 cifra text-[30px] leading-none text-slate-900">
+                    {cardState.formatted}
+                  </div>
+                  {!cardState.isSimulated && (ratios as any)?.[ratio.key]?.heuristicSimple && (
+                    <p className="mt-2 mb-0 text-sm text-slate-800 leading-snug">
+                      {(ratios as any)[ratio.key].heuristicSimple}.
+                    </p>
+                  )}
+                  <p className="mt-1.5 mb-0 text-sm text-slate-600">
+                    Umbral <span className="tabular font-medium text-slate-800">{ratio.benchmark}</span>
+                  </p>
+
+                  <p className="mt-1 mb-0 text-xs text-slate-600">
+                    {ratio.dimensionLabel}
+                    {cardState.isSimulated && <span className="text-amber-800">, valor simulado</span>}
+                    {ratio.sectorBenchmark != null && sectorBenchmarks?.industry_name && (
+                      <>
+                        {', '}
+                        <span className={better ? 'text-emerald-700' : 'text-rose-700'}>
+                          {better ? 'mejor' : 'peor'} que su sector ({ratio.sectorBenchmarkLabel})
+                        </span>
+                      </>
+                    )}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleCard(ratio.key)}
+                    aria-expanded={isExpanded}
+                    aria-controls={detailId}
+                    className="mt-3 -ml-1 px-1 h-8 text-sm font-medium text-amber-800 hover:text-amber-900 flex items-center gap-1 rounded"
+                  >
+                    {isExpanded ? 'Ocultar detalle' : 'Ver fórmula y simular'}
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} aria-hidden="true" />
+                  </button>
                 </div>
 
-                {/* Sector Benchmark Comparison */}
-                {ratio.sectorBenchmark != null && sectorBenchmarks?.industry_name && (
-                  <div className="mt-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
-                        Comparativa vs Sector ({sectorBenchmarks.industry_name})
-                      </span>
-                   <InfoTooltip 
-                     conceptId={
-                       ratio.key === 'liquidezCorriente' ? 'liquidezVsSector' :
-                       ratio.key === 'endeudamiento' ? 'deudaVsSector' :
-                       ratio.key === 'roe' ? 'roeVsSector' :
-                       ratio.key === 'per' ? 'perVsSector' :
-                       ratio.key === 'pb' ? 'pbVsSector' :
-                       ratio.key === 'ke' ? 'keVsSector' :
-                       undefined
-                     } 
-                     text={getSectorTooltip(ratio.key, cardState.value, ratio.sectorBenchmark!)}
-                   />
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full transition-all ${
-                            isBetterThanSector(ratio.key, cardState.value, ratio.sectorBenchmark!) 
-                              ? 'w-1/2 bg-emerald-500' 
-                              : 'w-full bg-rose-500'
-                          }`}
-                        ></div>
-                      </div>
-                      <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full border ${
-                        isBetterThanSector(ratio.key, cardState.value, ratio.sectorBenchmark!)
-                          ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                          : 'text-rose-700 bg-rose-50 border-rose-200'
-                      }`}>
-                        {ratio.sectorBenchmarkLabel}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Desglose Matemático de la Fórmula */}
-                <div className="p-3 bg-slate-100/60 rounded-xl border border-slate-200/60 text-xs space-y-1.5">
-                  <div className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
-                    <span>Desglose de la Fórmula:</span>
-                    <span className="text-slate-400">{ratio.formulaTex}</span>
-                  </div>
-                  <div className="font-mono text-xs flex items-center justify-between text-slate-700 bg-white p-2 rounded-lg border border-slate-200">
-                    <div className="truncate pr-2">
-                      <span className="text-[11px] text-slate-400 block">{ratio.numLabel}</span>
-                      <span className="font-bold text-slate-900">
-                        {cardState.num.toLocaleString()} {ratio.numUnit}
-                      </span>
-                    </div>
-                    <span className="text-slate-400 font-black text-sm px-1">/</span>
-                    <div className="truncate text-right pl-2">
-                      <span className="text-[11px] text-slate-400 block">{ratio.denLabel}</span>
-                      <span className="font-bold text-slate-900">
-                        {cardState.den.toLocaleString()} {ratio.denUnit}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Explicación Pedagógica del Ratio */}
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {ratio.explanation}
-                </p>
-
-                {/* Matriz de Umbrales de Seguridad */}
-                <div className="space-y-1.5 pt-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-mono">
-                    Criterios de Seguridad (Graham / Buffett):
-                  </span>
-                  <div className="space-y-1 text-[11px]">
-                    <div className={`p-1.5 rounded-lg flex items-start gap-1.5 border ${
-                      cardState.status === 'green' ? 'bg-emerald-50/90 border-emerald-300 font-medium text-emerald-950' : 'bg-slate-50 border-slate-100 text-slate-500'
-                    }`}>
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1"></span>
-                      <span>{ratio.greenThreshold}</span>
-                    </div>
-                    <div className={`p-1.5 rounded-lg flex items-start gap-1.5 border ${
-                      cardState.status === 'yellow' ? 'bg-slate-100 border-slate-200 font-medium text-slate-800' : 'bg-slate-50 border-slate-100 text-slate-500'
-                    }`}>
-                      <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0 mt-1"></span>
-                      <span>{ratio.yellowThreshold}</span>
-                    </div>
-                    <div className={`p-1.5 rounded-lg flex items-start gap-1.5 border ${
-                      cardState.status === 'red' ? 'bg-rose-50/90 border-rose-300 font-medium text-rose-950' : 'bg-slate-50 border-slate-100 text-slate-500'
-                    }`}>
-                      <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0 mt-1"></span>
-                      <span>{ratio.redThreshold}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mini-Simulador Interactivo "¿Qué pasa si...?" (Desplegable) */}
                 {isExpanded && (
-                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 pt-3 animate-in fade-in duration-150">
-                    <div className="flex items-center justify-between text-xs text-slate-900 font-bold">
-                      <span className="flex items-center gap-1.5">
-                        <Sliders className="w-3.5 h-3.5 text-slate-700" />
-                        Simulador de Escenarios
-                      </span>
-                      {cardState.isSimulated && (
-                        <button
-                          onClick={() => resetRatioSimulator(ratio.key)}
-                          className="text-[10px] text-slate-600 hover:text-slate-900 hover:underline flex items-center gap-1"
-                        >
-                          <RotateCcw className="w-3 h-3" /> Restaurar real
-                        </button>
-                      )}
+                  <div id={detailId} className="border-t border-slate-200 p-4 grid gap-5 lg:grid-cols-3">
+                    {/* Fórmula con las cifras de la empresa */}
+                    <div className="space-y-2">
+                      <h5 className="m-0 text-sm font-semibold text-slate-900">Fórmula</h5>
+                      <p className="m-0 text-sm text-slate-600">{ratio.formulaTex}</p>
+                      <dl className="m-0 text-sm divide-y divide-slate-200 border-y border-slate-200">
+                        <div className="flex justify-between gap-3 py-2">
+                          <dt className="text-slate-600">{ratio.numLabel}</dt>
+                          <dd className="m-0 tabular font-semibold text-slate-900 text-right">{cardState.num.toLocaleString('es-ES')} {ratio.numUnit}</dd>
+                        </div>
+                        <div className="flex justify-between gap-3 py-2">
+                          <dt className="text-slate-600">{ratio.denLabel}</dt>
+                          <dd className="m-0 tabular font-semibold text-slate-900 text-right">{cardState.den.toLocaleString('es-ES')} {ratio.denUnit}</dd>
+                        </div>
+                      </dl>
+                      <p className="m-0 text-sm text-slate-700 leading-relaxed">{ratio.explanation}</p>
                     </div>
 
-                    <div className="space-y-2.5 text-xs">
-                      <div>
-                        <div className="flex justify-between text-[11px] text-slate-600 mb-1">
+                    {/* Umbrales */}
+                    <div className="space-y-2">
+                      <h5 className="m-0 text-sm font-semibold text-slate-900">Umbrales</h5>
+                      <ul className="m-0 p-0 list-none space-y-1.5 text-sm">
+                        {([
+                          ['green', ratio.greenThreshold],
+                          ['yellow', ratio.yellowThreshold],
+                          ['red', ratio.redThreshold]
+                        ] as [TrafficLight, string][]).map(([st, txt]) => (
+                          <li
+                            key={st}
+                            className={`flex items-start gap-2 ${cardState.status === st ? 'font-medium text-slate-900' : 'text-slate-600'}`}
+                          >
+                            <span className={`w-2 h-2 mt-1.5 shrink-0 rounded-full ${STATUS_META[st].dot}`} aria-hidden="true" />
+                            <span>
+                              {txt}
+                              {cardState.status === st && <span className="sr-only"> (situación actual)</span>}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Simulador */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <h5 className="m-0 text-sm font-semibold text-slate-900">¿Qué pasaría si…?</h5>
+                        {cardState.isSimulated && (
+                          <button
+                            type="button"
+                            onClick={() => resetRatioSimulator(ratio.key)}
+                            className="text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" /> Restaurar
+                          </button>
+                        )}
+                      </div>
+                      <label className="block text-sm">
+                        <span className="flex justify-between gap-2 text-slate-600 mb-1">
                           <span>{ratio.numLabel}</span>
-                          <span className="font-mono font-bold text-slate-900">{cardState.num.toLocaleString()} {ratio.numUnit}</span>
-                        </div>
+                          <span className="tabular font-semibold text-slate-900">{cardState.num.toLocaleString('es-ES')}</span>
+                        </span>
                         <input
                           type="range"
                           min={Math.max(1, Math.round(ratio.numValue * 0.2))}
@@ -1136,20 +878,16 @@ export const RatiosDashboard: React.FC<RatiosDashboardProps> = ({
                           value={cardState.num}
                           onChange={e => {
                             const newNum = Number(e.target.value);
-                            setSimulatorOverrides(prev => ({
-                              ...prev,
-                              [ratio.key]: { num: newNum, den: cardState.den }
-                            }));
+                            setSimulatorOverrides(prev => ({ ...prev, [ratio.key]: { num: newNum, den: cardState.den } }));
                           }}
-                          className="w-full accent-slate-800 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+                          className="w-full accent-amber-700"
                         />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-[11px] text-slate-600 mb-1">
+                      </label>
+                      <label className="block text-sm">
+                        <span className="flex justify-between gap-2 text-slate-600 mb-1">
                           <span>{ratio.denLabel}</span>
-                          <span className="font-mono font-bold text-slate-900">{cardState.den.toLocaleString()} {ratio.denUnit}</span>
-                        </div>
+                          <span className="tabular font-semibold text-slate-900">{cardState.den.toLocaleString('es-ES')}</span>
+                        </span>
                         <input
                           type="range"
                           min={Math.max(1, Math.round(ratio.denValue * 0.2))}
@@ -1157,81 +895,50 @@ export const RatiosDashboard: React.FC<RatiosDashboardProps> = ({
                           value={cardState.den}
                           onChange={e => {
                             const newDen = Number(e.target.value);
-                            setSimulatorOverrides(prev => ({
-                              ...prev,
-                              [ratio.key]: { num: cardState.num, den: newDen }
-                            }));
+                            setSimulatorOverrides(prev => ({ ...prev, [ratio.key]: { num: cardState.num, den: newDen } }));
                           }}
-                          className="w-full accent-slate-800 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+                          className="w-full accent-amber-700"
                         />
-                      </div>
+                      </label>
+                      {onSelectRatioForAnalysis && (
+                        <button
+                          type="button"
+                          onClick={() => onSelectRatioForAnalysis(ratio.key)}
+                          className="text-sm font-medium text-amber-800 hover:text-amber-900 underline underline-offset-2"
+                        >
+                          Abrir en la guía de fórmulas
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
-              </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
-              {/* Card Footer Actions */}
-              <div className="p-4 pt-3 border-t border-slate-100 bg-slate-50/50 rounded-b-3xl flex items-center justify-between gap-2">
-                <button
-                  onClick={() => toggleCard(ratio.key)}
-                  className="text-xs font-bold text-slate-700 hover:text-slate-900 transition-colors flex items-center gap-1"
-                >
-                  <Sliders className="w-3.5 h-3.5 text-slate-500" />
-                  <span>{isExpanded ? 'Ocultar Simulador' : 'Simular ¿Qué pasa si...?'}</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (onSelectRatioForAnalysis) {
-                      onSelectRatioForAnalysis(ratio.key);
-                    }
-                  }}
-                  className="text-xs font-bold text-slate-900 hover:text-slate-700 transition-colors flex items-center gap-1 group"
-                  title="Abrir ficha detallada en la Guía de Fórmulas"
-                >
-                  <span>Fórmula Completa</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* 5. NAVEGACIÓN DIRECTA A OTRAS VISTAS DE ANÁLISIS */}
-      <div className="p-5 bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-slate-300 font-mono text-xs font-bold">PROFUNDIZAR ANÁLISIS</span>
-            <span className="text-xs text-slate-400">•</span>
-            <span className="text-xs text-slate-300">Auditoría multidimensional de {selectedCompany.ticker}</span>
+      {onNavigateToView && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-200">
+          <p className="m-0 text-sm text-slate-600">Para ver de dónde salen estas cifras, abre el balance o la guía de fórmulas.</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onNavigateToView('visualizer')}
+              className="h-9 px-3 rounded-md text-sm font-medium border border-slate-300 text-slate-700 hover:text-slate-900 hover:border-slate-400 transition-colors"
+            >
+              Balance y DuPont
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigateToView('formulas')}
+              className="h-9 px-3 rounded-md text-sm font-medium border border-slate-300 text-slate-700 hover:text-slate-900 hover:border-slate-400 transition-colors"
+            >
+              Guía de fórmulas
+            </button>
           </div>
-          <h4 className="text-base font-bold font-serif">
-            ¿Deseas examinar el desglose visual del Balance o la descomposición DuPont?
-          </h4>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {onNavigateToView && (
-            <>
-              <button
-                onClick={() => onNavigateToView('visualizer')}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/10 flex items-center gap-1.5"
-              >
-                <span>Desglose DuPont & Balance</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => onNavigateToView('formulas')}
-                className="px-4 py-2 rounded-xl bg-transparent hover:bg-white/10 text-white font-medium text-xs transition-all border border-white/20 flex items-center gap-1.5"
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>Guía Técnica de Fórmulas</span>
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 };

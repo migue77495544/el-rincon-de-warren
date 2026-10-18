@@ -52,18 +52,18 @@ export const DatabaseAndCodeViewer: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-slate-900 rounded-lg p-5 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">
+            <span className="text-xs font-semibold text-slate-500 font-mono">
               Instrucción Final: Estructuras y Scripts
             </span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono border border-slate-700">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono border border-slate-700">
               Producción / Backend Ready
             </span>
           </div>
-          <h2 className="text-xl font-black text-white mt-1">
-            Estructuras de Base de Datos (SQL/NoSQL) y Código de Algoritmos
+          <h2 className="text-xl font-semibold text-white mt-1">
+            Datos y código de los cálculos
           </h2>
           <p className="text-xs text-slate-300 mt-0.5">
             Esquemas completos para persistir las 4 dimensiones financieras, el simulador conductual, la gamificación de Divay y la evaluación DiD.
@@ -74,7 +74,7 @@ export const DatabaseAndCodeViewer: React.FC = () => {
           onClick={handleCopy}
           className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition-colors shadow-sm shrink-0 active:scale-95"
         >
-          {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-slate-400" />}
+          {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-slate-500" />}
           {copied ? '¡Copiado al Portapapeles!' : 'Copiar Código'}
         </button>
       </div>
@@ -86,7 +86,7 @@ export const DatabaseAndCodeViewer: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
             activeTab === 'sql'
               ? 'bg-white/10 text-white shadow-xs'
-              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              : 'bg-slate-900 text-slate-500 hover:text-white border border-slate-800'
           }`}
         >
           <Database className="w-4 h-4" />
@@ -98,7 +98,7 @@ export const DatabaseAndCodeViewer: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
             activeTab === 'nosql'
               ? 'bg-white/10 text-white shadow-xs'
-              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              : 'bg-slate-900 text-slate-500 hover:text-white border border-slate-800'
           }`}
         >
           <Database className="w-4 h-4" />
@@ -110,7 +110,7 @@ export const DatabaseAndCodeViewer: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
             activeTab === 'python'
               ? 'bg-white/10 text-white shadow-xs'
-              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              : 'bg-slate-900 text-slate-500 hover:text-white border border-slate-800'
           }`}
         >
           <FileCode2 className="w-4 h-4" />
@@ -122,7 +122,7 @@ export const DatabaseAndCodeViewer: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
             activeTab === 'javascript'
               ? 'bg-white/10 text-white shadow-xs'
-              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              : 'bg-slate-900 text-slate-500 hover:text-white border border-slate-800'
           }`}
         >
           <Terminal className="w-4 h-4" />
@@ -131,8 +131,8 @@ export const DatabaseAndCodeViewer: React.FC = () => {
       </div>
 
       {/* Code Viewer Box */}
-      <div className="bg-slate-950 rounded-2xl border border-slate-800 p-4 shadow-xl overflow-hidden">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800 text-xs text-slate-400">
+      <div className="bg-slate-950 rounded-lg border border-slate-800 p-4 shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800 text-xs text-slate-500">
           <div className="flex items-center gap-2 font-mono">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
@@ -147,7 +147,7 @@ export const DatabaseAndCodeViewer: React.FC = () => {
                 : 'warren_engine.ts'}
             </span>
           </div>
-          <span className="text-[11px] text-slate-500 uppercase font-mono font-semibold">
+          <span className="text-xs text-slate-500 font-mono font-semibold">
             {activeTab}
           </span>
         </div>

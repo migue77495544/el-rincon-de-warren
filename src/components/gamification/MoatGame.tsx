@@ -39,13 +39,13 @@ export const MoatGame: React.FC<MoatGameProps> = ({ onAddXP }) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--color-border)] pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold text-slate-500 uppercase">Juego 1 · Moat vs Trap</span>
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold border border-slate-200">
+            <span className="text-xs font-mono font-bold text-slate-500">Juego 1 · Moat vs Trap</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold border border-slate-200">
               Aciertos: {moatScore} / {MOAT_GAME_CASES.length}
             </span>
           </div>
           <h3 className="text-xl font-bold text-slate-900 mt-1">
-            ¿Foso Económico o Trampa de Valor?
+            ¿Foso económico o trampa de valor?
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
             Analiza la tarjeta fundamental de la compañía y toma tu decisión antes de que el mercado abra.
@@ -62,7 +62,7 @@ export const MoatGame: React.FC<MoatGameProps> = ({ onAddXP }) => {
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <span className="text-xs font-mono text-slate-500">{currentMoatCase.sector}</span>
-            <h4 className="text-2xl font-black text-slate-900">{currentMoatCase.companyName}</h4>
+            <h4 className="text-2xl font-semibold text-slate-900">{currentMoatCase.companyName}</h4>
             <span className="inline-block mt-1 font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
               Ticker: {currentMoatCase.ticker}
             </span>
@@ -71,7 +71,7 @@ export const MoatGame: React.FC<MoatGameProps> = ({ onAddXP }) => {
           {/* 4 Ratios en Pantalla */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
             <div className="p-3 bg-white rounded-xl border border-[var(--color-border)]">
-              <span className="text-[10px] text-slate-500 font-sans font-medium flex items-center">
+              <span className="text-xs text-slate-500 font-sans font-medium flex items-center">
                 ROE
                 <InfoTooltip concept="roe" />
               </span>
@@ -80,19 +80,19 @@ export const MoatGame: React.FC<MoatGameProps> = ({ onAddXP }) => {
               </strong>
             </div>
             <div className="p-3 bg-white rounded-xl border border-[var(--color-border)]">
-              <span className="text-[10px] text-slate-500 block font-sans font-medium">Current Ratio</span>
-              <strong className={`text-base font-bold ${currentMoatCase.currentRatio >= 1.2 ? 'text-success' : 'text-slate-400'}`}>
+              <span className="text-xs text-slate-500 block font-sans font-medium">Current Ratio</span>
+              <strong className={`text-base font-bold ${currentMoatCase.currentRatio >= 1.2 ? 'text-success' : 'text-slate-500'}`}>
                 {currentMoatCase.currentRatio}x
               </strong>
             </div>
             <div className="p-3 bg-white rounded-xl border border-[var(--color-border)]">
-              <span className="text-[10px] text-slate-500 block font-sans font-medium">Deuda / PN</span>
+              <span className="text-xs text-slate-500 block font-sans font-medium">Deuda / PN</span>
               <strong className={`text-base font-bold ${currentMoatCase.debtToEquity <= 1.5 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {currentMoatCase.debtToEquity}x
               </strong>
             </div>
             <div className="p-3 bg-slate-900 rounded-xl border border-slate-800">
-              <span className="text-[10px] text-slate-400 block font-sans font-medium">PER</span>
+              <span className="text-xs text-slate-500 block font-sans font-medium">PER</span>
               <strong className="text-base font-bold text-white">
                 {currentMoatCase.per > 0 ? `${currentMoatCase.per}x` : 'N/D (Pérdidas)'}
               </strong>

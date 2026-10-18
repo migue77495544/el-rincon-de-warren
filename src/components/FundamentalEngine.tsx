@@ -35,8 +35,7 @@ import {
   TrendingDown,
   TrendingUp,
   XCircle,
-  Zap
-} from 'lucide-react';
+  Zap, X } from 'lucide-react';
 import { CompanyPriceChart } from './CompanyPriceChart';
 import { VitalSigns } from './VitalSigns';
 import { InfoTooltip } from './SmartTooltip';
@@ -44,7 +43,9 @@ import { SimpleViewMode, SkeletonCard } from './SimpleViewMode';
 import { CustomCompanyModal, INITIAL_CUSTOM_FORM, CustomCompanyFormData } from './fundamental/CustomCompanyModal';
 import { QuickInspectModal } from './fundamental/QuickInspectModal';
 import { AnimatePresence, motion } from 'motion/react';
-import { Reveal, StatusBadge } from './ui/Feedback';
+import { Reveal } from './ui/Feedback';
+import { ScrollRail } from './ui/ScrollRail';
+import { deriveVerdict } from '../utils/verdict';
 
 // Paneles del modo Analista: se descargan solo cuando se muestran
 const FinancialFormulasGuide = lazy(() => import('./FinancialFormulasGuide').then(m => ({ default: m.FinancialFormulasGuide })));
@@ -123,11 +124,9 @@ const ANALYSIS_CATEGORIES: AnalysisCategory[] = [
 // Rótulo de subsección dentro de una categoría
 const SectionLabel: React.FC<{ icon: React.ComponentType<{ className?: string }>; children: React.ReactNode }> = ({ icon: Icon, children }) => (
   <div className="flex items-center gap-2 pt-1">
-    <span className="w-6 h-6 rounded-md bg-amber-50 border border-amber-200 flex items-center justify-center">
-      <Icon className="w-3.5 h-3.5 text-amber-700" />
-    </span>
-    <h3 className="m-0 text-[13px] font-semibold text-slate-700">{children}</h3>
-    <span className="flex-1 h-px bg-gradient-to-r from-slate-200 to-transparent" aria-hidden="true" />
+    <Icon className="w-4 h-4 text-slate-500" />
+    <h3 className="m-0 font-serif text-lg font-semibold text-slate-900">{children}</h3>
+    <span className="flex-1 h-px bg-slate-200" aria-hidden="true" />
   </div>
 );
 
@@ -529,7 +528,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
       {viewMode === 'simple' && !isAnalystEnabledForSection('fundamental') ? (
         <div className="space-y-6">
           {/* Mobile / Tablet Segmented Control for Simple Mode */}
-          <div className="flex lg:hidden items-center justify-between p-1 bg-slate-200/80 rounded-2xl border border-slate-200 gap-1">
+          <div className="flex lg:hidden items-center justify-between p-1 bg-slate-200/80 rounded-lg border border-slate-200 gap-1">
             <button
               onClick={() => setMobileActiveTab('list')}
               className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
@@ -539,7 +538,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               }`}
             >
               <Building2 className="w-3.5 h-3.5 text-slate-500" />
-              <span>Catálogo ({filteredCompanies.length})</span>
+              <span>Elegir empresa</span>
             </button>
 
             <button
@@ -556,19 +555,20 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               }`}
             >
               <BarChart3 className="w-3.5 h-3.5 text-slate-500" />
-              <span>Ficha de {selectedCompany.ticker}</span>
+              <span>Ver la respuesta</span>
             </button>
           </div>
 
           {/* Live sync notification feedback in Simple Mode */}
           {syncStatusBanner && (
-            <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between animate-fadeIn mb-2">
+            <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between animate-fadeIn mb-2">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>{syncStatusBanner}</span>
               </div>
-              <button onClick={() => setSyncStatusBanner(null)} className="text-slate-400 hover:text-slate-700 text-xs" aria-label="Cerrar aviso">
-                ✕
+              <button onClick={() => setSyncStatusBanner(null)} className="text-slate-500 hover:text-slate-700 text-xs" aria-label="Cerrar aviso">
+                <X className="w-4 h-4" aria-hidden="true" />
+                <span className="sr-only">Cerrar</span>
               </button>
             </div>
           )}
@@ -577,22 +577,14 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Column: List of Companies */}
             <div className={`lg:col-span-4 space-y-4 ${mobileActiveTab === 'list' || mobileActiveTab === 'both' ? 'block' : 'hidden lg:block'}`}>
-              <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-card">
-                <div className="flex items-center justify-between mb-3.5">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-slate-500" />
-                    <h2 className="m-0 font-serif text-lg font-semibold text-slate-900">
-                      Empresas
-                    </h2>
-                  </div>
-                  <button
-                    onClick={() => setShowCustomModal(true)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all shadow-2xs active:scale-95"
-                    title="Añadir empresa calculando estados financieros"
-                  >
-                    <PlusCircle className="w-3.5 h-3.5" />
-                    <span>Añadir</span>
-                  </button>
+              <div className="bg-white rounded-2xl p-5 border border-slate-200">
+                <div className="mb-3.5">
+                  <h2 className="m-0 font-serif text-lg font-semibold text-slate-900">
+                    Elige una empresa
+                  </h2>
+                  <p className="mt-0.5 mb-0 text-sm text-slate-600">
+                    La nota resume la calidad del negocio, de A (muy buena) a F (muy débil).
+                  </p>
                 </div>
 
                 <div className="relative mb-3">
@@ -603,10 +595,11 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                     }}
                     className="relative"
                   >
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                    <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
                     <input
                       type="text"
-                      placeholder="Buscar ticker (NVDA, TSLA) o empresa..."
+                      placeholder="Busca otra: Apple, Nike, NVDA…"
+                      aria-label="Buscar una empresa por nombre o ticker"
                       value={searchTerm}
                       onFocus={() => setShowSearchDropdown(true)}
                       onChange={e => {
@@ -619,7 +612,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                           handleSearchSubmit();
                         }
                       }}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-16 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 shadow-xs"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-16 py-2.5 text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:border-slate-400 shadow-xs"
                     />
                     <div className="absolute right-2.5 top-2 flex items-center gap-1">
                       {isSearchingLive && (
@@ -632,16 +625,17 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                             setSearchTerm('');
                             setShowSearchDropdown(false);
                           }}
-                          className="text-slate-400 hover:text-slate-700 text-xs p-1"
+                          className="text-slate-500 hover:text-slate-700 text-xs p-1"
                           title="Limpiar búsqueda"
                         >
-                          ✕
+                          <X className="w-4 h-4" aria-hidden="true" />
+                          <span className="sr-only">Cerrar</span>
                         </button>
                       )}
                       <button
                         type="submit"
                         disabled={!searchTerm.trim() || isImporting}
-                        className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-[10px] font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         title="Buscar o importar en vivo"
                       >
                         <Search className="w-3 h-3" />
@@ -652,7 +646,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                   {/* Dropdown flotante con resultados en vivo mientras se escribe */}
                   {showSearchDropdown && searchTerm.trim().length >= 1 && (
                     <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 max-h-72 overflow-y-auto no-scrollbar animate-fadeIn">
-                      <div className="flex items-center justify-between px-2 py-1 mb-1 border-b border-slate-100 text-[10px] text-slate-500 font-mono">
+                      <div className="flex items-center justify-between px-2 py-1 mb-1 border-b border-slate-100 text-xs text-slate-500 font-mono">
                         <span>Sugerencias de Mercado en Vivo</span>
                         {isSearchingLive ? (
                           <span className="text-slate-500 animate-pulse">Consultando Wall Street...</span>
@@ -680,14 +674,14 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                                 className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-100 cursor-pointer transition-colors"
                               >
                                 <div className="flex items-center gap-2">
-                                  <span className="w-9 h-6 rounded-lg bg-slate-100 border border-slate-200 font-mono font-bold text-[11px] text-slate-800 flex items-center justify-center shrink-0">
+                                  <span className="w-9 h-6 rounded-lg bg-slate-100 border border-slate-200 font-mono font-bold text-xs text-slate-800 flex items-center justify-center shrink-0">
                                     {item.ticker}
                                   </span>
                                   <div className="text-left truncate max-w-[140px]">
                                     <span className="text-xs font-semibold text-slate-900 block truncate">
                                       {item.nombre}
                                     </span>
-                                    <span className="text-[10px] text-slate-500 block truncate">
+                                    <span className="text-xs text-slate-500 block truncate">
                                       {item.sector}
                                     </span>
                                   </div>
@@ -695,16 +689,16 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
 
                                 <div className="text-right shrink-0">
                                   {local ? (
-                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                                       En Cartera
                                     </span>
                                   ) : (
-                                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-transparent text-slate-600 border border-slate-200 hover:border-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
+                                    <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-transparent text-slate-600 border border-slate-200 hover:border-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
                                       + Cargar en Vivo
                                     </span>
                                   )}
                                   {item.price && (
-                                    <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                                    <span className="text-xs text-slate-500 font-mono block mt-0.5">
                                       ${item.price.toFixed(2)}
                                     </span>
                                   )}
@@ -731,47 +725,18 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                   )}
                 </div>
 
-                {/* Popular Ticker Chips */}
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar mb-3.5 pb-1">
-                  <span className="text-[10px] text-slate-500 font-medium mr-1 shrink-0">Populares:</span>
-                  {['NVDA', 'MSFT', 'TSLA', 'GOOGL', 'META', 'AAPL', 'KO'].map(t => {
-                    const local = companies.find(c => c.ticker === t);
-                    return (
-                      <button
-                        key={t}
-                        onClick={() => {
-                          if (isImporting) return;
-                          if (local) {
-                            handleSelectAndOpenCompany(local);
-                          } else {
-                            handleImportTicker(undefined, t);
-                          }
-                        }}
-                        disabled={isImporting}
-                        className={`px-2.5 py-1 rounded-full text-[11px] font-mono font-bold transition-all active:scale-95 shrink-0 ${
-                          local
-                            ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200'
-                            : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'
-                        }`}
-                      >
-                        {local ? t : `+ ${t}`}
-                      </button>
-                    );
-                  })}
-                </div>
-
                 {/* Company List */}
                 <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1 no-scrollbar">
                   {filteredCompanies.length === 0 ? (
                     <div className="p-5 rounded-2xl bg-white border border-slate-200 text-center space-y-3 my-2 animate-fadeIn shadow-sm">
-                      <div className="w-10 h-10 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto text-slate-600">
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto text-slate-600">
                         <Search className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
+                        <h4 className="text-xs font-bold text-slate-900 font-mono">
                           "{searchTerm}" no está en el catálogo
                         </h4>
-                        <p className="text-[11px] text-slate-500 mt-1 max-w-[220px] mx-auto">
+                        <p className="text-xs text-slate-500 mt-1 max-w-[220px] mx-auto">
                           ¿Deseas buscarla e importarla directamente desde la Bolsa en tiempo real vía Yahoo Finance?
                         </p>
                       </div>
@@ -788,46 +753,30 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                     filteredCompanies.map(c => {
                       const isSelected = c.id === selectedCompany.id;
                       return (
-                        <div
+                        <button
                           key={c.id}
+                          type="button"
                           onClick={() => handleSelectAndOpenCompany(c)}
-                          className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:-translate-y-px hover:shadow-md ${
+                          aria-current={isSelected ? 'true' : undefined}
+                          className={`w-full text-left p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors ${
                             isSelected
-                              ? 'bg-slate-900/5 border-slate-900 shadow-xs'
-                              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                              ? 'bg-amber-50 border-amber-400'
+                              : 'bg-white border-slate-200 hover:border-slate-400'
                           }`}
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-8 h-8 rounded-lg border flex items-center justify-center font-mono font-black text-xs shrink-0 ${
-                                isSelected
-                                  ? 'bg-slate-900 text-white border-slate-900'
-                                  : 'bg-slate-100 border-slate-200 text-slate-800'
-                              }`}>
-                                {c.ticker.slice(0, 3)}
-                              </div>
-                              <div>
-                                <span className="font-mono font-bold text-xs text-slate-900 block">
-                                  {c.ticker}
-                                </span>
-                                <span className="text-[11px] text-slate-500 truncate block max-w-[140px]">
-                                  {c.nombre}
-                                </span>
-                              </div>
-                            </div>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              c.scoreGrade === 'A+' || c.scoreGrade === 'A'
-                                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                                : c.scoreGrade === 'F'
-                                ? 'bg-rose-50 text-rose-800 border border-rose-200'
-                                : 'bg-slate-100 text-slate-700 border border-slate-200'
-                            }`}>
-                              <span>
-                                {c.linearScore}
-                              </span>
-</span>
-                          </div>
-                        </div>
+                          <span className="min-w-0">
+                            <span className="block text-sm font-semibold text-slate-900 truncate">{c.nombre}</span>
+                            <span className="block text-xs text-slate-600">{c.ticker}, {c.sector}</span>
+                          </span>
+                          <span className="shrink-0 text-right">
+                            <span className={`block cifra text-xl leading-none ${
+                              c.scoreGrade === 'A+' || c.scoreGrade === 'A' ? 'text-emerald-800' : c.scoreGrade === 'F' || c.scoreGrade === 'D' ? 'text-rose-800' : 'text-amber-900'
+                            }`}>{c.scoreGrade}</span>
+                            <span className="block text-xs text-slate-600">
+                              {c.scoreGrade === 'A+' || c.scoreGrade === 'A' ? 'muy buena' : c.scoreGrade === 'B' ? 'buena' : c.scoreGrade === 'C' ? 'regular' : 'débil'}
+                            </span>
+                          </span>
+                        </button>
                       )
                       })
                   )}
@@ -880,7 +829,6 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
         <div>
           <h1 className="m-0 font-serif text-[28px] leading-tight font-semibold text-slate-900">
             Análisis fundamental
-            <span className="block h-[3px] w-12 mt-2 rounded-full bg-gradient-to-r from-amber-500 to-amber-300" aria-hidden="true" />
           </h1>
           <p className="mt-1 mb-0 text-sm text-slate-600 max-w-[72ch] leading-relaxed">
             Tasa libre de riesgo{' '}
@@ -895,7 +843,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
             type="button"
             onClick={handleSyncPrices}
             disabled={isSyncingPrices}
-            className="press flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] font-medium border border-slate-200 bg-white text-slate-700 hover:text-slate-900 hover:border-slate-300 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 h-9 px-3 rounded-md text-sm font-medium border border-slate-300 bg-white text-slate-700 hover:text-slate-900 hover:border-slate-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="Actualizar las cotizaciones de todo el catálogo desde Yahoo Finance"
           >
             <RefreshCw className={`w-4 h-4 text-slate-500 ${isSyncingPrices ? 'animate-spin' : ''}`} />
@@ -904,7 +852,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
           <button
             type="button"
             onClick={() => setShowCustomModal(true)}
-            className="press flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-[13px] font-semibold bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-glow"
+            className="flex items-center gap-1.5 h-9 px-3.5 rounded-md text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition-colors"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Analizar mi empresa</span>
@@ -925,7 +873,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
       )}
 
       {/* Mobile / Tablet Segmented Control: Lista de Empresas vs Análisis Fundamental vs Ambos */}
-      <div className="flex lg:hidden items-center justify-between p-1 bg-slate-200/80 rounded-2xl border border-slate-200 mb-4 gap-1">
+      <div className="flex lg:hidden items-center justify-between p-1 bg-slate-200/80 rounded-lg border border-slate-200 mb-4 gap-1">
         <button
           onClick={() => setMobileActiveTab('list')}
           className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
@@ -973,7 +921,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: List of Companies (Bottom-Up Filter) */}
         <div className={`lg:col-span-4 space-y-4 ${mobileActiveTab === 'list' || mobileActiveTab === 'both' ? 'block' : 'hidden lg:block'}`}>
-          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-card">
+          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-card">
             <div className="flex items-center justify-between mb-3.5">
               <div className="flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-slate-500" />
@@ -995,7 +943,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                 }}
                 className="relative"
               >
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
                 <input
                   type="text"
                   placeholder="Buscar ticker (NVDA) o empresa (Tesla)..."
@@ -1011,7 +959,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                       handleSearchSubmit();
                     }
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-16 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 shadow-xs"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-16 py-2.5 text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:border-slate-400 shadow-xs"
                 />
                 <div className="absolute right-2.5 top-2 flex items-center gap-1">
                   {isSearchingLive && (
@@ -1024,16 +972,17 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                         setSearchTerm('');
                         setShowSearchDropdown(false);
                       }}
-                      className="text-slate-400 hover:text-slate-700 text-xs p-1"
+                      className="text-slate-500 hover:text-slate-700 text-xs p-1"
                       title="Limpiar búsqueda"
                     >
-                      ✕
+                      <X className="w-4 h-4" aria-hidden="true" />
+                      <span className="sr-only">Cerrar</span>
                     </button>
                   )}
                   <button
                     type="submit"
                     disabled={!searchTerm.trim() || isImporting}
-                    className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-[10px] font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     title="Buscar e importar"
                   >
                     <Search className="w-3 h-3" />
@@ -1044,7 +993,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               {/* Dropdown flotante con resultados en vivo mientras se escribe */}
               {showSearchDropdown && searchTerm.trim().length >= 1 && (
                 <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 max-h-72 overflow-y-auto no-scrollbar animate-fadeIn">
-                  <div className="flex items-center justify-between px-2 py-1 mb-1 border-b border-slate-100 text-[10px] text-slate-500 font-mono">
+                  <div className="flex items-center justify-between px-2 py-1 mb-1 border-b border-slate-100 text-xs text-slate-500 font-mono">
                     <span>Sugerencias de Mercado en Vivo</span>
                     {isSearchingLive ? (
                       <span className="text-slate-500 animate-pulse">Consultando Wall Street...</span>
@@ -1072,14 +1021,14 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                             className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-100 cursor-pointer transition-colors"
                           >
                             <div className="flex items-center gap-2">
-                              <span className="w-9 h-6 rounded-lg bg-slate-100 border border-slate-200 font-mono font-bold text-[11px] text-slate-800 flex items-center justify-center shrink-0">
+                              <span className="w-9 h-6 rounded-lg bg-slate-100 border border-slate-200 font-mono font-bold text-xs text-slate-800 flex items-center justify-center shrink-0">
                                 {item.ticker}
                               </span>
                               <div className="text-left truncate max-w-[140px]">
                                 <span className="text-xs font-semibold text-slate-900 block truncate">
                                   {item.nombre}
                                 </span>
-                                <span className="text-[10px] text-slate-500 block truncate">
+                                <span className="text-xs text-slate-500 block truncate">
                                   {item.sector}
                                 </span>
                               </div>
@@ -1087,16 +1036,16 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
 
                             <div className="text-right shrink-0">
                               {local ? (
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                                   En Cartera
                                 </span>
                               ) : (
-                                <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-transparent text-slate-600 border border-slate-200 hover:border-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
+                                <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-transparent text-slate-600 border border-slate-200 hover:border-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
                                   + Cargar en Vivo
                                 </span>
                               )}
                               {item.price && (
-                                <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                                <span className="text-xs text-slate-500 font-mono block mt-0.5">
                                   ${item.price.toFixed(2)}
                                 </span>
                               )}
@@ -1125,7 +1074,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
 
             {/* Accesos rápidos a Tickers Populares */}
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar mb-3 pb-1">
-              <span className="text-[10px] text-slate-500 uppercase font-mono tracking-wider shrink-0 mr-1">
+              <span className="text-xs text-slate-500 font-mono shrink-0 mr-1">
                 Top:
               </span>
               {['NVDA', 'TSLA', 'MSFT', 'AMZN', 'GOOGL', 'META', 'SAN', 'DIS'].map(t => {
@@ -1141,7 +1090,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                         handleImportTicker(undefined, t);
                       }
                     }}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold transition-all shrink-0 ${
+                    className={`px-2 py-0.5 rounded-lg text-xs font-mono font-bold transition-all shrink-0 ${
                       inCatalog
                         ? 'bg-slate-200 text-slate-800 border border-slate-300 hover:bg-slate-300'
                         : 'bg-slate-100 text-slate-700 border border-slate-200 hover:border-slate-400 hover:text-slate-900'
@@ -1158,7 +1107,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
             <div className="flex flex-wrap gap-1.5 mb-3.5 pb-2 border-b border-slate-100">
               <button
                 onClick={() => setQualityFilter('all')}
-                className={`press px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                className={`press px-2.5 py-1 rounded-full text-xs font-semibold ${
                   qualityFilter === 'all'
                     ? 'bg-slate-900 text-white font-bold'
                     : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
@@ -1168,7 +1117,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               </button>
               <button
                 onClick={() => setQualityFilter('green')}
-                className={`press px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                className={`press px-2.5 py-1 rounded-full text-xs font-semibold ${
                   qualityFilter === 'green'
                     ? 'bg-slate-900 text-white font-bold'
                     : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
@@ -1178,7 +1127,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               </button>
               <button
                 onClick={() => setQualityFilter('margin')}
-                className={`press px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                className={`press px-2.5 py-1 rounded-full text-xs font-semibold ${
                   qualityFilter === 'margin'
                     ? 'bg-slate-900 text-white font-bold'
                     : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
@@ -1188,7 +1137,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               </button>
               <button
                 onClick={() => setQualityFilter('speculative')}
-                className={`press px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                className={`press px-2.5 py-1 rounded-full text-xs font-semibold ${
                   qualityFilter === 'speculative'
                     ? 'bg-slate-900 text-white font-bold'
                     : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
@@ -1202,14 +1151,14 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
             <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1 no-scrollbar">
               {filteredCompanies.length === 0 ? (
                 <div className="p-5 rounded-2xl bg-white border border-slate-200 text-center space-y-3 my-2 animate-fadeIn shadow-sm">
-                  <div className="w-10 h-10 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto text-slate-600">
+                  <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto text-slate-600">
                     <Search className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
+                    <h4 className="text-xs font-bold text-slate-900 font-mono">
                       "{searchTerm}" no está en el catálogo local
                     </h4>
-                    <p className="text-[11px] text-slate-500 mt-1 max-w-[220px] mx-auto">
+                    <p className="text-xs text-slate-500 mt-1 max-w-[220px] mx-auto">
                       ¿Deseas buscarla e importarla directamente desde la Bolsa en tiempo real vía Yahoo Finance?
                     </p>
                   </div>
@@ -1230,7 +1179,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                     <div
                       key={c.id}
                       onClick={() => handleSelectAndOpenCompany(c)}
-                      className={`p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer group hover:-translate-y-px hover:shadow-md ${
+                      className={`p-3.5 rounded-lg border transition-all duration-200 cursor-pointer group hover:-translate-y-px hover:shadow-md ${
                         isSelected
                           ? 'bg-slate-100/90 border-slate-900 shadow-xs ring-1 ring-slate-900'
                           : isSpeculative
@@ -1240,7 +1189,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
-                          <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-mono font-black text-xs shrink-0 transition-colors ${
+                          <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-mono font-semibold text-xs shrink-0 transition-colors ${
                             isSelected
                               ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
                               : 'bg-slate-100 border-slate-200 text-slate-800'
@@ -1253,19 +1202,19 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                                 {c.ticker}
                               </span>
                               {isSelected && (
-                                <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded-md bg-slate-900 text-white">
+                                <span className="text-xs font-semibold px-1.5 py-0.2 rounded-md bg-slate-900 text-white">
                                   Activa
                                 </span>
                               )}
                             </div>
-                            <span className="text-[11px] text-slate-500 truncate max-w-[130px] block">
+                            <span className="text-xs text-slate-500 truncate max-w-[130px] block">
                               {c.nombre}
                             </span>
                           </div>
                         </div>
 
                         <div className="text-right">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block ${
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block ${
                             c.scoreGrade === 'A+' || c.scoreGrade === 'A'
                               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                               : c.scoreGrade === 'F'
@@ -1274,13 +1223,13 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                           }`}>
                             {c.scoreGrade} · {c.linearScore} pts
                           </span>
-                          <span className="text-[11px] text-slate-700 block mt-0.5 font-mono font-bold">
+                          <span className="text-xs text-slate-700 block mt-0.5 font-mono font-bold">
                             ${c.raw.precioCotizacion.toFixed(2)}
                           </span>
                         </div>
                       </div>
 
-                      <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 gap-2">
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 gap-2">
                         <div className="truncate">
                           <span>Foso: <strong className="text-slate-800">{c.moat.slice(0, 12)}</strong></span>
                            <span className="mx-1 text-slate-300">·</span>
@@ -1289,7 +1238,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                                {c.targetConsensus.upside_potential > 0 ? '+' : ''}{c.targetConsensus.upside_potential}%
                              </span>
                            ) : (
-                             <span className="text-slate-400">Sin consenso</span>
+                             <span className="text-slate-500">Sin consenso</span>
                            )}
                         </div>
 
@@ -1307,8 +1256,8 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                             }`}
                             title="Ver análisis y semáforos de esta empresa"
                           >
-                            <BarChart3 className={`w-3.5 h-3.5 ${isSelected ? 'text-slate-900' : 'text-slate-400'}`} />
-                            <span>{isSelected ? 'Viendo Análisis' : 'Ver Análisis →'}</span>
+                            <BarChart3 className={`w-3.5 h-3.5 ${isSelected ? 'text-slate-900' : 'text-slate-500'}`} />
+                            <span>{isSelected ? 'En pantalla' : 'Ver ficha'}</span>
                           </button>
                         </div>
                       </div>
@@ -1335,172 +1284,167 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
             <span>Volver al catálogo</span>
           </button>
 
-          {/* Cabecera de la empresa */}
-          <Reveal key={selectedCompany.id}>
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-card">
-            <div className="ink-panel p-5 sm:p-6">
+          {/* Cabecera de la empresa: hoja del libro con las cifras clave */}
+          <section
+            key={selectedCompany.id}
+            aria-labelledby="ficha-empresa-titulo"
+            className="bg-white rounded-2xl border border-slate-200"
+          >
+            <div className="p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-                <div className="flex items-center gap-2 text-xs text-slate-400 min-w-0">
-                  <span className="font-mono font-semibold text-amber-300">{selectedCompany.ticker}</span>
-                  <span aria-hidden="true">/</span>
+                <p className="m-0 flex flex-wrap items-center gap-x-2 text-sm text-slate-600 min-w-0">
+                  <span className="font-semibold text-amber-800">{selectedCompany.ticker}</span>
+                  <span className="text-slate-300" aria-hidden="true">/</span>
                   <span>{selectedCompany.sector}</span>
-                  <span aria-hidden="true">/</span>
-                  <span className="tabular">${selectedCompany.raw.precioCotizacion.toFixed(2)}</span>
-                </div>
+                </p>
 
-              <div className="flex flex-wrap items-center gap-1.5 shrink-0">
-                <div className="flex items-center h-9 rounded-lg border border-white/15 bg-white/5 overflow-hidden">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center h-9 rounded-md border border-slate-200 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={handlePrevCompany}
+                      disabled={companies.length <= 1}
+                      className="h-full px-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors disabled:opacity-30"
+                      aria-label="Empresa anterior"
+                      title="Empresa anterior"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <select
+                      value={selectedCompany.id}
+                      onChange={(e) => {
+                        const found = companies.find(c => c.id === e.target.value);
+                        if (found) handleSelectAndOpenCompany(found);
+                      }}
+                      className="h-full max-w-[150px] sm:max-w-[200px] border-0 border-x border-slate-200 rounded-none bg-white px-2 text-sm font-medium text-slate-800 cursor-pointer"
+                      aria-label={`Cambiar de empresa (${currentCompanyIndex + 1} de ${companies.length})`}
+                    >
+                      {companies.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.ticker}: {c.nombre}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={handleNextCompany}
+                      disabled={companies.length <= 1}
+                      className="h-full px-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors disabled:opacity-30"
+                      aria-label="Empresa siguiente"
+                      title="Empresa siguiente"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                   <button
                     type="button"
-                    onClick={handlePrevCompany}
-                    disabled={companies.length <= 1}
-                    className="h-full px-2 text-slate-300 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-30"
-                    aria-label="Empresa anterior"
-                    title="Empresa anterior"
+                    onClick={() => setShowQuickInspectModal(true)}
+                    className="h-9 w-9 rounded-md border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center justify-center transition-colors"
+                    title="Abrir ficha y gráfico en pantalla completa"
+                    aria-label="Abrir ficha ampliada"
                   >
-                    <ChevronLeft className="w-4 h-4" />
+                    <Maximize2 className="w-4 h-4" />
                   </button>
-                  <select
-                    value={selectedCompany.id}
-                    onChange={(e) => {
-                      const found = companies.find(c => c.id === e.target.value);
-                      if (found) handleSelectAndOpenCompany(found);
-                    }}
-                    className="h-full max-w-[180px] border-0 border-x border-white/15 rounded-none bg-transparent px-2 text-xs font-semibold text-white cursor-pointer"
-                    aria-label="Cambiar de empresa"
-                  >
-                    {companies.map(c => (
-                      <option key={c.id} value={c.id} className="text-slate-900">
-                        {c.ticker} · {c.nombre}
-                      </option>
-                    ))}
-                  </select>
                   <button
                     type="button"
-                    onClick={handleNextCompany}
-                    disabled={companies.length <= 1}
-                    className="h-full px-2 text-slate-300 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-30"
-                    aria-label="Empresa siguiente"
-                    title="Empresa siguiente"
+                    onClick={() => onSelectForSimulation(selectedCompany.ticker)}
+                    className="flex items-center gap-1.5 h-9 px-3 rounded-md bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 transition-colors"
                   >
-                    <ChevronRight className="w-4 h-4" />
+                    <LineChart className="w-4 h-4" />
+                    <span>Simular en cartera</span>
                   </button>
                 </div>
-                <span className="font-mono text-[11px] text-slate-500 px-1">
-                  {currentCompanyIndex + 1}/{companies.length}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowQuickInspectModal(true)}
-                  className="press h-9 w-9 rounded-lg border border-white/15 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 flex items-center justify-center"
-                  title="Abrir ficha y gráfico en pantalla completa"
-                  aria-label="Ficha ampliada"
-                >
-                  <Maximize2 className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSelectForSimulation(selectedCompany.ticker)}
-                  className="press flex items-center gap-1.5 h-9 px-3 rounded-lg bg-amber-500 text-slate-950 text-[13px] font-semibold hover:bg-amber-400 shadow-glow"
-                >
-                  <LineChart className="w-4 h-4" />
-                  <span>Simular en cartera</span>
-                </button>
               </div>
-              </div>
-              <h2 className="mt-2 mb-0 font-serif text-[30px] leading-tight font-semibold text-white">
+
+              <h2 id="ficha-empresa-titulo" className="mt-3 mb-0 font-serif text-[26px] sm:text-[34px] leading-tight font-semibold text-slate-900">
                 {selectedCompany.nombre}
               </h2>
-              <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                <StatusBadge
-                  tone={selectedCompany.scoreGrade === 'A+' || selectedCompany.scoreGrade === 'A' ? 'green' : selectedCompany.scoreGrade === 'F' ? 'red' : 'yellow'}
-                  title="Nota del Score lineal S(a)"
-                >
-                  Nota {selectedCompany.scoreGrade}
-                </StatusBadge>
-                {selectedCompany.targetConsensus && (
-                  <StatusBadge
-                    tone={selectedCompany.targetConsensus.upside_potential >= 15 ? 'green' : selectedCompany.targetConsensus.upside_potential >= 0 ? 'yellow' : 'red'}
-                    title="Margen de seguridad estimado frente al precio objetivo medio del consenso"
-                  >
-                    {selectedCompany.targetConsensus.upside_potential >= 15
-                      ? 'Margen de seguridad amplio'
-                      : selectedCompany.targetConsensus.upside_potential >= 0
-                      ? 'Margen de seguridad estrecho'
-                      : 'Sin margen de seguridad'}
-                  </StatusBadge>
-                )}
-              </div>
               {selectedCompany.descripcion && (
-                <p className="mt-3 mb-0 text-[13px] text-slate-300 max-w-[72ch] leading-relaxed line-clamp-2">
+                <p className="mt-2 mb-0 text-sm text-slate-600 max-w-[68ch] leading-relaxed line-clamp-2">
                   {selectedCompany.descripcion}
                 </p>
               )}
             </div>
 
-            {/* Cifras clave */}
-            <dl className="m-0 grid grid-cols-1 sm:grid-cols-3 gap-px bg-slate-200 border-t border-slate-200 [&>div]:bg-white">
-              <div className="p-4 sm:px-6">
-                <dt className="text-xs text-slate-500">Score lineal S(a)</dt>
-                <dd className="m-0 mt-1 flex items-baseline gap-2">
-                  <span className="tabular text-2xl font-semibold text-slate-900">{selectedCompany.linearScore}</span>
-                  <span className="text-xs text-slate-500">/100 · nota {selectedCompany.scoreGrade}</span>
+            {/* Cifras clave, compuestas como un asiento del libro */}
+            <dl className="m-0 grid grid-cols-2 lg:grid-cols-4 border-t border-slate-200">
+              <div className="p-4 sm:px-6 border-r border-b lg:border-b-0 border-slate-200">
+                <dt className="text-sm text-slate-600">Cotización</dt>
+                <dd className="m-0 mt-1 cifra text-[26px] leading-none text-slate-900">
+                  ${selectedCompany.raw.precioCotizacion.toFixed(2)}
                 </dd>
+                <p className="m-0 mt-1.5 text-xs text-slate-600">Precio de una acción hoy</p>
               </div>
-              <div className="p-4 sm:px-6">
-                <dt className="text-xs text-slate-500 flex items-center">
-                  Potencial según consenso
-                  <InfoTooltip concept="per" />
-                </dt>
-                <dd className="m-0 mt-1 flex items-baseline gap-2 flex-wrap">
-                  <span className={`tabular text-2xl font-semibold ${
-                    !selectedCompany.targetConsensus ? 'text-slate-400' :
+              <div className="p-4 sm:px-6 border-b lg:border-b-0 lg:border-r border-slate-200">
+                <dt className="text-sm text-slate-600">Score S(a)</dt>
+                <dd className="m-0 mt-1 flex items-baseline gap-1.5">
+                  <span className="cifra text-[26px] leading-none text-slate-900">{selectedCompany.linearScore}</span>
+                  <span className="text-sm text-slate-600">/100, nota {selectedCompany.scoreGrade}</span>
+                </dd>
+                <p className="m-0 mt-1.5 text-xs text-slate-600">
+                  {selectedCompany.linearScore >= 80 ? 'Negocio de calidad alta' : selectedCompany.linearScore >= 65 ? 'Negocio sólido' : selectedCompany.linearScore >= 50 ? 'Calidad irregular' : 'Negocio débil'}
+                </p>
+              </div>
+              <div className="p-4 sm:px-6 border-r border-slate-200">
+                <dt className="text-sm text-slate-600">Potencial según analistas</dt>
+                <dd className="m-0 mt-1">
+                  <span className={`cifra text-[26px] leading-none ${
+                    !selectedCompany.targetConsensus ? 'text-slate-500' :
                     selectedCompany.targetConsensus.upside_potential >= 10 ? 'text-emerald-700' :
                     selectedCompany.targetConsensus.upside_potential >= 0 ? 'text-slate-900' :
                     'text-rose-700'
                   }`}>
                     {selectedCompany.targetConsensus
-                      ? `${selectedCompany.targetConsensus.upside_potential > 0 ? '+' : ''}${Math.round(selectedCompany.targetConsensus.upside_potential * 10) / 10}%`
-                      : 'N/D'}
+                      ? `${selectedCompany.targetConsensus.upside_potential > 0 ? '+' : ''}${(Math.round(selectedCompany.targetConsensus.upside_potential * 10) / 10).toLocaleString('es-ES')} %`
+                      : 'Sin cobertura'}
                   </span>
                   {selectedCompany.targetConsensus && (
-                    <span className="text-xs text-slate-500">
-                      {selectedCompany.targetConsensus.number_of_analysts} analistas, objetivo ${selectedCompany.targetConsensus.target_mean.toFixed(2)}
+                    <span className="block mt-1.5 text-xs text-slate-600">
+                      {selectedCompany.targetConsensus.upside_potential >= 15 ? 'Descuento amplio' : selectedCompany.targetConsensus.upside_potential >= 0 ? 'Poco descuento' : 'Por encima del objetivo'}: objetivo ${selectedCompany.targetConsensus.target_mean.toFixed(2)} según {selectedCompany.targetConsensus.number_of_analysts} analistas
                     </span>
                   )}
                 </dd>
               </div>
               <div className="p-4 sm:px-6">
-                <dt className="text-xs text-slate-500 flex items-center">
+                <dt className="text-sm text-slate-600 flex items-center">
                   Foso defensivo
                   <InfoTooltip concept="foso" />
                 </dt>
-                <dd className="m-0 mt-1 text-sm font-semibold text-slate-900">{selectedCompany.moat}</dd>
+                <dd className="m-0 mt-1 cifra text-[26px] leading-none text-slate-900">{selectedCompany.moat}</dd>
+                <p className="m-0 mt-1.5 text-xs text-slate-600">
+                  {selectedCompany.moat === 'Amplio' ? 'Difícil de copiar por la competencia' : selectedCompany.moat === 'Medio' ? 'Alguna ventaja frente a rivales' : 'Poca protección frente a rivales'}
+                </p>
               </div>
             </dl>
 
-            {/* Veredicto */}
-            <div className="relative border-t border-slate-200 px-5 sm:px-6 py-4">
-              <span className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r bg-amber-500" aria-hidden="true" />
-              <p className="m-0 font-serif text-[17px] leading-relaxed text-slate-800">
-                «{selectedCompany.warrenVerdict}»
-              </p>
-            </div>
-          </div>
-          </Reveal>
+            {/* Veredicto calculado con los datos de esta ficha (no el texto fijo de los datos semilla) */}
+            {(() => {
+              const verdict = deriveVerdict(selectedCompany);
+              const bar = verdict.tone === 'green' ? 'bg-emerald-600' : verdict.tone === 'red' ? 'bg-rose-600' : 'bg-amber-600';
+              return (
+                <div className="flex gap-3 border-t border-slate-200 px-5 sm:px-6 py-4">
+                  <span className={`w-[3px] shrink-0 rounded ${bar}`} aria-hidden="true" />
+                  <p className="m-0 font-serif text-[17px] leading-relaxed text-slate-800 max-w-[70ch]">
+                    {verdict.text}
+                  </p>
+                </div>
+              );
+            })()}
+          </section>
 
           {/* Subpestañas del análisis (quedan pegadas bajo la barra superior) */}
           {(() => {
             const activeCategory =
               ANALYSIS_CATEGORIES.find(cat => cat.views.some(v => v.id === engineViewMode)) ?? ANALYSIS_CATEGORIES[0];
             return (
-              <div className="sticky top-[var(--navbar-h)] z-20 -mx-1 px-1 py-2 bg-papel/90 backdrop-blur-md">
-                <nav
-                  aria-label="Categorías del análisis"
-                  className="glass flex gap-1 p-1 rounded-2xl overflow-x-auto no-scrollbar"
+              <div className="sticky top-[var(--navbar-h)] z-20 -mx-4 px-4 sm:mx-0 sm:px-0 bg-papel">
+                <ScrollRail
+                  label="Categorías del análisis"
+                  activeKey={activeCategory.id}
+                  className="border-b border-slate-200"
+                  innerClassName="gap-1"
                 >
                   {ANALYSIS_CATEGORIES.map(cat => {
-                    const Icon = cat.icon;
                     const isActive = cat.id === activeCategory.id;
                     return (
                       <button
@@ -1511,44 +1455,33 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
                         }}
                         aria-current={isActive ? 'true' : undefined}
                         title={cat.descripcion}
-                        className={`relative flex items-center gap-1.5 whitespace-nowrap px-3 py-2 rounded-xl text-[13px] transition-colors ${
-                          isActive ? 'font-semibold text-white' : 'font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                        className={`relative shrink-0 whitespace-nowrap px-3 py-3 text-sm transition-colors ${
+                          isActive ? 'font-semibold text-slate-900' : 'font-medium text-slate-600 hover:text-slate-900'
                         }`}
                       >
-                        {isActive && (
-                          <motion.span
-                            layoutId="analysis-category-pill"
-                            className="absolute inset-0 rounded-xl ink-panel shadow-md"
-                            transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                            aria-hidden="true"
-                          />
-                        )}
-                        <Icon className={`relative w-4 h-4 ${isActive ? 'text-amber-300' : 'text-slate-400'}`} />
-                        <span className="relative">{cat.label}</span>
+                        {cat.label}
+                        {isActive && <span className="absolute inset-x-3 -bottom-px h-[2px] bg-amber-700" aria-hidden="true" />}
                       </button>
                     );
                   })}
-                </nav>
+                </ScrollRail>
 
                 {activeCategory.views.length > 1 && (
-                  <div className="flex items-center gap-1.5 mt-2 px-1 overflow-x-auto no-scrollbar animate-fadeIn">
-                    <span className="text-[11px] text-slate-500 mr-1 shrink-0">{activeCategory.descripcion}:</span>
+                  <div role="group" aria-label={activeCategory.descripcion} className="flex items-center gap-1 py-2 overflow-x-auto no-scrollbar">
                     {activeCategory.views.map(view => {
-                      const Icon = view.icon;
                       const isActive = engineViewMode === view.id;
                       return (
                         <button
                           key={view.id}
                           type="button"
                           onClick={() => setEngineViewMode(view.id)}
-                          aria-current={isActive ? 'true' : undefined}
-                          className={`press flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full text-xs border ${
+                          aria-pressed={isActive}
+                          className={`shrink-0 whitespace-nowrap px-3 h-8 rounded-md text-sm transition-colors ${
                             isActive
-                              ? 'bg-amber-50 border-amber-300 text-amber-900 font-semibold'
-                              : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                              ? 'bg-white border border-slate-300 text-slate-900 font-semibold'
+                              : 'border border-transparent text-slate-600 hover:text-slate-900 hover:bg-white'
                           }`}
                         >
-                          <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-700' : 'text-slate-400'}`} />
                           {view.label}
                         </button>
                       );
@@ -1562,10 +1495,10 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={engineViewMode}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
               className="space-y-6"
             >
               <Suspense fallback={<SkeletonCard lines={6} />}>
@@ -1598,16 +1531,16 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
 
               {/* Banner Rápido para Desplegar Gráfica si estás en Semáforos o Visualizador */}
               {(engineViewMode === 'semaphores' || engineViewMode === 'visualizer') && (
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-3">
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 sm:p-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600">
                       <TrendingUp className="w-4 h-4" />
                     </div>
                     <div>
                       <h4 className="text-xs font-bold text-slate-900">
-                        Gráfica de Cotización Histórica: {selectedCompany.ticker}
+                        Cotización de {selectedCompany.ticker}
                       </h4>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-xs text-slate-500">
                         Precio actual: ${selectedCompany.raw.precioCotizacion.toFixed(2)} · Objetivo Medio: ${selectedCompany.targetConsensus?.target_mean.toFixed(2) ?? 'N/D'}
                       </p>
                     </div>

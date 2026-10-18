@@ -171,7 +171,7 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
   };
 
   return (
-    <div className="mt-5 p-4 sm:p-5 bg-slate-50/80 rounded-2xl border border-slate-200 shadow-2xs">
+    <div className="mt-5 p-4 sm:p-5 bg-slate-50/80 rounded-lg border border-slate-200 shadow-2xs">
       {/* Encabezado de la sección y barra de pestañas */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-200">
         <div className="flex items-center gap-2.5">
@@ -183,11 +183,11 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
               <h3 className="text-sm font-bold text-slate-900 font-serif tracking-tight">
                 Consenso de Wall Street
               </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200">
+              <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200">
                 {ticker} • yfinance
               </span>
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-slate-500">
               Precios objetivo, calificaciones institucionales y noticias del mercado.
             </p>
           </div>
@@ -231,7 +231,7 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
               <Newspaper className="w-3.5 h-3.5" />
               <span>Noticias</span>
               {newsData?.count ? (
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                <span className={`text-xs px-1.5 py-0.2 rounded-full font-mono font-bold ${
                   activeTab === 'news' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-300 text-slate-700'
                 }`}>
                   {newsData.count}
@@ -253,29 +253,29 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
 
       {/* Resumen compacto de consenso estático (TargetConsensus prop) */}
       {consensus && (
-        <div className="mt-4 p-4 bg-amber-50/30 rounded-2xl border border-amber-200/50 animate-fadeIn">
+        <div className="mt-4 p-4 bg-amber-50/30 rounded-lg border border-amber-200/50 animate-fadeIn">
           <div className="flex items-center gap-2.5 mb-3">
             <DollarSign className="w-4 h-4 text-amber-600 shrink-0" />
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
-              Resumen de Consenso de Wall Street
+            <h4 className="text-xs font-bold text-slate-900 font-mono">
+              Resumen del consenso
             </h4>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 font-mono block">
+                <span className="text-xs font-bold text-slate-500 font-mono block">
                   Precio Objetivo Medio
                 </span>
-                <div className="text-2xl font-black text-slate-900 font-mono mt-0.5">
+                <div className="text-2xl font-semibold text-slate-900 font-mono mt-0.5">
                   ${consensus.target_mean.toFixed(2)}
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] uppercase font-bold text-slate-400 font-mono block">
+                <span className="text-xs font-bold text-slate-500 font-mono block">
                   Potencial
                 </span>
-                <div className={`text-xl font-black font-mono mt-0.5 ${
+                <div className={`text-xl font-semibold font-mono mt-0.5 ${
                   consensus.upside_potential >= 0 ? 'text-emerald-600' : 'text-rose-600'
                 }`}>
                   {consensus.upside_potential >= 0 ? '+' : ''}{consensus.upside_potential.toFixed(1)}%
@@ -285,13 +285,13 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
 
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 font-mono block">
+                <span className="text-xs font-bold text-slate-500 font-mono block">
                   Recomendación
                 </span>
                 <div className="text-sm font-bold text-slate-900 mt-0.5">
                   {consensus.recommendation}
                 </div>
-                <span className="text-[10px] text-slate-500">
+                <span className="text-xs text-slate-500">
                   {consensus.number_of_analysts} analistas
                 </span>
               </div>
@@ -301,7 +301,7 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
 
           {/* Mini visual: precio actual vs objetivo medio vs objetivo máximo */}
           <div className="mt-3 space-y-1.5">
-            <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+            <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
               <span>${currentPrice ? currentPrice.toFixed(2) : consensus.target_mean.toFixed(2)}</span>
               <span>${consensus.target_mean.toFixed(2)}</span>
               <span>${consensus.target_high.toFixed(2)}</span>
@@ -325,10 +325,10 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                 title={`Objetivo Máximo: $${consensus.target_high.toFixed(2)}`}
               />
               <div className="absolute inset-0 flex items-center">
-                <div className="h-1 w-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-400 rounded-full"></div>
+                <div className="h-1 w-full flex rounded-full overflow-hidden"><span className="flex-1 bg-emerald-500" /><span className="flex-1 bg-amber-500" /><span className="flex-1 bg-rose-500" /></div>
               </div>
             </div>
-            <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+            <div className="flex justify-between text-xs text-slate-500 font-mono">
               <span>Rango bajo (${consensus.target_low.toFixed(2)})</span>
               <span>Rango alto (${consensus.target_high.toFixed(2)})</span>
             </div>
@@ -356,35 +356,35 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                   {/* Tarjetas de Métricas de Objetivos */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <div className="p-3 bg-white rounded-xl border border-slate-200">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 font-mono block">
+                      <span className="text-xs font-bold text-slate-500 font-mono block">
                         Cotización Actual
                       </span>
-                      <div className="text-base font-black text-slate-900 font-mono mt-0.5">
+                      <div className="text-base font-semibold text-slate-900 font-mono mt-0.5">
                         ${targetsData.currentPrice?.toFixed(2) || (currentPrice ? currentPrice.toFixed(2) : '---')}
                       </div>
-                      <span className="text-[10px] text-slate-500">Precio de referencia</span>
+                      <span className="text-xs text-slate-500">Precio de referencia</span>
                     </div>
 
                     <div className="p-3 bg-white rounded-xl border border-slate-200">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 font-mono block">
+                      <span className="text-xs font-bold text-slate-500 font-mono block">
                         Objetivo Mínimo
                       </span>
-                      <div className="text-base font-black text-rose-600 font-mono mt-0.5">
+                      <div className="text-base font-semibold text-rose-600 font-mono mt-0.5">
                         ${targetsData.targetLow?.toFixed(2) || '---'}
                       </div>
-                      <span className="text-[10px] text-rose-600 font-mono font-bold">
+                      <span className="text-xs text-rose-600 font-mono font-bold">
                         {targetsData.downsideLowPercent > 0 ? `+${targetsData.downsideLowPercent}%` : `${targetsData.downsideLowPercent}%`}
                       </span>
                     </div>
 
                     <div className="p-3 bg-white rounded-xl border border-amber-200/80 bg-amber-50/20">
-                      <span className="text-[10px] uppercase font-bold text-amber-700 font-mono block">
+                      <span className="text-xs font-bold text-amber-700 font-mono block">
                         Objetivo Medio (Consenso)
                       </span>
-                      <div className="text-base font-black text-slate-900 font-mono mt-0.5">
+                      <div className="text-base font-semibold text-slate-900 font-mono mt-0.5">
                         ${targetsData.targetMean?.toFixed(2) || '---'}
                       </div>
-                      <span className={`text-[10px] font-mono font-bold ${
+                      <span className={`text-xs font-mono font-bold ${
                         targetsData.upsideMeanPercent >= 0 ? 'text-emerald-600' : 'text-rose-600'
                       }`}>
                         {targetsData.upsideMeanPercent >= 0 ? `+${targetsData.upsideMeanPercent}%` : `${targetsData.upsideMeanPercent}%`} potencial
@@ -392,13 +392,13 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                     </div>
 
                     <div className="p-3 bg-white rounded-xl border border-slate-200">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 font-mono block">
+                      <span className="text-xs font-bold text-slate-500 font-mono block">
                         Objetivo Máximo
                       </span>
-                      <div className="text-base font-black text-emerald-600 font-mono mt-0.5">
+                      <div className="text-base font-semibold text-emerald-600 font-mono mt-0.5">
                         ${targetsData.targetHigh?.toFixed(2) || '---'}
                       </div>
-                      <span className="text-[10px] text-emerald-600 font-mono font-bold">
+                      <span className="text-xs text-emerald-600 font-mono font-bold">
                         +{targetsData.upsideHighPercent}%
                       </span>
                     </div>
@@ -413,12 +413,12 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                           <span>Distribución Gráfica del Rango de Analistas</span>
                         </span>
                         {targetsData.numberOfAnalysts && (
-                          <span className="font-mono text-[11px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                          <span className="font-mono text-xs font-bold text-slate-700 bg-white px-2 py-0.5 rounded-md border border-slate-200">
                             {targetsData.numberOfAnalysts} analistas de Wall Street
                           </span>
                         )}
                       </div>
-                      <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 p-2 shadow-sm">
+                      <div className="bg-slate-900 rounded-lg overflow-hidden border border-slate-800 p-2 shadow-sm">
                         <img
                           src={targetsData.chart}
                           alt={`Precios Objetivo ${ticker}`}
@@ -451,12 +451,12 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                   {recommendationsData.summary && (
                     <div className="p-4 bg-white rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 font-mono block">
+                        <span className="text-xs font-bold text-slate-500 font-mono block">
                           Calificación de Consenso
                         </span>
                         <div className="flex items-center gap-2 mt-1">
                           <Award className="w-5 h-5 text-amber-500" />
-                          <span className="text-base font-black text-slate-900 font-serif">
+                          <span className="text-base font-semibold text-slate-900 font-serif">
                             {recommendationsData.summary.consensus}
                           </span>
                         </div>
@@ -464,25 +464,25 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
 
                       <div className="flex items-center gap-4 text-xs font-mono">
                         <div>
-                          <span className="text-slate-400 block text-[10px]">Analistas:</span>
+                          <span className="text-slate-500 block text-xs">Analistas:</span>
                           <span className="font-bold text-slate-900 text-sm">
                             {recommendationsData.summary.totalAnalysts}
                           </span>
                         </div>
                         <div>
-                          <span className="text-emerald-600 block text-[10px]">Comprar:</span>
+                          <span className="text-emerald-600 block text-xs">Comprar:</span>
                           <span className="font-bold text-emerald-700 text-sm">
                             {recommendationsData.summary.strongBuy + recommendationsData.summary.buy}
                           </span>
                         </div>
                         <div>
-                          <span className="text-slate-500 block text-[10px]">Mantener:</span>
+                          <span className="text-slate-500 block text-xs">Mantener:</span>
                           <span className="font-bold text-slate-700 text-sm">
                             {recommendationsData.summary.hold}
                           </span>
                         </div>
                         <div>
-                          <span className="text-rose-600 block text-[10px]">Vender:</span>
+                          <span className="text-rose-600 block text-xs">Vender:</span>
                           <span className="font-bold text-rose-700 text-sm">
                             {recommendationsData.summary.sell + recommendationsData.summary.strongSell}
                           </span>
@@ -498,13 +498,13 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                         <span className="text-xs font-bold text-slate-800">
                           Evolución Mensual del Voto de Analistas
                         </span>
-                        <span className="text-[10px] text-slate-500 font-mono">
+                        <span className="text-xs text-slate-500 font-mono">
                           Periodos (0m = mes actual)
                         </span>
                       </div>
                       <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs font-mono">
-                          <thead className="bg-slate-50/50 text-[11px] text-slate-500 border-b border-slate-200">
+                          <thead className="bg-slate-50/50 text-xs text-slate-500 border-b border-slate-200">
                             <tr>
                               <th className="p-2.5 pl-4">Periodo</th>
                               <th className="p-2.5 text-emerald-700 font-bold">Fuerte Compra</th>
@@ -538,9 +538,9 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
                       <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                         <span className="text-xs font-bold text-slate-800">
-                          Últimos Cambios de Calificación y Acciones Institucionales
+                          Últimos cambios de recomendación
                         </span>
-                        <span className="text-[10px] text-slate-500 font-mono">
+                        <span className="text-xs text-slate-500 font-mono">
                           Firmas de inversión
                         </span>
                       </div>
@@ -548,15 +548,15 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                         {recommendationsData.upgradesDowngrades.slice(0, 10).map((u, i) => (
                           <div key={i} className="p-3 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div className="flex items-center gap-2.5">
-                              <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
+                              <Building2 className="w-4 h-4 text-slate-500 shrink-0" />
                               <div>
                                 <span className="font-bold text-slate-900 block">
                                   {u.Firm || 'Firma de Análisis'}
                                 </span>
-                                <span className="text-[11px] text-slate-500">
+                                <span className="text-xs text-slate-500">
                                   {u.FromGrade && u.FromGrade !== u.ToGrade ? (
                                     <>
-                                      <span className="line-through text-slate-400">{u.FromGrade}</span> →{' '}
+                                      <span className="line-through text-slate-500">{u.FromGrade}</span> →{' '}
                                     </>
                                   ) : null}
                                   <strong className="text-slate-800">{u.ToGrade || 'Revisión'}</strong>
@@ -565,16 +565,16 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3 text-right font-mono text-[11px] self-end sm:self-auto">
+                            <div className="flex items-center gap-3 text-right font-mono text-xs self-end sm:self-auto">
                               {u.currentPriceTarget ? (
                                 <div>
-                                  <span className="text-slate-400 block text-[10px]">Obj. Precio:</span>
+                                  <span className="text-slate-500 block text-xs">Obj. Precio:</span>
                                   <span className="font-bold text-slate-800">
                                     ${u.currentPriceTarget}
                                   </span>
                                 </div>
                               ) : null}
-                              <div className="text-slate-400 text-[10px] whitespace-nowrap">
+                              <div className="text-slate-500 text-xs whitespace-nowrap">
                                 {formatDate(u.GradeDate)}
                               </div>
                             </div>
@@ -603,7 +603,7 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                     <span className="font-medium">
                       Mostrando {showAllNews ? newsData.news.length : Math.min(3, newsData.news.length)} de {newsData.news.length} noticias sobre {ticker}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">
+                    <span className="text-xs font-mono text-slate-500">
                       Fuente: Yahoo Finance
                     </span>
                   </div>
@@ -631,13 +631,13 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                         ) : null}
 
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono mb-1">
+                          <div className="flex items-center gap-2 text-xs text-slate-500 font-mono mb-1">
                             <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
                               {item.publisher || 'Yahoo Finance'}
                             </span>
                             {item.pubDate && (
                               <span className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3 text-slate-400" />
+                                <Calendar className="w-3 h-3 text-slate-500" />
                                 {formatDate(item.pubDate)}
                               </span>
                             )}
@@ -660,7 +660,7 @@ export const WallStreetConsensus: React.FC<WallStreetConsensusProps> = ({
                           </h4>
 
                           {item.summary && (
-                            <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                            <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
                               {item.summary}
                             </p>
                           )}

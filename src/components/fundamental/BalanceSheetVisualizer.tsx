@@ -34,12 +34,12 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
   return (
     <div className="space-y-6">
       {/* 1. VISUALIZADOR DE BALANCE GENERAL Y CAPITAL DE TRABAJO */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 font-serif">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-serif">
               <PieChart className="w-4 h-4 text-slate-600" />
-              Visualizador de Estructura de Balance General y Liquidez
+              Estructura del balance y liquidez
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
               Descomposición proporcional de los Activos (Inversión) frente a Pasivos y Fondos Propios (Financiación).
@@ -55,7 +55,7 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
         {/* Diagrama de Doble Columna Proporcional */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Columna Izquierda: Activos */}
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
             <div className="flex justify-between items-center text-xs">
               <span className="font-bold text-slate-800">Estructura del Activo (Destino del Capital)</span>
               <span className="font-mono text-blue-700 font-semibold">100%</span>
@@ -86,7 +86,7 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
             </div>
 
             {/* Leyenda de Activo */}
-            <div className="grid grid-cols-2 gap-2 text-[11px] pt-2">
+            <div className="grid grid-cols-2 gap-2 text-xs pt-2">
               <div className="flex items-center gap-2 p-2 rounded-lg bg-white border border-slate-200">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 <div className="truncate">
@@ -119,7 +119,7 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
           </div>
 
           {/* Columna Derecha: Pasivo y Patrimonio */}
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
             <div className="flex justify-between items-center text-xs">
               <span className="font-bold text-slate-800">Financiación (Pasivo Exigible y Patrimonio)</span>
               <span className="font-mono text-purple-700 font-semibold">100%</span>
@@ -145,7 +145,7 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
             </div>
 
             {/* Leyenda de Financiación */}
-            <div className="grid grid-cols-2 gap-2 text-[11px] pt-2">
+            <div className="grid grid-cols-2 gap-2 text-xs pt-2">
               <div className="flex items-center gap-2 p-2 rounded-lg bg-white border border-slate-200">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
                 <div className="truncate">
@@ -172,13 +172,13 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
         </div>
 
         {/* Fondo de Maniobra / Capital de Trabajo Heurístico */}
-        <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+        <div className={`p-4 rounded-lg border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
           fondoManiobra >= 0
             ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
             : 'bg-rose-50 border-rose-200 text-rose-900'
         }`}>
           <div className="space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
+            <span className="text-xs font-bold font-mono flex items-center gap-1.5">
               {fondoManiobra >= 0 ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-rose-600" />}
               Fondo de Maniobra (Capital de Trabajo Neto): ${fondoManiobra.toLocaleString()}M
             </span>
@@ -195,10 +195,10 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
       </div>
 
       {/* 2. VISUALIZADOR DEL MODELO DUPONT DE RENTABILIDAD ROE */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 font-serif">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-serif">
               <Sparkles className="w-4 h-4 text-slate-600" />
               <span>Visualizador del Modelo DuPont (Descomposición del ROE)</span>
               <InfoTooltip concept="roe" />
@@ -217,48 +217,48 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
         {/* Cadena Multiplicativa DuPont Interactiva */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Factor 1: Margen Neto */}
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-xs font-bold text-slate-800">1. Margen Neto (Eficacia)</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200 font-mono">
+              <span className="text-xs px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200 font-mono">
                 Pricing Power
               </span>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900">
+            <div className="text-2xl font-semibold font-mono text-slate-900">
               {margenNeto.toFixed(1)}%
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-slate-500">
               Beneficio neto por cada dólar ingresado. Empresas con foso amplio sostienen márgenes &gt; 15%.
             </p>
-            <div className="p-1.5 bg-white rounded-lg text-[10px] font-mono text-slate-700 border border-slate-200">
+            <div className="p-1.5 bg-white rounded-lg text-xs font-mono text-slate-700 border border-slate-200">
               Utilidad Neta / Ingresos
             </div>
           </div>
 
           {/* Factor 2: Rotación de Activos */}
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-xs font-bold text-slate-800">2. Rotación Activos (Eficiencia)</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-md bg-cyan-50 text-cyan-800 border border-cyan-200 font-mono">
+              <span className="text-xs px-2 py-0.5 rounded-md bg-cyan-50 text-cyan-800 border border-cyan-200 font-mono">
                 Velocidad
               </span>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900">
+            <div className="text-2xl font-semibold font-mono text-slate-900">
               {rotacionActivos.toFixed(2)}x
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-slate-500">
               Ventas generadas por cada dólar de activo en balance.
             </p>
-            <div className="p-1.5 bg-white rounded-lg text-[10px] font-mono text-slate-700 border border-slate-200">
+            <div className="p-1.5 bg-white rounded-lg text-xs font-mono text-slate-700 border border-slate-200">
               Ventas / Activos Totales
             </div>
           </div>
 
           {/* Factor 3: Apalancamiento Financiero */}
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-xs font-bold text-slate-800">3. Multiplicador de Deuda</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono ${
+              <span className={`text-xs px-2 py-0.5 rounded-md font-mono ${
                 multiplicadorApalancamiento <= 2.5
                   ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                   : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -266,31 +266,31 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
                 {multiplicadorApalancamiento <= 2.5 ? 'Conservador' : 'Alto Apalancamiento'}
               </span>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900">
+            <div className="text-2xl font-semibold font-mono text-slate-900">
               {multiplicadorApalancamiento.toFixed(2)}x
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-slate-500">
               Grado en que la empresa recurre a pasivos para financiar sus activos.
             </p>
-            <div className="p-1.5 bg-white rounded-lg text-[10px] font-mono text-slate-700 border border-slate-200">
+            <div className="p-1.5 bg-white rounded-lg text-xs font-mono text-slate-700 border border-slate-200">
               Activos / Patrimonio Neto
             </div>
           </div>
         </div>
 
         {/* Fórmula Visual */}
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-2">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">
+        <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 text-center space-y-2">
+          <span className="text-xs font-bold text-slate-500 font-mono">
             Ecuación DuPont Integrada
           </span>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-sm sm:text-base font-mono font-bold text-slate-900">
             <span className="text-blue-700">{margenNeto.toFixed(1)}% Margen</span>
-            <span className="text-slate-400">×</span>
+            <span className="text-slate-500">×</span>
             <span className="text-cyan-700">{rotacionActivos.toFixed(2)}x Rotación</span>
-            <span className="text-slate-400">×</span>
+            <span className="text-slate-500">×</span>
             <span className="text-purple-700">{multiplicadorApalancamiento.toFixed(2)}x Apalancamiento</span>
-            <span className="text-slate-400">=</span>
-            <span className="text-slate-900 text-lg sm:text-xl font-black">
+            <span className="text-slate-500">=</span>
+            <span className="text-slate-900 text-lg sm:text-xl font-semibold">
               {(((company.ratios.roe?.value ?? (roeDuPont / 100))) * 100).toFixed(1)}% ROE
             </span>
           </div>
@@ -298,12 +298,12 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
       </div>
 
       {/* 3. VISUALIZADOR DE 4 DIMENSIONES CON BARRAS DE CALIDAD */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-5">
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-5">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 font-serif">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-serif">
               <Scale className="w-4 h-4 text-slate-600" />
-              Visualizador de Puntuación en 4 Dimensiones
+              Puntuación por dimensión
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
               Ponderación lineal normalizada de 0 a 100 para evaluar la salud fundamental global.
@@ -402,11 +402,11 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
       </div>
 
       {/* 4. VISUALIZADOR DE CONSENSO WALL STREET */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 font-serif">
+          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-serif">
             <Shield className="w-4 h-4 text-emerald-600" />
-            <span>Visualizador de Consenso de Wall Street (Analistas)</span>
+            <span>Consenso de analistas</span>
             <InfoTooltip concept="per" />
           </h3>
           {company.targetConsensus && (
@@ -424,23 +424,23 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
 
         {company.targetConsensus ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+            <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
               <span className="text-xs text-slate-500 block">Precio Actual de Cotización</span>
-              <span className="text-2xl font-black font-mono text-slate-900 mt-1 block">
+              <span className="text-2xl font-semibold font-mono text-slate-900 mt-1 block">
                 ${raw.precioCotizacion.toFixed(2)}
               </span>
-              <span className="text-[10px] text-slate-400">Cotización en tiempo de mercado</span>
+              <span className="text-xs text-slate-500">Cotización en tiempo de mercado</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+            <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
               <span className="text-xs text-slate-500 block">Precio Objetivo Medio (Consenso)</span>
-              <span className="text-2xl font-black font-mono text-emerald-700 mt-1 block">
+              <span className="text-2xl font-semibold font-mono text-emerald-700 mt-1 block">
                 ${company.targetConsensus.target_mean.toFixed(2)}
               </span>
-              <span className="text-[10px] text-slate-400">{company.targetConsensus.number_of_analysts} analistas · {company.targetConsensus.recommendation}</span>
+              <span className="text-xs text-slate-500">{company.targetConsensus.number_of_analysts} analistas · {company.targetConsensus.recommendation}</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+            <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
               <span className="text-xs text-slate-500 block">Veredicto de Consenso</span>
               <span className={`text-base font-bold font-serif mt-1 block ${
                 company.targetConsensus.upside_potential >= 15
@@ -455,12 +455,12 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
                   ? 'Precio Razonable'
                   : 'Sobrevalorada vs Objetivos'}
               </span>
-              <span className="text-[10px] text-slate-500">Objetivo: &gt; 10% potencial alcista</span>
+              <span className="text-xs text-slate-500">Objetivo: &gt; 10% potencial alcista</span>
             </div>
 
             <div className="sm:col-span-3">
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
                   <span>Precio actual: ${raw.precioCotizacion.toFixed(2)}</span>
                   <span>Media: ${company.targetConsensus.target_mean.toFixed(2)}</span>
                   <span>Máx: ${company.targetConsensus.target_high.toFixed(2)}</span>
@@ -479,7 +479,7 @@ export const BalanceSheetVisualizer: React.FC<BalanceSheetVisualizerProps> = ({ 
                     style={{ left: `${Math.min(100, Math.max(0, ((company.targetConsensus.target_high - (company.targetConsensus.target_low * 0.9)) / ((company.targetConsensus.target_high * 1.1) - (company.targetConsensus.target_low * 0.9))) * 100))}%` }}
                   />
                   <div className="absolute inset-0 flex items-center">
-                    <div className="h-1 w-full bg-gradient-to-r from-rose-300 via-amber-300 to-emerald-300 rounded-full"></div>
+                    <div className="h-1 w-full flex rounded-full overflow-hidden"><span className="flex-1 bg-rose-500" /><span className="flex-1 bg-amber-500" /><span className="flex-1 bg-emerald-500" /></div>
                   </div>
                 </div>
               </div>

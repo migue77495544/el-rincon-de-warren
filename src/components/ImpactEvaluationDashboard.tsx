@@ -160,73 +160,60 @@ export const ImpactEvaluationDashboard: React.FC = () => {
   return (
     <div className="space-y-6" id="did-evaluation-root">
       {/* Cabecera del Módulo DiD */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-white rounded-2xl border-slate-200 p-6 border border-slate-200 relative overflow-hidden">
 
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 relative z-10">
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono flex items-center gap-1.5">
-                <Scale className="w-3.5 h-3.5" />
-                Módulo 4: Evaluación de Impacto Cuasi-Experimental (DiD)
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                Identificación Causal Rigurosa
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30">
-                RCT N = {sampleCohortSize * 2} Inversores
-              </span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white mt-1 font-serif">
-              Modelo Econométrico de Diferencias en Diferencias
+            <h2 className="text-xl sm:text-2xl font-semibold text-slate-900 font-serif">
+              Evaluación de impacto (diferencias en diferencias)
             </h2>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-700 mt-1 max-w-3xl leading-relaxed">
               Evalúa si las heurísticas, la gamificación (Divay, 2024) y el simulador de <em>El Rincón de Warren</em> generan una <strong>transformación pedagógica real y causal</strong> aislando tendencias macroeconómicas mediante un grupo de control contemporáneo.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono bg-slate-900 p-2.5 rounded-2xl border border-slate-800 shrink-0">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span className="text-slate-300">Tendencias Paralelas:</span>
-            <strong className="text-emerald-400">Verificadas (p = 0.64)</strong>
+          <div className="flex items-center gap-2 text-xs font-mono bg-white p-2.5 rounded-lg border border-slate-200 shrink-0">
+            <ShieldCheck className="w-4 h-4 text-emerald-700" />
+            <span className="text-slate-700">Tendencias Paralelas:</span>
+            <strong className="text-emerald-700">Verificadas (p = 0.64)</strong>
           </div>
         </div>
 
         {/* Ecuación Econométrica OLS General */}
-        <div className="mt-6 pt-5 border-t border-slate-800/80">
-          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+        <div className="mt-6 pt-5 border-t border-slate-200">
+          <div className="bg-white p-4 rounded-lg border border-slate-200 space-y-2">
             <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
-              <span className="font-mono font-bold text-amber-400 flex items-center gap-1.5">
+              <span className="font-mono font-bold text-amber-700 flex items-center gap-1.5">
                 <Activity className="w-3.5 h-3.5" />
                 Especificación del Estimador Diferencias en Diferencias (OLS):
               </span>
-              <span className="font-mono text-slate-400 text-[11px]">
+              <span className="font-mono text-slate-600 text-xs">
                 Y_it = β₀ + β₁(Tratamiento_i) + β₂(Post_t) + β₃(Tratamiento_i × Post_t) + ε_it
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 text-[11px] font-mono">
-              <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
-                <span className="text-slate-400 block text-[10px]">β₀ (Constante / Baseline):</span>
-                <strong className="text-white text-xs">{didResult.beta0.toFixed(2)}</strong>
-                <span className="text-slate-500 block text-[9px] mt-0.5">Control en Pre</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 text-xs font-mono">
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200">
+                <span className="text-slate-600 block text-xs">β₀ (Constante / Baseline):</span>
+                <strong className="text-slate-900 text-xs">{didResult.beta0.toFixed(2)}</strong>
+                <span className="text-slate-600 block text-xs mt-0.5">Control en Pre</span>
               </div>
-              <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
-                <span className="text-slate-400 block text-[10px]">β₁ (Diferencia Previa):</span>
-                <strong className="text-white text-xs">{didResult.beta1 >= 0 ? `+${didResult.beta1.toFixed(2)}` : didResult.beta1.toFixed(2)}</strong>
-                <span className="text-slate-500 block text-[9px] mt-0.5">Sesgo inicial de selección</span>
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200">
+                <span className="text-slate-600 block text-xs">β₁ (Diferencia Previa):</span>
+                <strong className="text-slate-900 text-xs">{didResult.beta1 >= 0 ? `+${didResult.beta1.toFixed(2)}` : didResult.beta1.toFixed(2)}</strong>
+                <span className="text-slate-600 block text-xs mt-0.5">Sesgo inicial de selección</span>
               </div>
-              <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
-                <span className="text-slate-400 block text-[10px]">β₂ (Efecto Temporal):</span>
-                <strong className="text-white text-xs">{didResult.beta2 >= 0 ? `+${didResult.beta2.toFixed(2)}` : didResult.beta2.toFixed(2)}</strong>
-                <span className="text-slate-500 block text-[9px] mt-0.5">Shock macro / maduración</span>
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200">
+                <span className="text-slate-600 block text-xs">β₂ (Efecto Temporal):</span>
+                <strong className="text-slate-900 text-xs">{didResult.beta2 >= 0 ? `+${didResult.beta2.toFixed(2)}` : didResult.beta2.toFixed(2)}</strong>
+                <span className="text-slate-600 block text-xs mt-0.5">Shock macro / maduración</span>
               </div>
-              <div className="p-2.5 bg-slate-900 rounded-xl border border-amber-500/30 bg-amber-500/5">
-                <span className="text-amber-400 block text-[10px] font-bold">β₃ (Efecto Causal Neto):</span>
-                <strong className="text-amber-300 text-sm font-black">
+              <div className="p-2.5 bg-white rounded-xl border border-amber-200 bg-amber-50">
+                <span className="text-amber-700 block text-xs font-bold">β₃ (Efecto Causal Neto):</span>
+                <strong className="text-amber-700 text-sm font-semibold">
                   {didResult.beta3 >= 0 ? `+${didResult.beta3.toFixed(2)}` : didResult.beta3.toFixed(2)} {metric.unit}
                 </strong>
-                <span className="text-emerald-400 block text-[9px] mt-0.5 font-bold">
+                <span className="text-emerald-700 block text-xs mt-0.5 font-bold">
                   p = {didResult.pValue} (Significativo)
                 </span>
               </div>
@@ -244,16 +231,16 @@ export const ImpactEvaluationDashboard: React.FC = () => {
             <button
               key={key}
               onClick={() => handleSelectMetric(key)}
-              className={`p-4 rounded-2xl border text-left transition-all relative ${
+              className={`p-4 rounded-lg border text-left transition-all relative ${
                 isSelected
                   ? 'bg-amber-500 text-slate-950 font-bold border-amber-400 shadow-md shadow-amber-500/20 scale-[1.02]'
                   : 'bg-white hover:bg-slate-50 text-slate-800 border-slate-200 shadow-xs'
               }`}
             >
-              <div className="text-[11px] font-mono opacity-80 uppercase tracking-wider">
+              <div className="text-xs font-mono opacity-80">
                 Métrica DiD #{key === 'turnover' ? '1' : key === 'sharpe' ? '2' : key === 'mos' ? '3' : '4'}
               </div>
-              <div className="text-sm font-black mt-1 line-clamp-1">
+              <div className="text-sm font-semibold mt-1 line-clamp-1">
                 {cfg.title.split('(')[0]}
               </div>
               <div className={`text-xs mt-1 font-mono ${isSelected ? 'text-slate-950 font-bold' : 'text-slate-500'}`}>
@@ -267,13 +254,13 @@ export const ImpactEvaluationDashboard: React.FC = () => {
       {/* PANEL PRINCIPAL: TABLA 2x2 DiD + GRÁFICO DE TENDENCIAS PARALELAS */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Lado Izquierdo: Gráfico SVG de Tendencias Paralelas & Contrafactual */}
-        <div className="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+        <div className="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
               <div className="flex items-center gap-2">
                 <LineChart className="w-4 h-4 text-amber-600" />
                 <h3 className="text-base font-bold text-slate-900 font-serif">
-                  Dinámica Temporal & Trayectoria Contrafactual
+                  Evolución y trayectoria contrafactual
                 </h3>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -288,14 +275,14 @@ export const ImpactEvaluationDashboard: React.FC = () => {
               <span className="flex items-center gap-1.5 text-slate-600">
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-400 inline-block" /> Control
               </span>
-              <span className="flex items-center gap-1.5 text-slate-400">
+              <span className="flex items-center gap-1.5 text-slate-500">
                 <span className="w-2.5 h-0.5 bg-slate-400 inline-block border-t border-dashed" /> Contrafactual
               </span>
             </div>
           </div>
 
           {/* Lienzo SVG */}
-          <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+          <div className="bg-white p-4 rounded-lg border border-slate-200">
             <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-64 sm:h-72">
               {/* Ejes y Cuadrícula */}
               {[metric.minScale, (metric.minScale + metric.maxScale) / 2, metric.maxScale].map(val => (
@@ -305,16 +292,16 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                     y1={scaleY(val)}
                     x2={chartWidth - pad.right}
                     y2={scaleY(val)}
-                    stroke="#334155"
+                    stroke="#DCE1DA"
                     strokeDasharray="3 3"
                     strokeWidth="1"
                   />
                   <text
                     x={pad.left - 10}
                     y={scaleY(val) + 4}
-                    fill="#94a3b8"
+                    fill="#687169"
                     fontSize="10"
-                    fontFamily="monospace"
+                    
                     textAnchor="end"
                   >
                     {val.toFixed(1)}
@@ -328,27 +315,27 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                 y1={pad.top}
                 x2={xIntervention}
                 y2={chartHeight - pad.bottom}
-                stroke="#f59e0b"
+                stroke="#9A6D1C"
                 strokeWidth="2"
                 strokeDasharray="4 4"
               />
               <text
                 x={xIntervention}
                 y={pad.top - 12}
-                fill="#f59e0b"
+                fill="#9A6D1C"
                 fontSize="10"
                 fontWeight="bold"
-                fontFamily="monospace"
+                
                 textAnchor="middle"
               >
                 t = 0 (Lanzamiento App)
               </text>
 
               {/* Marcadores de Fase */}
-              <text x={xPre1 + 20} y={chartHeight - 12} fill="#64748b" fontSize="10" fontWeight="bold">
+              <text x={xPre1 + 20} y={chartHeight - 12} fill="#5C665F" fontSize="10" fontWeight="bold">
                 Pre-Intervención (Sem -8 a 0)
               </text>
-              <text x={xPost - 30} y={chartHeight - 12} fill="#64748b" fontSize="10" fontWeight="bold">
+              <text x={xPost - 30} y={chartHeight - 12} fill="#5C665F" fontSize="10" fontWeight="bold">
                 Post (Sem 12)
               </text>
 
@@ -358,7 +345,7 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                 y1={scaleY(metric.controlPre - 0.2)}
                 x2={xPre2}
                 y2={scaleY(metric.controlPre)}
-                stroke="#94a3b8"
+                stroke="#687169"
                 strokeWidth="2.5"
               />
               <line
@@ -366,12 +353,12 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                 y1={scaleY(metric.controlPre)}
                 x2={xPost}
                 y2={scaleY(customControlPost)}
-                stroke="#94a3b8"
+                stroke="#687169"
                 strokeWidth="2.5"
               />
-              <circle cx={xPre2} cy={scaleY(metric.controlPre)} r="4" fill="#94a3b8" />
-              <circle cx={xPost} cy={scaleY(customControlPost)} r="5" fill="#94a3b8" />
-              <text x={xPost + 8} y={scaleY(customControlPost) + 4} fill="#cbd5e1" fontSize="10" fontFamily="monospace">
+              <circle cx={xPre2} cy={scaleY(metric.controlPre)} r="4" fill="#687169" />
+              <circle cx={xPost} cy={scaleY(customControlPost)} r="5" fill="#687169" />
+              <text x={xPost + 8} y={scaleY(customControlPost) + 4} fill="#3B433D" fontSize="10" >
                 Control: {customControlPost.toFixed(1)}
               </text>
 
@@ -381,12 +368,12 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                 y1={scaleY(metric.treatmentPre)}
                 x2={xPost}
                 y2={scaleY(counterfactualPost)}
-                stroke="#64748b"
+                stroke="#5C665F"
                 strokeWidth="2"
                 strokeDasharray="4 4"
               />
-              <circle cx={xPost} cy={scaleY(counterfactualPost)} r="4" fill="none" stroke="#94a3b8" strokeWidth="2" />
-              <text x={xPost + 8} y={scaleY(counterfactualPost) + 4} fill="#94a3b8" fontSize="10" fontFamily="monospace">
+              <circle cx={xPost} cy={scaleY(counterfactualPost)} r="4" fill="none" stroke="#687169" strokeWidth="2" />
+              <text x={xPost + 8} y={scaleY(counterfactualPost) + 4} fill="#687169" fontSize="10" >
                 Contrafactual: {counterfactualPost.toFixed(1)}
               </text>
 
@@ -396,7 +383,7 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                 y1={scaleY(metric.treatmentPre - 0.2)}
                 x2={xPre2}
                 y2={scaleY(metric.treatmentPre)}
-                stroke="#f59e0b"
+                stroke="#9A6D1C"
                 strokeWidth="3.5"
               />
               <line
@@ -404,12 +391,12 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                 y1={scaleY(metric.treatmentPre)}
                 x2={xPost}
                 y2={scaleY(customTreatmentPost)}
-                stroke="#f59e0b"
+                stroke="#9A6D1C"
                 strokeWidth="3.5"
               />
-              <circle cx={xPre2} cy={scaleY(metric.treatmentPre)} r="5" fill="#f59e0b" />
-              <circle cx={xPost} cy={scaleY(customTreatmentPost)} r="7" fill="#f59e0b" stroke="#ffffff" strokeWidth="2" />
-              <text x={xPost + 10} y={scaleY(customTreatmentPost) + 4} fill="#f59e0b" fontSize="11" fontWeight="bold" fontFamily="monospace">
+              <circle cx={xPre2} cy={scaleY(metric.treatmentPre)} r="5" fill="#9A6D1C" />
+              <circle cx={xPost} cy={scaleY(customTreatmentPost)} r="7" fill="#9A6D1C" stroke="#1B231E" strokeWidth="2" />
+              <text x={xPost + 10} y={scaleY(customTreatmentPost) + 4} fill="#9A6D1C" fontSize="11" fontWeight="bold" >
                 Tratamiento: {customTreatmentPost.toFixed(1)}
               </text>
 
@@ -419,16 +406,16 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                 y1={scaleY(counterfactualPost)}
                 x2={xPost}
                 y2={scaleY(customTreatmentPost)}
-                stroke="#10b981"
+                stroke="#1F6D46"
                 strokeWidth="3"
               />
               <text
                 x={xPost - 12}
                 y={(scaleY(counterfactualPost) + scaleY(customTreatmentPost)) / 2}
-                fill="#10b981"
+                fill="#1F6D46"
                 fontSize="11"
                 fontWeight="black"
-                fontFamily="monospace"
+                
                 textAnchor="end"
               >
                 Efecto β₃ = {didResult.beta3 >= 0 ? `+${didResult.beta3.toFixed(2)}` : didResult.beta3.toFixed(2)}
@@ -437,7 +424,7 @@ export const ImpactEvaluationDashboard: React.FC = () => {
           </div>
 
           {/* Explicación Pedagógica del Efecto Causal */}
-          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-700 leading-relaxed">
+          <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700 leading-relaxed">
             <span className="font-bold text-slate-900 block mb-1">Mecanismo de Identificación Causal:</span>
             {metric.explanation}
           </div>
@@ -446,18 +433,18 @@ export const ImpactEvaluationDashboard: React.FC = () => {
         {/* Lado Derecho: Matriz 2x2 DiD & Sensibilidad Contrafactual */}
         <div className="lg:col-span-5 space-y-4">
           {/* Matriz 2x2 Clásica de Econometría */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
+          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900 font-serif flex items-center gap-1.5">
                 <Database className="w-4 h-4 text-amber-600" />
-                Matriz 2×2 de Diferencias en Diferencias
+                Tabla 2×2 de diferencias en diferencias
               </h3>
-              <span className="text-[10px] font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">
+              <span className="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">
                 {metric.unit}
               </span>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
+            <div className="overflow-hidden rounded-lg border border-slate-200">
               <table className="w-full text-xs text-center">
                 <thead className="bg-slate-100 font-mono text-slate-600 font-bold border-b border-slate-200">
                   <tr>
@@ -489,12 +476,12 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                     </td>
                   </tr>
                   <tr className="bg-emerald-50 text-emerald-950 font-bold border-t-2 border-emerald-300">
-                    <td className="p-3 text-left font-sans text-emerald-900 font-black">
+                    <td className="p-3 text-left font-sans text-emerald-900 font-semibold">
                       Efecto Neto DiD (β₃)
                     </td>
-                    <td className="p-3 text-slate-400 text-[11px]">—</td>
-                    <td className="p-3 text-slate-400 text-[11px]">—</td>
-                    <td className="p-3 text-sm font-black text-emerald-700 font-mono">
+                    <td className="p-3 text-slate-500 text-xs">—</td>
+                    <td className="p-3 text-slate-500 text-xs">—</td>
+                    <td className="p-3 text-sm font-semibold text-emerald-700 font-mono">
                       {didResult.beta3 >= 0 ? `+${didResult.beta3.toFixed(2)}` : didResult.beta3.toFixed(2)}
                     </td>
                   </tr>
@@ -505,15 +492,15 @@ export const ImpactEvaluationDashboard: React.FC = () => {
             {/* Inferencia Estadística */}
             <div className="grid grid-cols-3 gap-2 text-center pt-1">
               <div className="p-2 bg-slate-50 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-slate-500 block font-mono">Error Estándar</span>
+                <span className="text-xs text-slate-500 block font-mono">Error Estándar</span>
                 <strong className="text-xs font-mono text-slate-800">{didResult.stdError.toFixed(3)}</strong>
               </div>
               <div className="p-2 bg-slate-50 rounded-xl border border-slate-200">
-                <span className="text-[10px] text-slate-500 block font-mono">Estadístico t</span>
+                <span className="text-xs text-slate-500 block font-mono">Estadístico t</span>
                 <strong className="text-xs font-mono text-slate-800">{didResult.tStat.toFixed(2)}</strong>
               </div>
               <div className="p-2 bg-emerald-50 rounded-xl border border-emerald-200">
-                <span className="text-[10px] text-emerald-800 block font-mono font-bold">p-valor</span>
+                <span className="text-xs text-emerald-800 block font-mono font-bold">p-valor</span>
                 <strong className="text-xs font-mono text-emerald-700 font-bold">
                   {didResult.pValue < 0.001 ? '< 0.001' : didResult.pValue}
                 </strong>
@@ -522,18 +509,18 @@ export const ImpactEvaluationDashboard: React.FC = () => {
           </div>
 
           {/* Simulador de Sensibilidad y Políticas Públicas */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
+          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900 font-serif flex items-center gap-1.5">
                 <Sliders className="w-4 h-4 text-amber-600" />
-                Simulador de Sensibilidad Contrafactual
+                Sensibilidad del resultado
               </h3>
               <button
                 onClick={() => {
                   setCustomTreatmentPost(metric.treatmentPost);
                   setCustomControlPost(metric.controlPost);
                 }}
-                className="text-[10px] text-amber-700 hover:text-amber-800 font-bold"
+                className="text-xs text-amber-700 hover:text-amber-800 font-bold"
               >
                 Restaurar RCT
               </button>
@@ -572,7 +559,7 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                 />
               </div>
 
-              <div className="p-3 bg-slate-100 rounded-2xl border border-slate-200 text-[11px] text-slate-800 space-y-1">
+              <div className="p-3 bg-slate-100 rounded-lg border border-slate-200 text-xs text-slate-800 space-y-1">
                 <div className="font-bold flex items-center gap-1.5">
                   <Info className="w-3.5 h-3.5 text-slate-600" />
                   Intervalo de Confianza al 95% para β₃:
@@ -580,7 +567,7 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                 <div className="font-mono font-bold text-slate-900">
                   [ {ci95Lower.toFixed(2)} , {ci95Upper.toFixed(2)} ] {metric.unit}
                 </div>
-                <p className="text-slate-600 text-[10px] leading-tight">
+                <p className="text-slate-600 text-xs leading-tight">
                   Como el cero (0) queda {ci95Lower > 0 || ci95Upper < 0 ? 'fuera' : 'dentro'} del intervalo, el efecto causal es {ci95Lower > 0 || ci95Upper < 0 ? 'estadísticamente indistinguible del azar al 95%' : 'robusto al 95% de confianza'}.
                 </p>
               </div>
@@ -590,11 +577,11 @@ export const ImpactEvaluationDashboard: React.FC = () => {
       </div>
 
       {/* Verificación de Supuestos Econométricos de Causalidad */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
         <div>
           <h3 className="text-base font-bold text-slate-900 font-serif flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            Auditoría de Supuestos de Identificación Causal
+            Supuestos de identificación
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
             Requisitos econométricos obligatorios para interpretar β₃ como un verdadero efecto de tratamiento sin sesgo por variables omitidas.
@@ -602,42 +589,42 @@ export const ImpactEvaluationDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
             <div className="flex items-center gap-2 font-bold text-xs text-slate-900">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               1. Tendencias Paralelas
             </div>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-600 leading-relaxed">
               Test placebo pre-intervención con 8 semanas de datos históricos: F = 0.45, p = 0.642. <strong>No se rechaza</strong> la hipótesis de pendientes paralelas previas.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
             <div className="flex items-center gap-2 font-bold text-xs text-slate-900">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               2. No Anticipación
             </div>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-600 leading-relaxed">
               Los inversores del grupo tratamiento no modificaron sus hábitos antes del despliegue oficial (ausencia de caída de Ashenfelter).
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
             <div className="flex items-center gap-2 font-bold text-xs text-slate-900">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               3. Supuesto SUTVA
             </div>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-600 leading-relaxed">
               Sin contaminación cruzada: las cuentas del grupo de control no tuvieron acceso a los foros de tesis ni a las alertas cognitivas del tratamiento.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
             <div className="flex items-center gap-2 font-bold text-xs text-slate-900">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               4. Exogeneidad Estricta
             </div>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-600 leading-relaxed">
               Asignación aleatorizada estratificada por edad y experiencia financiera previa, asegurando balances de covariables idénticos al inicio.
             </p>
           </div>

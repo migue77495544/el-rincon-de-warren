@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, X } from 'lucide-react';
 
 export interface CustomCompanyFormData {
   ticker: string;
@@ -66,19 +66,20 @@ export const CustomCompanyModal: React.FC<CustomCompanyModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white border border-slate-200 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar">
+      <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar">
         <div className="flex justify-between items-center pb-3 border-b border-slate-200">
           <div className="flex items-center gap-2">
             <PlusCircle className="w-5 h-5 text-slate-700" />
             <h3 className="text-base font-bold text-slate-900 font-serif">
-              Calculadora Contable de Empresa Personalizada
+              Analizar mi empresa
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100"
+            className="text-slate-500 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100"
           >
-            ✕
+            <X className="w-4 h-4" aria-hidden="true" />
+            <span className="sr-only">Cerrar</span>
           </button>
         </div>
 
@@ -122,8 +123,8 @@ export const CustomCompanyModal: React.FC<CustomCompanyModalProps> = ({
           </div>
 
           {/* Balance General Rápido */}
-          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block font-mono">
+          <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+            <span className="text-xs font-bold text-slate-700 block font-mono">
               1. Balance General (En Millones $)
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -203,8 +204,8 @@ export const CustomCompanyModal: React.FC<CustomCompanyModalProps> = ({
           </div>
 
           {/* Cuenta de Resultados Rápida */}
-          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block font-mono">
+          <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+            <span className="text-xs font-bold text-slate-700 block font-mono">
               2. Cuenta de Resultados (P&L en Millones $)
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -258,7 +259,7 @@ export const CustomCompanyModal: React.FC<CustomCompanyModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition-all shadow-sm active:scale-95"
+              className="px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition-all shadow-sm active:scale-95"
             >
               Calcular Ratios & Semáforos
             </button>
