@@ -39,7 +39,10 @@ server/data/               Perfiles de asesores y copias de respaldo (Damodaran,
 netlify/functions/api.mts  Función de Netlify (envuelve server/app.ts)
 netlify.toml               Build, redirecciones /api/* → función y cabeceras de caché
 src/App.tsx                Orquestador: estado global con useState + pestañas (secciones con React.lazy)
-src/components/            Componentes; subcarpetas chart/, fundamental/, gamification/, formulas/
+src/components/            Componentes; subcarpetas chart/, fundamental/, gamification/, formulas/, learn/
+src/components/learn/      Ruta de Aprender tipo Duolingo: RutaAprendizaje, LeccionPlayer, Ejercicios, VideoEmbed
+src/components/SpotlightSearch.tsx  Buscador único de empresas (lupa de la barra superior; se abre con abrirBuscador())
+src/data/rutaAprendizaje.ts  Unidades, lecciones, ejercicios y los 15 videos de YouTube (verificados con oEmbed)
 src/utils/                 financialCalculations.ts, markowitz.ts, dualAdvisorEngine.ts (respaldo sin IA), api.ts
 python/                    Motor anterior (ya no se usa; referencia histórica)
 src/services/, src/routes/ Código muerto de una extracción antigua — no se importa
@@ -53,6 +56,8 @@ src/services/, src/routes/ Código muerto de una extracción antigua — no se i
 - UI, comentarios, mensajes de error y nombres de dominio en **español**; identificadores técnicos en inglés.
 - Endpoints nuevos en `server/app.ts`. Nada de `child_process` ni Python: Netlify Functions solo ejecuta Node.
 - Secciones o paneles pesados nuevos: cargarlos con `React.lazy` como los existentes.
+- Buscar o cambiar de empresa se hace solo con la lupa de la barra superior; no añadas buscadores ni selectores de empresa dentro de las páginas (usa `abrirBuscador()` de `src/utils/events.ts`).
+- Videos nuevos de la Academia: comprueba que existen y se pueden insertar con `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=ID&format=json` (200).
 
 ## Límites de Netlify
 

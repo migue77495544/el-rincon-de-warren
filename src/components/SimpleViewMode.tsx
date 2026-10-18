@@ -5,11 +5,11 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   MessagesSquare,
+  Search,
   X
 } from 'lucide-react';
+import { abrirBuscador } from '../utils/events';
 import { JairoGuillermoConsult } from './JairoGuillermoConsult';
 import { CompanyPriceChart } from './CompanyPriceChart';
 import { plainVerdict, MARGEN_EXIGIDO } from '../utils/verdict';
@@ -69,7 +69,7 @@ const PrimerosPasos: React.FC<{ eligioEmpresa: boolean; abrioDefinicion: boolean
   if (!visible) return null;
 
   const pasos = [
-    { texto: 'Elige una empresa de la lista (o deja Berkshire, la de Buffett).', hecho: eligioEmpresa },
+    { texto: 'Busca una empresa con la lupa de arriba (o quédate con Berkshire, la de Buffett).', hecho: eligioEmpresa, accion: true },
     { texto: 'Lee la respuesta: si la empresa es buena y si su precio lo es.', hecho: eligioEmpresa || abrioDefinicion },
     { texto: 'Toca «¿Qué significa?» bajo cualquier cifra para entenderla.', hecho: abrioDefinicion }
   ];
@@ -109,6 +109,12 @@ const PrimerosPasos: React.FC<{ eligioEmpresa: boolean; abrioDefinicion: boolean
             <span>
               {p.texto}
               <span className="sr-only">{p.hecho ? ' (hecho)' : ' (pendiente)'}</span>
+              {'accion' in p && !p.hecho && (
+                <button type="button" onClick={abrirBuscador}
+                  className="mt-1.5 flex items-center gap-1.5 h-8 px-3 rounded-full border border-amber-400 bg-white text-sm font-medium text-amber-900 hover:bg-amber-100">
+                  <Search className="w-3.5 h-3.5" aria-hidden="true" /> Buscar empresa
+                </button>
+              )}
             </span>
           </li>
         ))}
@@ -274,30 +280,6 @@ export const SimpleViewMode: React.FC<SimpleViewModeProps> = ({
           )}
         </div>
 
-        {/* En escritorio la lista de la izquierda ya sirve para cambiar; aquí solo en móvil y tableta */}
-        <div className="flex lg:hidden items-center gap-1.5">
-          <button type="button" onClick={onPrev} disabled={!canPrev} aria-label="Empresa anterior"
-            className="h-10 w-10 rounded-md border border-slate-300 bg-white text-slate-700 flex items-center justify-center disabled:opacity-40">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <select
-            value={company.id}
-            onChange={e => {
-              const selected = companies.find(c => c.id === e.target.value);
-              if (selected) onSelectCompany(selected);
-            }}
-            className="h-10 flex-1 min-w-0 rounded-md border border-slate-300 bg-white px-2.5 text-sm font-medium text-slate-900"
-            aria-label="Cambiar de empresa"
-          >
-            {companies.map(c => (
-              <option key={c.id} value={c.id}>{c.nombre}</option>
-            ))}
-          </select>
-          <button type="button" onClick={onNext} disabled={!canNext} aria-label="Empresa siguiente"
-            className="h-10 w-10 rounded-md border border-slate-300 bg-white text-slate-700 flex items-center justify-center disabled:opacity-40">
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
       </header>
 
       {/* ── La respuesta ── */}

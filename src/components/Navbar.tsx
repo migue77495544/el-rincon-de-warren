@@ -101,7 +101,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="w-8 h-8 rounded-md bg-slate-900 flex items-center justify-center font-serif text-[19px] font-semibold text-amber-300 leading-none">
               W
             </span>
-            <span className="font-serif text-[17px] font-semibold text-slate-900 hidden sm:inline">
+            <span className="font-serif text-[17px] font-semibold text-slate-900 hidden md:inline">
               El Rincón de Warren
             </span>
           </button>
@@ -111,19 +111,27 @@ export const Navbar: React.FC<NavbarProps> = ({
             {visibleModules.map(mod => renderTab(mod))}
           </nav>
 
-          {/* Controles: nunca se encogen, así el selector de modo no se corta */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Buscador único de empresas, en forma de píldora y siempre visible */}
+          <div className="flex-1 min-w-0 flex xl:flex-none xl:order-none justify-center">
             <button
               type="button"
               onClick={onOpenSearch}
-              className="flex items-center gap-2 h-9 px-2.5 text-slate-600 hover:text-slate-900 hover:bg-white border border-slate-200 rounded-md text-sm transition-colors"
-              title="Buscar empresas, conceptos o secciones (Ctrl K)"
-              aria-label="Buscar empresas, conceptos o secciones"
+              className="w-full max-w-[22rem] xl:w-64 flex items-center gap-2.5 h-10 pl-3.5 pr-2 rounded-full border border-slate-300 bg-white text-left text-sm text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-colors"
+              title="Buscar una empresa (Ctrl K)"
+              aria-label="Buscar una empresa"
+              aria-haspopup="dialog"
             >
-              <Search className="w-4 h-4" />
-              <span className="hidden md:inline">Buscar</span>
-              <kbd className="hidden md:inline font-sans text-xs text-slate-500 border border-slate-200 rounded px-1">Ctrl K</kbd>
+              <Search className="w-4 h-4 shrink-0 text-slate-700" />
+              <span className="flex-1 min-w-0 truncate">
+                <span className="sm:hidden">Buscar</span>
+                <span className="hidden sm:inline">Busca una empresa</span>
+              </span>
+              <kbd className="hidden lg:inline font-sans text-xs text-slate-500 border border-slate-200 rounded-full px-2 py-0.5">Ctrl K</kbd>
             </button>
+          </div>
+
+          {/* Controles: nunca se encogen, así el selector de modo no se corta */}
+          <div className="flex items-center gap-2 shrink-0">
 
             {!isSimple && (
               <button

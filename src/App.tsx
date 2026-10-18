@@ -7,6 +7,7 @@ import { ViewMode } from './types';
 import { FundamentalEngine } from './components/FundamentalEngine';
 import { InstantFeedbackModal } from './components/InstantFeedbackModal';
 import { WarrenFAB } from './components/WarrenFAB';
+import { OPEN_SEARCH_EVENT } from './utils/events';
 import {
   CompanyAnalysis,
   PortfolioStats,
@@ -98,6 +99,13 @@ function AppContent() {
     window.addEventListener('warren:toggle-to-analyst', handleToggleToAnalyst);
     return () => window.removeEventListener('warren:toggle-to-analyst', handleToggleToAnalyst);
   }, [setViewMode]);
+
+  // Cualquier parte de la app puede abrir el buscador de empresas (p. ej. «Primeros pasos»)
+  useEffect(() => {
+    const abrir = () => setIsSearchOpen(true);
+    window.addEventListener(OPEN_SEARCH_EVENT, abrir);
+    return () => window.removeEventListener(OPEN_SEARCH_EVENT, abrir);
+  }, []);
 
   // Ctrl+K / Cmd+K abre el buscador desde cualquier pantalla
   useEffect(() => {
@@ -612,10 +620,14 @@ function AppContent() {
           onSelectCompany={(comp) => {
             setSelectedCompany(comp);
             setActiveTab('fundamental');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onCompanyImported={(comp) => {
+            handleAddCustomCompany(comp);
+            setActiveTab('fundamental');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           onNavigateTab={setActiveTab}
-          onSelectForSimulation={handleSelectForSimulation}
-          onOpenCustomCompanyModal={() => setIsCustomModalOpen(true)}
         />
         </Suspense>
       )}

@@ -1,479 +1,332 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CompanyAnalysis } from '../types';
 import { useViewMode } from '../context/ViewModeContext';
-import {
-  ArrowRight,
-  BarChart3,
-  BookOpen,
-  Building2,
-  CheckCircle2,
-  Command,
-  Compass,
-  Database,
-  HelpCircle,
-  Lightbulb,
-  PlusCircle,
-  Search,
-  ShieldAlert,
-  ShieldCheck,
-  Sparkles,
-  TrendingUp,
-  Trophy,
-  Users,
-  Wallet,
-  X
-} from 'lucide-react';
+import { BookOpen, CornerDownLeft, GraduationCap, LineChart, Loader2, Search, X } from 'lucide-react';
+import { fetchJson, postJson, errorMessage } from '../utils/api';
+import { marginLevel } from '../utils/verdict';
+
+type Tab = 'fundamental' | 'simulator' | 'gamification' | 'impact' | 'methodology';
 
 interface SpotlightSearchProps {
   isOpen: boolean;
   onClose: () => void;
   companies: CompanyAnalysis[];
   onSelectCompany: (company: CompanyAnalysis) => void;
-  onNavigateTab: (tab: 'fundamental' | 'simulator' | 'gamification' | 'impact' | 'schemas') => void;
-  onSelectForSimulation: (ticker: string) => void;
-  onOpenCustomCompanyModal?: () => void;
+  /** Empresa nueva cargada desde la bolsa: se añade al catálogo y se abre */
+  onCompanyImported: (company: CompanyAnalysis) => void;
+  onNavigateTab: (tab: Tab) => void;
 }
+
+interface LiveResult {
+  ticker: string;
+  nombre: string;
+  sector: string;
+  inCatalog: boolean;
+  price?: number;
+}
+
+type Item =
+  | { kind: 'catalog'; key: string; company: CompanyAnalysis }
+  | { kind: 'live'; key: string; result: LiveResult }
+  | { kind: 'section'; key: string; label: string; hint: string; tab: Tab; icon: React.ComponentType<{ className?: string }> };
+
+const NOTA: Record<string, { word: string; cls: string }> = {
+  'A+': { word: 'muy buena', cls: 'text-emerald-800' },
+  A: { word: 'muy buena', cls: 'text-emerald-800' },
+  B: { word: 'buena', cls: 'text-emerald-800' },
+  C: { word: 'regular', cls: 'text-amber-900' },
+  D: { word: 'débil', cls: 'text-rose-800' },
+  F: { word: 'débil', cls: 'text-rose-800' }
+};
+
+const PRECIO: Record<string, { word: string; cls: string }> = {
+  amplio: { word: 'barata', cls: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+  estrecho: { word: 'precio justo', cls: 'bg-amber-50 text-amber-900 border-amber-200' },
+  'sin-margen': { word: 'cara', cls: 'bg-rose-50 text-rose-800 border-rose-200' },
+  'sin-cobertura': { word: 'sin referencia', cls: 'bg-slate-100 text-slate-700 border-slate-200' }
+};
+
+const SECCIONES: Array<{ label: string; hint: string; tab: Tab; icon: React.ComponentType<{ className?: string }>; words: string; analyst?: boolean }> = [
+  { label: 'Aprender', hint: 'Lecciones cortas, juegos y videos', tab: 'gamification', icon: GraduationCap, words: 'aprender juegos lecciones videos academia curso' },
+  { label: 'Cómo se calcula', hint: 'Fórmulas y metodología de la nota', tab: 'methodology', icon: BookOpen, words: 'metodologia formulas como se calcula nota score' },
+  { label: 'Simulador de cartera', hint: 'Practica con $100.000 sin riesgo', tab: 'simulator', icon: LineChart, words: 'simulador cartera markowitz practicar', analyst: true }
+];
+
+const sinTildes = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
   isOpen,
   onClose,
   companies,
   onSelectCompany,
-  onNavigateTab,
-  onSelectForSimulation,
-  onOpenCustomCompanyModal
+  onCompanyImported,
+  onNavigateTab
 }) => {
-  const { flags } = useViewMode();
+  const { mode } = useViewMode();
   const [query, setQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'all' | 'apps' | 'companies' | 'heuristics'>('all');
+  const [live, setLive] = useState<LiveResult[]>([]);
+  const [buscando, setBuscando] = useState(false);
+  const [cargando, setCargando] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [activo, setActivo] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 50);
-    } else {
-      setQuery('');
+      setTimeout(() => inputRef.current?.focus(), 30);
+      document.body.style.overflow = 'hidden';
     }
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  // Keyboard shortcut listener (Cmd+K / Ctrl+K / Esc)
+  // Búsqueda en vivo en la bolsa (también tickers de una letra: V, F, T)
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        if (isOpen) onClose();
-      } else if (e.key === 'Escape' && isOpen) {
-        onClose();
+    const term = query.trim();
+    setError(null);
+    if (!term) {
+      setLive([]);
+      setBuscando(false);
+      return;
+    }
+    let cancelado = false;
+    setBuscando(true);
+    const t = setTimeout(async () => {
+      try {
+        const data = await fetchJson<{ results: LiveResult[] }>(`/api/market/search?q=${encodeURIComponent(term)}`, {}, 12000);
+        if (!cancelado) setLive(Array.isArray(data.results) ? data.results : []);
+      } catch {
+        if (!cancelado) setLive([]);
+      } finally {
+        if (!cancelado) setBuscando(false);
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+    }, 250);
+    return () => { cancelado = true; clearTimeout(t); };
+  }, [query]);
+
+  const items: Item[] = useMemo(() => {
+    const q = sinTildes(query.trim());
+    const enCatalogo = companies.filter(c => {
+      if (!q) return true;
+      const t = c.ticker.toLowerCase();
+      const n = sinTildes(c.nombre);
+      // Con 1-2 letras solo cuenta el inicio: «V» no debe casar con medio catálogo
+      return q.length <= 2 ? t.startsWith(q) || n.startsWith(q) : t.includes(q) || n.includes(q) || sinTildes(c.sector).includes(q);
+    });
+    const tickersCatalogo = new Set(companies.map(c => c.ticker.toUpperCase()));
+    const enBolsa = live.filter(r => !tickersCatalogo.has(r.ticker.toUpperCase()));
+    const secciones = q.length >= 3
+      ? SECCIONES.filter(s => (!s.analyst || mode === 'analyst') && (sinTildes(s.label).includes(q) || s.words.includes(q)))
+      : [];
+    return [
+      ...enCatalogo.map(c => ({ kind: 'catalog' as const, key: `c-${c.id}`, company: c })),
+      ...enBolsa.map(r => ({ kind: 'live' as const, key: `l-${r.ticker}`, result: r })),
+      ...secciones.map(s => ({ kind: 'section' as const, key: `s-${s.tab}`, label: s.label, hint: s.hint, tab: s.tab, icon: s.icon }))
+    ];
+  }, [companies, live, query, mode]);
+
+  useEffect(() => { setActivo(0); }, [query, items.length]);
+  useEffect(() => {
+    listRef.current?.querySelector<HTMLElement>(`[data-index="${activo}"]`)?.scrollIntoView({ block: 'nearest' });
+  }, [activo]);
 
   if (!isOpen) return null;
 
-  // Search items definition — filtered by view mode
-  const allApps = [
-    {
-      id: 'app-fundamental',
-      title: 'Análisis fundamental',
-      subtitle: 'Visualizador de balance, DuPont, semáforos de liquidez, solvencia, rentabilidad y valoración',
-      category: 'Visualizador & Módulo 1',
-      icon: BarChart3,
-      iconBg: 'bg-emerald-500',
-      section: 'apps',
-      action: () => {
-        onNavigateTab('fundamental');
-        onClose();
-      }
-    },
-    {
-      id: 'app-visualizer-dupont',
-      title: 'Visualizador DuPont & Balance General',
-      subtitle: 'Desglose visual de ROE = Margen Neto × Rotación × Apalancamiento y capital de trabajo',
-      category: 'Visualizador Gráfico',
-      icon: BarChart3,
-      iconBg: 'bg-amber-500',
-      section: 'apps',
-      action: () => {
-        onNavigateTab('fundamental');
-        onClose();
-      }
-    },
-    {
-      id: 'app-simulator',
-      title: '2. Simulador de Inversiones Conductual',
-      subtitle: 'Práctica con $100,000, cálculo de Ratio de Sharpe y detección de sesgos',
-      category: 'Simulador',
-      icon: TrendingUp,
-      iconBg: 'bg-blue-500',
-      section: 'apps',
-      action: () => {
-        onNavigateTab('simulator');
-        onClose();
-      }
-    },
-    {
-      id: 'app-gamification',
-      title: '3. Aprender Jugando',
-      subtitle: 'Juegos interactivos, tesis y academía de videos',
-      category: 'Comunidad & Aprendizaje',
-      icon: Users,
-      iconBg: 'bg-purple-500',
-      section: 'apps',
-      action: () => {
-        onNavigateTab('gamification');
-        onClose();
-      }
-    },
-    {
-      id: 'app-did',
-      title: '4. Evaluación de Impacto DiD (Admin)',
-      subtitle: 'Econometría de Diferencias en Diferencias y reducción de sobreoperativa',
-      category: 'Analítica',
-      icon: ShieldCheck,
-      iconBg: 'bg-amber-500',
-      section: 'apps',
-      action: () => {
-        onNavigateTab('impact');
-        onClose();
-      }
-    },
-    {
-      id: 'app-custom-calc',
-      title: 'Calculadora de Empresa Personalizada',
-      subtitle: 'Ingresa estados financieros para calcular los ratios y Score S(a)',
-      category: 'Herramienta',
-      icon: PlusCircle,
-      iconBg: 'bg-teal-500',
-      section: 'apps',
-      action: () => {
-        onNavigateTab('fundamental');
-        if (onOpenCustomCompanyModal) onOpenCustomCompanyModal();
-        onClose();
-      }
+  const abrirEmpresa = (c: CompanyAnalysis) => {
+    onSelectCompany(c);
+    onClose();
+  };
+
+  const cargarDeLaBolsa = async (ticker: string) => {
+    setCargando(ticker);
+    setError(null);
+    try {
+      // La primera descarga de estados financieros puede tardar varios segundos
+      const data = await postJson<{ company: CompanyAnalysis }>('/api/market/import', { query: ticker, ticker }, 60000);
+      onCompanyImported(data.company);
+      onClose();
+    } catch (err) {
+      setError(errorMessage(err, `No se pudieron cargar los datos de ${ticker}. Prueba de nuevo en unos segundos.`));
+    } finally {
+      setCargando(null);
     }
-  ];
+  };
 
-  // Filter apps by view mode
-  const apps = flags.spotlightSections.includes('apps')
-    ? allApps.filter(app => {
-        // En modo simple: ocultar apps avanzadas
-        if (app.id === 'app-did') return false; // Solo analyst
-        if (app.id === 'app-schemas') return false; // Solo analyst
-        return true;
-      })
-    : allApps;
-
-  const heuristics = [
-    {
-      id: 'h-margin',
-      title: 'Margen de Seguridad (Margin of Safety)',
-      subtitle: 'Regla de Benjamin Graham: comprar con al menos 15-30% de descuento respecto al valor intrínseco',
-      tag: 'Principio Rector',
-      icon: ShieldCheck,
-      action: () => {
-        onNavigateTab('fundamental');
-        onClose();
-      }
-    },
-    {
-      id: 'h-moat',
-      title: 'Foso Económico (Economic Moat)',
-      subtitle: 'Ventaja competitiva estructural: poder de fijación de precios, marcas fuertes o costes de cambio',
-      tag: 'Cualitativo',
-      icon: Sparkles,
-      action: () => {
-        onNavigateTab('fundamental');
-        onClose();
-      }
-    },
-    {
-      id: 'h-overtrading',
-      title: 'Evitar el Sesgo de Sobreoperativa (Overtrading)',
-      subtitle: 'Warren Buffett: El mercado es un mecanismo para transferir dinero de los impacientes a los pacientes',
-      tag: 'Conductual',
-      icon: ShieldAlert,
-      action: () => {
-        onNavigateTab('simulator');
-        onClose();
-      }
-    },
-    {
-      id: 'h-sharpe',
-      title: 'Ratio de Sharpe (SR_p = (E(R) - Rf) / σ)',
-      subtitle: 'Premia la consistencia y castiga la volatilidad de apuestas imprudentes',
-      tag: 'Gestión de Riesgo',
-      icon: Compass,
-      action: () => {
-        onNavigateTab('simulator');
-        onClose();
-      }
+  const ejecutar = (item: Item | undefined) => {
+    if (!item || cargando) return;
+    if (item.kind === 'catalog') abrirEmpresa(item.company);
+    else if (item.kind === 'live') cargarDeLaBolsa(item.result.ticker);
+    else {
+      onNavigateTab(item.tab);
+      onClose();
     }
-  ];
+  };
 
-  // Filtering
-  const cleanQ = query.toLowerCase().trim();
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onClose();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActivo(i => Math.min(items.length - 1, i + 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActivo(i => Math.max(0, i - 1));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const term = query.trim();
+      // Sin resultados: se intenta cargar lo escrito como ticker
+      if (!items.length && term) cargarDeLaBolsa(term.toUpperCase());
+      else ejecutar(items[activo]);
+    }
+  };
 
-  const filteredApps = apps.filter(
-    a => !cleanQ || a.title.toLowerCase().includes(cleanQ) || a.subtitle.toLowerCase().includes(cleanQ) || a.category.toLowerCase().includes(cleanQ)
-  );
+  const term = query.trim();
+  const nCatalogo = items.filter(i => i.kind === 'catalog').length;
+  const nBolsa = items.filter(i => i.kind === 'live').length;
 
-  const filteredCompanies = companies.filter(
-    c => !cleanQ || c.ticker.toLowerCase().includes(cleanQ) || c.nombre.toLowerCase().includes(cleanQ) || c.sector.toLowerCase().includes(cleanQ) || c.scoreGrade.toLowerCase().includes(cleanQ)
-  );
+  const fila = (item: Item, index: number) => {
+    const activa = index === activo;
+    const base = `w-full text-left flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${activa ? 'bg-slate-100' : 'hover:bg-slate-50'}`;
+    if (item.kind === 'catalog') {
+      const c = item.company;
+      const nota = NOTA[c.scoreGrade] || NOTA.C;
+      const precio = PRECIO[marginLevel(c)];
+      return (
+        <button type="button" role="option" aria-selected={activa} data-index={index} onMouseEnter={() => setActivo(index)} onClick={() => ejecutar(item)} className={base}>
+          <span className={`w-11 shrink-0 text-center cifra text-2xl leading-none ${nota.cls}`} aria-hidden="true">{c.scoreGrade}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold text-slate-900 truncate">{c.nombre}</span>
+            <span className="block text-sm text-slate-600 truncate">{c.ticker} · nota {c.scoreGrade}, {nota.word}</span>
+          </span>
+          <span className="shrink-0 text-right">
+            <span className="block tabular text-sm font-semibold text-slate-900">${c.raw.precioCotizacion.toFixed(2)}</span>
+            <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full border text-xs font-medium ${precio.cls}`}>{precio.word}</span>
+          </span>
+        </button>
+      );
+    }
+    if (item.kind === 'live') {
+      const r = item.result;
+      const estaCargando = cargando === r.ticker;
+      return (
+        <button type="button" role="option" aria-selected={activa} data-index={index} onMouseEnter={() => setActivo(index)} onClick={() => ejecutar(item)} disabled={Boolean(cargando)}
+          className={`${base} disabled:opacity-60`}>
+          <span className="w-11 shrink-0 flex justify-center text-slate-500" aria-hidden="true">
+            {estaCargando ? <Loader2 className="w-5 h-5 animate-spin text-amber-700" /> : <Search className="w-5 h-5" />}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold text-slate-900 truncate">{r.nombre}</span>
+            <span className="block text-sm text-slate-600 truncate">{r.ticker} · {r.sector}</span>
+          </span>
+          <span className="shrink-0 text-sm font-medium text-amber-800">
+            {estaCargando ? 'Analizando…' : 'Analizar'}
+          </span>
+        </button>
+      );
+    }
+    const Icon = item.icon;
+    return (
+      <button type="button" role="option" aria-selected={activa} data-index={index} onMouseEnter={() => setActivo(index)} onClick={() => ejecutar(item)} className={base}>
+        <span className="w-11 shrink-0 flex justify-center text-slate-500" aria-hidden="true"><Icon className="w-5 h-5" /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[15px] font-semibold text-slate-900">{item.label}</span>
+          <span className="block text-sm text-slate-600">{item.hint}</span>
+        </span>
+      </button>
+    );
+  };
 
-  const filteredHeuristics = heuristics.filter(
-    h => !cleanQ || h.title.toLowerCase().includes(cleanQ) || h.subtitle.toLowerCase().includes(cleanQ) || h.tag.toLowerCase().includes(cleanQ)
-  );
+  let index = 0;
+  const grupo = (titulo: string, kind: Item['kind']) => {
+    const lista = items.filter(i => i.kind === kind);
+    if (!lista.length) return null;
+    return (
+      <li role="presentation">
+        <p className="m-0 px-3 pt-3 pb-1.5 text-sm font-medium text-slate-600">{titulo}</p>
+        <ul role="presentation" className="m-0 p-0 list-none">
+          {lista.map(item => <li key={item.key} role="presentation">{fila(item, index++)}</li>)}
+        </ul>
+      </li>
+    );
+  };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-start justify-center pt-16 sm:pt-24 px-4 animate-in fade-in duration-150">
+    <div
+      className="fixed inset-0 z-[var(--z-modal)] bg-slate-900/30 flex items-start justify-center sm:pt-20 animate-in fade-in duration-150"
+      onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <div
-        className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col transition-all"
-        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Buscar una empresa"
+        className="bg-white w-full h-full sm:h-auto sm:max-w-xl sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-2xl flex flex-col overflow-hidden"
       >
-        {/* iOS Spotlight Search Input Bar */}
-        <div className="flex items-center px-4 py-3.5 border-b border-slate-200 bg-slate-50">
-          <Search className="w-5 h-5 text-amber-600 shrink-0 mr-3" />
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Buscar aplicaciones, empresas (AAPL, KO...), heurísticas o acciones..."
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            className="w-full bg-transparent text-slate-900 text-sm sm:text-base placeholder-slate-500 focus:outline-none font-sans"
-          />
-          {query && (
-            <button
-              onClick={() => setQuery('')}
-              className="p-1 rounded-full bg-slate-200 text-slate-600 hover:text-slate-900 mr-2"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-          <button
-            onClick={onClose}
-            className="text-xs px-2.5 py-1 rounded-xl bg-white text-slate-700 hover:text-slate-900 border border-slate-200 font-medium shadow-xs"
-          >
-            Esc
-          </button>
-        </div>
-
-        {/* Category Pills (iOS Segmented Style) */}
-        <div className="flex items-center gap-1.5 px-4 py-2 border-b border-slate-200 bg-slate-50/50 text-xs overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => setFilterCategory('all')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-              filterCategory === 'all'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            Todo
-          </button>
-          <button
-            onClick={() => setFilterCategory('apps')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-              filterCategory === 'apps'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            Aplicaciones ({filteredApps.length})
-          </button>
-          <button
-            onClick={() => setFilterCategory('companies')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-              filterCategory === 'companies'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            Empresas & Tickers ({filteredCompanies.length})
-          </button>
-          <button
-            onClick={() => setFilterCategory('heuristics')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-              filterCategory === 'heuristics'
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            Heurísticas Value ({filteredHeuristics.length})
-          </button>
-        </div>
-
-        {/* Search Results Container */}
-        <div className="max-h-[62vh] overflow-y-auto p-3 space-y-4 text-xs no-scrollbar">
-          {/* Section: Aplicaciones y Módulos */}
-          {(filterCategory === 'all' || filterCategory === 'apps') && filteredApps.length > 0 && (
-            <div className="space-y-1.5">
-              <span className="text-xs font-bold text-slate-500 px-2 block font-mono">
-                Aplicaciones & Módulos
-              </span>
-              <div className="grid grid-cols-1 gap-1">
-                {filteredApps.map(app => {
-                  const Icon = app.icon;
-                  return (
-                    <button
-                      key={app.id}
-                      onClick={app.action}
-                      className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-50 transition-all text-left group border border-transparent hover:border-slate-200"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-xl ${app.iconBg} flex items-center justify-center text-white shadow-xs shrink-0`}>
-                          <Icon className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 text-xs sm:text-sm group-hover:text-amber-600 transition-colors">
-                              {app.title}
-                            </span>
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                              {app.category}
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
-                            {app.subtitle}
-                          </p>
-                        </div>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-slate-800 group-hover:translate-x-0.5 transition-all shrink-0" />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Section: Empresas & Tickers */}
-          {(filterCategory === 'all' || filterCategory === 'companies') && filteredCompanies.length > 0 && (
-            <div className="space-y-1.5">
-              <span className="text-xs font-bold text-slate-500 px-2 block font-mono">
-                Empresas Cotizadas & Análisis Fundamental
-              </span>
-              <div className="grid grid-cols-1 gap-1">
-                {filteredCompanies.map(comp => (
-                  <div
-                    key={comp.id}
-                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-50 transition-all text-left group border border-transparent hover:border-slate-200"
-                  >
-                    <button
-                      onClick={() => {
-                        onSelectCompany(comp);
-                        onNavigateTab('fundamental');
-                        onClose();
-                      }}
-                      className="flex items-center gap-3 flex-1 text-left"
-                    >
-                      <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-mono font-bold text-amber-700 shrink-0 text-xs shadow-xs">
-                        {comp.ticker.slice(0, 4)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 text-xs sm:text-sm group-hover:text-amber-700 transition-colors font-mono">
-                            {comp.ticker}
-                          </span>
-                          <span className="text-slate-600 font-medium text-xs">
-                            {comp.nombre}
-                          </span>
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
-                            comp.linearScore >= 80 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
-                            comp.linearScore >= 60 ? 'bg-amber-50 text-amber-800 border border-amber-200' :
-                            'bg-rose-50 text-rose-800 border border-rose-200'
-                          }`}>
-                            Score: {comp.linearScore} ({comp.scoreGrade})
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
-                          <span>Precio: <strong className="text-slate-900 font-mono">${comp.raw.precioCotizacion.toFixed(2)}</strong></span>
-                          <span>Margen de Seg.: <strong className={comp.targetConsensus?.upside_potential > 0 ? 'text-emerald-700' : 'text-rose-700'}>{comp.targetConsensus ? `${comp.targetConsensus.upside_potential > 0 ? '+' : ''}${Math.round(comp.targetConsensus.upside_potential * 10) / 10}%` : 'N/D'}</strong></span>
-                          <span className="hidden sm:inline text-slate-500 truncate max-w-[220px]">Foso: {comp.moat}</span>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        onSelectForSimulation(comp.ticker);
-                        onClose();
-                      }}
-                      className="px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-500 text-amber-800 hover:text-slate-950 border border-amber-200 transition-all shrink-0 ml-2 shadow-xs"
-                    >
-                      Simular
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Section: Heurísticas & Principios de Warren */}
-          {(filterCategory === 'all' || filterCategory === 'heuristics') && filteredHeuristics.length > 0 && (
-            <div className="space-y-1.5">
-              <span className="text-xs font-bold text-slate-500 px-2 block font-mono">
-                Heurísticas & Principios de Inversión
-              </span>
-              <div className="grid grid-cols-1 gap-1">
-                {filteredHeuristics.map(h => {
-                  const Icon = h.icon;
-                  return (
-                    <button
-                      key={h.id}
-                      onClick={h.action}
-                      className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-50 transition-all text-left group border border-transparent hover:border-slate-200"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 text-xs group-hover:text-amber-700 transition-colors">
-                              {h.title}
-                            </span>
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                              {h.tag}
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
-                            {h.subtitle}
-                          </p>
-                        </div>
-                      </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-800 transition-all shrink-0" />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {filteredApps.length === 0 && filteredCompanies.length === 0 && filteredHeuristics.length === 0 && (
-            <div className="text-center py-10 space-y-2">
-              <HelpCircle className="w-8 h-8 text-slate-500 mx-auto" />
-              <p className="text-xs text-slate-600">
-                No se encontraron resultados para "<span className="text-slate-900 font-semibold">{query}</span>".
-              </p>
-              <p className="text-xs text-slate-500">
-                Prueba buscando "Apple", "Sharpe", "DiD", "Simulador" o "Margen".
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* iOS Spotlight Footer info */}
-        <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+        <div className="p-3 sm:p-4 border-b border-slate-200">
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 font-mono">
-              <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-xs text-slate-700 shadow-xs">⌘</kbd>
-              <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-xs text-slate-700 shadow-xs">K</kbd>
-              para buscar en cualquier momento
-            </span>
+            <div className="flex-1 min-w-0 flex items-center gap-2.5 h-12 px-4 rounded-full border border-slate-300 bg-white focus-within:border-amber-700 focus-within:ring-2 focus-within:ring-amber-700/20">
+              <Search className="w-5 h-5 text-slate-500 shrink-0" aria-hidden="true" />
+              <input
+                ref={inputRef}
+                type="text"
+                role="combobox"
+                aria-expanded="true"
+                aria-controls="resultados-busqueda"
+                aria-activedescendant={undefined}
+                aria-label="Nombre o ticker de la empresa"
+                placeholder="Apple, Coca-Cola, NVDA…"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={onKeyDown}
+                // El foco se marca en la píldora entera (focus-within), no en el campo
+                style={{ outline: 'none' }}
+                className="flex-1 min-w-0 bg-transparent text-base text-slate-900 placeholder-slate-500 focus:outline-none focus-visible:outline-none"
+              />
+              {buscando && <Loader2 className="w-4 h-4 text-slate-500 animate-spin shrink-0" aria-label="Buscando" />}
+              {query && !buscando && (
+                <button type="button" onClick={() => { setQuery(''); inputRef.current?.focus(); }} className="shrink-0 w-7 h-7 rounded-full text-slate-500 hover:bg-slate-100 flex items-center justify-center" aria-label="Borrar búsqueda">
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            <button type="button" onClick={onClose} className="shrink-0 h-12 px-2 text-sm font-medium text-slate-700 hover:text-slate-900 rounded-lg">
+              Cerrar
+            </button>
           </div>
-          <span>Buscador Spotlight Estilo iOS</span>
+        </div>
+
+        <div className="flex-1 sm:max-h-[60vh] overflow-y-auto p-2">
+          {error && (
+            <p role="alert" className="m-2 p-3 rounded-lg bg-rose-50 border border-rose-200 text-sm text-rose-800">{error}</p>
+          )}
+
+          {items.length > 0 ? (
+            <ul id="resultados-busqueda" role="listbox" aria-label="Resultados" ref={listRef} className="m-0 p-0 list-none">
+              {grupo(term ? `En tu lista (${nCatalogo})` : 'Empresas para empezar', 'catalog')}
+              {grupo(`En la bolsa (${nBolsa})`, 'live')}
+              {grupo('Ir a', 'section')}
+            </ul>
+          ) : (
+            <div className="px-4 py-10 text-center">
+              {buscando ? (
+                <p className="m-0 text-sm text-slate-600">Buscando «{term}» en la bolsa…</p>
+              ) : (
+                <>
+                  <p className="m-0 text-[15px] font-semibold text-slate-900">No encontramos «{term}»</p>
+                  <p className="mt-1 mb-4 text-sm text-slate-600">Prueba con el nombre de la empresa o su ticker (por ejemplo, KO para Coca-Cola).</p>
+                  <button type="button" onClick={() => cargarDeLaBolsa(term.toUpperCase())} disabled={Boolean(cargando)}
+                    className="h-10 px-4 rounded-full bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 disabled:opacity-60">
+                    {cargando ? 'Analizando…' : `Analizar «${term.toUpperCase()}» de todas formas`}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="hidden sm:flex items-center justify-between gap-3 px-4 py-2.5 border-t border-slate-200 text-xs text-slate-600">
+          <span>La nota resume la calidad del negocio; la etiqueta, si su precio está barato o caro.</span>
+          <span className="flex items-center gap-1 shrink-0"><CornerDownLeft className="w-3.5 h-3.5" aria-hidden="true" /> abrir</span>
         </div>
       </div>
     </div>

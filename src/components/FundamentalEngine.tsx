@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { CompanyAnalysis, FinancialRawData } from '../types';
 import { fetchJson, postJson, errorMessage } from '../utils/api';
+import { abrirBuscador } from '../utils/events';
 import { useViewMode } from '../context/ViewModeContext';
 import {
   AlertTriangle,
@@ -527,38 +528,6 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
       {/* Simple Mode: Clean, minimal interface with only essential elements */}
       {viewMode === 'simple' && !isAnalystEnabledForSection('fundamental') ? (
         <div className="space-y-6">
-          {/* Mobile / Tablet Segmented Control for Simple Mode */}
-          <div className="flex lg:hidden items-center justify-between p-1 bg-slate-200/80 rounded-lg border border-slate-200 gap-1">
-            <button
-              onClick={() => setMobileActiveTab('list')}
-              className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                mobileActiveTab === 'list'
-                  ? 'bg-white text-slate-950 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5 text-slate-500" />
-              <span>Elegir empresa</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setMobileActiveTab('detail');
-                setTimeout(() => {
-                  document.getElementById('company-detail-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 50);
-              }}
-              className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                mobileActiveTab === 'detail'
-                  ? 'bg-white text-slate-950 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <BarChart3 className="w-3.5 h-3.5 text-slate-500" />
-              <span>Ver la respuesta</span>
-            </button>
-          </div>
-
           {/* Live sync notification feedback in Simple Mode */}
           {syncStatusBanner && (
             <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between animate-fadeIn mb-2">
@@ -573,221 +542,12 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
             </div>
           )}
 
-          {/* Grid: Stock Selector Column & Simple Analysis */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left Column: List of Companies */}
-            <div className={`lg:col-span-4 space-y-4 ${mobileActiveTab === 'list' || mobileActiveTab === 'both' ? 'block' : 'hidden lg:block'}`}>
-              <div className="bg-white rounded-2xl p-5 border border-slate-200">
-                <div className="mb-3.5">
-                  <h2 className="m-0 font-serif text-lg font-semibold text-slate-900">
-                    Elige una empresa
-                  </h2>
-                  <p className="mt-0.5 mb-0 text-sm text-slate-600">
-                    La nota resume la calidad del negocio, de A (muy buena) a F (muy débil).
-                  </p>
-                </div>
-
-                <div className="relative mb-3">
-                  <form
-                    onSubmit={e => {
-                      e.preventDefault();
-                      handleSearchSubmit();
-                    }}
-                    className="relative"
-                  >
-                    <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="text"
-                      placeholder="Busca otra: Apple, Nike, NVDA…"
-                      aria-label="Buscar una empresa por nombre o ticker"
-                      value={searchTerm}
-                      onFocus={() => setShowSearchDropdown(true)}
-                      onChange={e => {
-                        setSearchTerm(e.target.value);
-                        setShowSearchDropdown(true);
-                      }}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleSearchSubmit();
-                        }
-                      }}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-16 py-2.5 text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:border-slate-400 shadow-xs"
-                    />
-                    <div className="absolute right-2.5 top-2 flex items-center gap-1">
-                      {isSearchingLive && (
-                        <RefreshCw className="w-3.5 h-3.5 text-slate-500 animate-spin mr-1" />
-                      )}
-                      {searchTerm && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSearchTerm('');
-                            setShowSearchDropdown(false);
-                          }}
-                          className="text-slate-500 hover:text-slate-700 text-xs p-1"
-                          title="Limpiar búsqueda"
-                        >
-                          <X className="w-4 h-4" aria-hidden="true" />
-                          <span className="sr-only">Cerrar</span>
-                        </button>
-                      )}
-                      <button
-                        type="submit"
-                        disabled={!searchTerm.trim() || isImporting}
-                        className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                        title="Buscar o importar en vivo"
-                      >
-                        <Search className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </form>
-
-                  {/* Dropdown flotante con resultados en vivo mientras se escribe */}
-                  {showSearchDropdown && searchTerm.trim().length >= 1 && (
-                    <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 max-h-72 overflow-y-auto no-scrollbar animate-fadeIn">
-                      <div className="flex items-center justify-between px-2 py-1 mb-1 border-b border-slate-100 text-xs text-slate-500 font-mono">
-                        <span>Sugerencias de Mercado en Vivo</span>
-                        {isSearchingLive ? (
-                          <span className="text-slate-500 animate-pulse">Consultando Wall Street...</span>
-                        ) : (
-                          <span>Pulsa Enter para cargar</span>
-                        )}
-                      </div>
-
-                      {liveSearchResults.length > 0 ? (
-                        <div className="space-y-1">
-                          {liveSearchResults.map(item => {
-                            const local = companies.find(c => c.ticker === item.ticker);
-                            return (
-                              <div
-                                key={item.ticker}
-                                onClick={() => {
-                                  if (local) {
-                                    handleSelectAndOpenCompany(local);
-                                    setSearchTerm('');
-                                    setShowSearchDropdown(false);
-                                  } else {
-                                    handleImportTicker(undefined, item.ticker);
-                                  }
-                                }}
-                                className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-100 cursor-pointer transition-colors"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="w-9 h-6 rounded-lg bg-slate-100 border border-slate-200 font-mono font-bold text-xs text-slate-800 flex items-center justify-center shrink-0">
-                                    {item.ticker}
-                                  </span>
-                                  <div className="text-left truncate max-w-[140px]">
-                                    <span className="text-xs font-semibold text-slate-900 block truncate">
-                                      {item.nombre}
-                                    </span>
-                                    <span className="text-xs text-slate-500 block truncate">
-                                      {item.sector}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                <div className="text-right shrink-0">
-                                  {local ? (
-                                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                                      En Cartera
-                                    </span>
-                                  ) : (
-                                    <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-transparent text-slate-600 border border-slate-200 hover:border-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
-                                      + Cargar en Vivo
-                                    </span>
-                                  )}
-                                  {item.price && (
-                                    <span className="text-xs text-slate-500 font-mono block mt-0.5">
-                                      ${item.price.toFixed(2)}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : !isSearchingLive ? (
-                        <div className="p-3 text-center">
-                          <p className="text-xs text-slate-700">
-                            ¿Cargar <strong>"{searchTerm}"</strong> directamente desde Wall Street?
-                          </p>
-                          <button
-                            onClick={() => handleImportTicker(undefined, searchTerm)}
-                            disabled={isImporting}
-                            className="mt-2 w-full py-1.5 px-3 rounded-xl bg-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-950 border border-slate-300 hover:border-slate-400 text-xs font-medium transition-all"
-                          >
-                            {isImporting ? 'Consultando...' : `Buscar "${searchTerm}" en Bolsa`}
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-
-                {/* Company List */}
-                <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1 no-scrollbar">
-                  {filteredCompanies.length === 0 ? (
-                    <div className="p-5 rounded-2xl bg-white border border-slate-200 text-center space-y-3 my-2 animate-fadeIn shadow-sm">
-                      <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto text-slate-600">
-                        <Search className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-900 font-mono">
-                          "{searchTerm}" no está en el catálogo
-                        </h4>
-                        <p className="text-xs text-slate-500 mt-1 max-w-[220px] mx-auto">
-                          ¿Deseas buscarla e importarla directamente desde la Bolsa en tiempo real vía Yahoo Finance?
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleImportTicker(undefined, searchTerm)}
-                        disabled={isImporting || !searchTerm.trim()}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition-all active:scale-95 disabled:opacity-40 shadow-xs"
-                      >
-                        <RefreshCw className={`w-3.5 h-3.5 ${isImporting ? 'animate-spin' : ''}`} />
-                        <span>{isImporting ? 'Consultando Wall Street...' : `Cargar "${searchTerm}" en Vivo`}</span>
-                      </button>
-                    </div>
-                  ) : (
-                    filteredCompanies.map(c => {
-                      const isSelected = c.id === selectedCompany.id;
-                      return (
-                        <button
-                          key={c.id}
-                          type="button"
-                          onClick={() => handleSelectAndOpenCompany(c)}
-                          aria-current={isSelected ? 'true' : undefined}
-                          className={`w-full text-left p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors ${
-                            isSelected
-                              ? 'bg-amber-50 border-amber-400'
-                              : 'bg-white border-slate-200 hover:border-slate-400'
-                          }`}
-                        >
-                          <span className="min-w-0">
-                            <span className="block text-sm font-semibold text-slate-900 truncate">{c.nombre}</span>
-                            <span className="block text-xs text-slate-600">{c.ticker}, {c.sector}</span>
-                          </span>
-                          <span className="shrink-0 text-right">
-                            <span className={`block cifra text-xl leading-none ${
-                              c.scoreGrade === 'A+' || c.scoreGrade === 'A' ? 'text-emerald-800' : c.scoreGrade === 'F' || c.scoreGrade === 'D' ? 'text-rose-800' : 'text-amber-900'
-                            }`}>{c.scoreGrade}</span>
-                            <span className="block text-xs text-slate-600">
-                              {c.scoreGrade === 'A+' || c.scoreGrade === 'A' ? 'muy buena' : c.scoreGrade === 'B' ? 'buena' : c.scoreGrade === 'C' ? 'regular' : 'débil'}
-                            </span>
-                          </span>
-                        </button>
-                      )
-                      })
-                  )}
-                </div>
-              </div>
-            </div>
-
+          {/* Ficha a todo el ancho: para cambiar de empresa se usa la lupa de la barra superior */}
+          <div>
             {/* Right Column: Simple Analysis View */}
             <div
               id="company-detail-panel"
-              className={`lg:col-span-8 ${mobileActiveTab === 'detail' || mobileActiveTab === 'both' ? 'block' : 'hidden lg:block'}`}
+              className="max-w-5xl mx-auto"
             >
               {isCompanyLoading ? (
                 <div className="space-y-6 animate-fadeIn">
@@ -872,55 +632,10 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
         </div>
       )}
 
-      {/* Mobile / Tablet Segmented Control: Lista de Empresas vs Análisis Fundamental vs Ambos */}
-      <div className="flex lg:hidden items-center justify-between p-1 bg-slate-200/80 rounded-lg border border-slate-200 mb-4 gap-1">
-        <button
-          onClick={() => setMobileActiveTab('list')}
-          className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-            mobileActiveTab === 'list'
-              ? 'bg-white text-slate-950 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <Building2 className="w-3.5 h-3.5 text-slate-500" />
-          <span>Catálogo ({filteredCompanies.length})</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setMobileActiveTab('detail');
-            setTimeout(() => {
-              document.getElementById('company-detail-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 50);
-          }}
-          className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-            mobileActiveTab === 'detail'
-              ? 'bg-white text-slate-950 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <BarChart3 className="w-3.5 h-3.5 text-slate-500" />
-          <span>Ficha de {selectedCompany.ticker}</span>
-        </button>
-
-        <button
-          onClick={() => setMobileActiveTab('both')}
-          className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 ${
-            mobileActiveTab === 'both'
-              ? 'bg-white text-slate-950 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-          title="Ver Catálogo y Análisis en una sola vista"
-        >
-          <Layers className="w-3.5 h-3.5 text-slate-500" />
-          <span className="hidden sm:inline">Ambos</span>
-        </button>
-      </div>
-
       {/* Grid: Stock Selector Column & Detailed Fundamental Analysis */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: List of Companies (Bottom-Up Filter) */}
-        <div className={`lg:col-span-4 space-y-4 ${mobileActiveTab === 'list' || mobileActiveTab === 'both' ? 'block' : 'hidden lg:block'}`}>
+        <div className="hidden lg:block lg:col-span-4 space-y-4">
           <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-card">
             <div className="flex items-center justify-between mb-3.5">
               <div className="flex items-center gap-2">
@@ -932,175 +647,6 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
               <span className="text-xs text-slate-500 font-medium">
                 {filteredCompanies.length} empresas
               </span>
-            </div>
-
-            {/* iOS Styled Search Bar with Live Market Suggestions & Enter Handling */}
-            <div className="relative mb-3">
-              <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  handleSearchSubmit();
-                }}
-                className="relative"
-              >
-                <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                <input
-                  type="text"
-                  placeholder="Buscar ticker (NVDA) o empresa (Tesla)..."
-                  value={searchTerm}
-                  onFocus={() => setShowSearchDropdown(true)}
-                  onChange={e => {
-                    setSearchTerm(e.target.value);
-                    setShowSearchDropdown(true);
-                  }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleSearchSubmit();
-                    }
-                  }}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-16 py-2.5 text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:border-slate-400 shadow-xs"
-                />
-                <div className="absolute right-2.5 top-2 flex items-center gap-1">
-                  {isSearchingLive && (
-                    <RefreshCw className="w-3.5 h-3.5 text-slate-500 animate-spin mr-1" />
-                  )}
-                  {searchTerm && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearchTerm('');
-                        setShowSearchDropdown(false);
-                      }}
-                      className="text-slate-500 hover:text-slate-700 text-xs p-1"
-                      title="Limpiar búsqueda"
-                    >
-                      <X className="w-4 h-4" aria-hidden="true" />
-                      <span className="sr-only">Cerrar</span>
-                    </button>
-                  )}
-                  <button
-                    type="submit"
-                    disabled={!searchTerm.trim() || isImporting}
-                    className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                    title="Buscar e importar"
-                  >
-                    <Search className="w-3 h-3" />
-                  </button>
-                </div>
-              </form>
-
-              {/* Dropdown flotante con resultados en vivo mientras se escribe */}
-              {showSearchDropdown && searchTerm.trim().length >= 1 && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 max-h-72 overflow-y-auto no-scrollbar animate-fadeIn">
-                  <div className="flex items-center justify-between px-2 py-1 mb-1 border-b border-slate-100 text-xs text-slate-500 font-mono">
-                    <span>Sugerencias de Mercado en Vivo</span>
-                    {isSearchingLive ? (
-                      <span className="text-slate-500 animate-pulse">Consultando Wall Street...</span>
-                    ) : (
-                      <span>Pulsa Enter para cargar</span>
-                    )}
-                  </div>
-
-                  {liveSearchResults.length > 0 ? (
-                    <div className="space-y-1">
-                      {liveSearchResults.map(item => {
-                        const local = companies.find(c => c.ticker === item.ticker);
-                        return (
-                          <div
-                            key={item.ticker}
-                            onClick={() => {
-                              if (local) {
-                                handleSelectAndOpenCompany(local);
-                                setSearchTerm('');
-                                setShowSearchDropdown(false);
-                              } else {
-                                handleImportTicker(undefined, item.ticker);
-                              }
-                            }}
-                            className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-100 cursor-pointer transition-colors"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="w-9 h-6 rounded-lg bg-slate-100 border border-slate-200 font-mono font-bold text-xs text-slate-800 flex items-center justify-center shrink-0">
-                                {item.ticker}
-                              </span>
-                              <div className="text-left truncate max-w-[140px]">
-                                <span className="text-xs font-semibold text-slate-900 block truncate">
-                                  {item.nombre}
-                                </span>
-                                <span className="text-xs text-slate-500 block truncate">
-                                  {item.sector}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="text-right shrink-0">
-                              {local ? (
-                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                                  En Cartera
-                                </span>
-                              ) : (
-                                <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-transparent text-slate-600 border border-slate-200 hover:border-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
-                                  + Cargar en Vivo
-                                </span>
-                              )}
-                              {item.price && (
-                                <span className="text-xs text-slate-500 font-mono block mt-0.5">
-                                  ${item.price.toFixed(2)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : !isSearchingLive ? (
-                    <div className="p-3 text-center">
-                      <p className="text-xs text-slate-700">
-                        ¿Cargar <strong>"{searchTerm}"</strong> directamente desde Wall Street?
-                      </p>
-                      <button
-                        onClick={() => handleImportTicker(undefined, searchTerm)}
-                        disabled={isImporting}
-                        className="mt-2 w-full py-1.5 px-3 rounded-xl bg-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-950 border border-slate-300 hover:border-slate-400 text-xs font-medium transition-all"
-                      >
-                        {isImporting ? 'Consultando...' : `Buscar "${searchTerm}" en Bolsa`}
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              )}
-            </div>
-
-            {/* Accesos rápidos a Tickers Populares */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar mb-3 pb-1">
-              <span className="text-xs text-slate-500 font-mono shrink-0 mr-1">
-                Top:
-              </span>
-              {['NVDA', 'TSLA', 'MSFT', 'AMZN', 'GOOGL', 'META', 'SAN', 'DIS'].map(t => {
-                const inCatalog = companies.some(c => c.ticker === t);
-                return (
-                  <button
-                    key={t}
-                    onClick={() => {
-                      const local = companies.find(c => c.ticker === t);
-                      if (local) {
-                        handleSelectAndOpenCompany(local);
-                      } else {
-                        handleImportTicker(undefined, t);
-                      }
-                    }}
-                    className={`px-2 py-0.5 rounded-lg text-xs font-mono font-bold transition-all shrink-0 ${
-                      inCatalog
-                        ? 'bg-slate-200 text-slate-800 border border-slate-300 hover:bg-slate-300'
-                        : 'bg-slate-100 text-slate-700 border border-slate-200 hover:border-slate-400 hover:text-slate-900'
-                    }`}
-                    title={inCatalog ? `Ver ${t} en cartera` : `Cargar ${t} en vivo`}
-                  >
-                    {inCatalog ? `✓ ${t}` : `+ ${t}`}
-                  </button>
-                );
-              })}
             </div>
 
             {/* iOS Filter Chips */}
@@ -1150,25 +696,11 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
             {/* Company Cards List (iOS Squircle List) */}
             <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1 no-scrollbar">
               {filteredCompanies.length === 0 ? (
-                <div className="p-5 rounded-2xl bg-white border border-slate-200 text-center space-y-3 my-2 animate-fadeIn shadow-sm">
-                  <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto text-slate-600">
-                    <Search className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900 font-mono">
-                      "{searchTerm}" no está en el catálogo local
-                    </h4>
-                    <p className="text-xs text-slate-500 mt-1 max-w-[220px] mx-auto">
-                      ¿Deseas buscarla e importarla directamente desde la Bolsa en tiempo real vía Yahoo Finance?
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleImportTicker(undefined, searchTerm)}
-                    disabled={isImporting || !searchTerm.trim()}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-transparent hover:bg-slate-50 text-slate-700 hover:text-slate-950 border border-slate-300 hover:border-slate-400 transition-all active:scale-95 disabled:opacity-40"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isImporting ? 'animate-spin' : ''}`} />
-                    <span>{isImporting ? 'Consultando Wall Street...' : `Cargar "${searchTerm}" en Vivo`}</span>
+                <div className="p-5 rounded-xl border border-dashed border-slate-300 text-center my-2">
+                  <p className="m-0 text-sm font-semibold text-slate-900">Ninguna empresa cumple este filtro</p>
+                  <p className="mt-1 mb-3 text-sm text-slate-600">Quita el filtro o busca otra empresa con la lupa.</p>
+                  <button type="button" onClick={abrirBuscador} className="h-9 px-4 rounded-full border border-slate-300 bg-white text-sm font-medium text-slate-800 hover:border-slate-400">
+                    Buscar empresa
                   </button>
                 </div>
               ) : (
@@ -1272,17 +804,8 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
         {/* Right Column: Detailed Financial Audit, Price Chart & Semaphores */}
         <div
           id="company-detail-panel"
-          className={`lg:col-span-8 space-y-6 ${mobileActiveTab === 'detail' || mobileActiveTab === 'both' ? 'block' : 'hidden lg:block'}`}
+          className="lg:col-span-8 space-y-6"
         >
-          {/* Volver al catálogo (móvil) */}
-          <button
-            type="button"
-            onClick={() => setMobileActiveTab('list')}
-            className="flex lg:hidden items-center gap-1 text-[13px] font-medium text-slate-600 hover:text-slate-900"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Volver al catálogo</span>
-          </button>
 
           {/* Cabecera de la empresa: hoja del libro con las cifras clave */}
           <section

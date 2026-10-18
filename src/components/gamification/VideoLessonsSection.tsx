@@ -1,129 +1,120 @@
 import React, { useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
-import confetti from 'canvas-confetti';
-import { EDUCATIONAL_VIDEOS } from '../../data/gamificationData';
+import { Check, CheckCircle2, PlayCircle } from 'lucide-react';
+import { RUTA, Leccion } from '../../data/rutaAprendizaje';
+import { VideoEmbed } from '../learn/VideoEmbed';
+import { guardarProgreso, leerProgreso, marcarVideo, Progreso } from '../../utils/progresoAprendizaje';
+
+const XP_VIDEO = 15;
 
 interface VideoLessonsSectionProps {
   onAddXP?: (amount: number) => void;
 }
 
+/** Academia: un video recomendado por lección, ordenados como un curso de cero a avanzado */
 export const VideoLessonsSection: React.FC<VideoLessonsSectionProps> = ({ onAddXP }) => {
-  const [completedVideos, setCompletedVideos] = useState<string[]>([]);
-  const [activeVideoId, setActiveVideoId] = useState<string>('vid-1');
+  const [progreso, setProgreso] = useState<Progreso>(() => leerProgreso());
+  const todas = RUTA.flatMap(u => u.lecciones);
+  const primeraSinVer = todas.find(l => !progreso.videosVistos.includes(l.video.youtubeId)) ?? todas[0];
+  const [actual, setActual] = useState<Leccion>(primeraSinVer);
+  const [reproductorKey, setReproductorKey] = useState(0);
 
-  const currentVideo = EDUCATIONAL_VIDEOS.find(v => v.id === activeVideoId) || EDUCATIONAL_VIDEOS[0];
+  const visto = (l: Leccion) => progreso.videosVistos.includes(l.video.youtubeId);
+  const numero = (l: Leccion) => todas.indexOf(l) + 1;
 
-  const handleMarkVideoWatched = (vidId: string, xpReward: number) => {
-    if (!completedVideos.includes(vidId)) {
-      setCompletedVideos([...completedVideos, vidId]);
-      if (onAddXP) onAddXP(xpReward);
-      confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
-    }
+  const marcarVisto = () => {
+    if (visto(actual)) return;
+    const p = marcarVideo(progreso, actual.video.youtubeId, XP_VIDEO);
+    setProgreso(p);
+    guardarProgreso(p);
+    onAddXP?.(XP_VIDEO);
   };
 
+  const elegir = (l: Leccion) => {
+    setActual(l);
+    setReproductorKey(k => k + 1);
+    document.getElementById('reproductor-academia')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const vistos = todas.filter(visto).length;
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Reproductor de Video Activo */}
-        <div className="lg:col-span-8 bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-xs font-mono font-bold text-slate-500">
-                Video Lección Activa · {currentVideo.duration}
-              </span>
-              <h3 className="text-lg font-bold text-white font-serif mt-0.5">
-                {currentVideo.title}
-              </h3>
-            </div>
-            <span className="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-mono">
-              {currentVideo.instructor}
-            </span>
-          </div>
-
-          {/* Contenedor del Reproductor de Video */}
-          <div className="aspect-video w-full rounded-lg overflow-hidden bg-black border border-slate-800 relative shadow-2xl">
-            <iframe
-              className="w-full h-full"
-              src={`https://www.youtube.com/embed/${currentVideo.youtubeId}?rel=0&modestbranding=1`}
-              title={currentVideo.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-
-          {/* Conceptos Clave y Resumen */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-slate-500 font-medium">Conceptos evaluados:</span>
-              {currentVideo.concepts.map((c, i) => (
-                <span key={i} className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-bold">
-                  {c}
-                </span>
-              ))}
-            </div>
-
-            <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-4 rounded-xl border border-slate-800">
-              {currentVideo.summary}
-            </p>
-
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-xs text-slate-500">
-                Recompensa por asimilar el concepto: <strong className="text-emerald-400">+{currentVideo.xpReward} XP</strong>
-              </span>
+    <div className="space-y-8">
+      {/* Reproductor */}
+      <section id="reproductor-academia" aria-labelledby="video-actual" className="rounded-2xl bg-white border border-slate-200 overflow-hidden scroll-mt-28">
+        <div className="grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <VideoEmbed key={reproductorKey} video={actual.video} autoplay={reproductorKey > 0} />
+          <div className="p-5 sm:p-6 flex flex-col gap-3">
+            <p className="m-0 text-sm font-medium text-amber-800">Video {numero(actual)} de {todas.length} · {actual.video.duracion}</p>
+            <h2 id="video-actual" className="m-0 font-serif text-xl sm:text-2xl leading-snug font-semibold text-slate-900">{actual.video.titulo}</h2>
+            <p className="m-0 text-sm text-slate-600">De {actual.video.canal}. Acompaña a la lección «{actual.titulo}».</p>
+            <p className="m-0 text-[15px] text-slate-700 leading-relaxed">{actual.idea[0]}</p>
+            <div className="mt-auto pt-2">
               <button
-                onClick={() => handleMarkVideoWatched(currentVideo.id, currentVideo.xpReward)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                  completedVideos.includes(currentVideo.id)
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 shadow-md'
+                type="button"
+                onClick={marcarVisto}
+                disabled={visto(actual)}
+                className={`h-11 px-5 rounded-full text-sm font-semibold flex items-center gap-2 ${
+                  visto(actual) ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-700 text-white hover:bg-amber-800'
                 }`}
               >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>{completedVideos.includes(currentVideo.id) ? 'Lección Asimilada (+50 XP Ganados)' : 'Marcar Lección como Completada'}</span>
+                <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+                {visto(actual) ? 'Visto' : `Ya lo vi (+${XP_VIDEO} XP)`}
               </button>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Lista de Reproducción Lateral */}
-        <div className="lg:col-span-4 space-y-3">
-          <h4 className="text-xs font-bold text-slate-500 px-1 font-mono">
-            Lecciones en vídeo ({EDUCATIONAL_VIDEOS.length})
-          </h4>
-          <div className="space-y-2">
-            {EDUCATIONAL_VIDEOS.map(v => {
-              const isPlaying = v.id === activeVideoId;
-              const isDone = completedVideos.includes(v.id);
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="m-0 font-serif text-xl font-semibold text-slate-900">Todos los videos, en orden</h2>
+        <span className="text-sm text-slate-600 tabular">{vistos} de {todas.length} vistos</span>
+      </div>
+
+      {RUTA.map(u => (
+        <section key={u.id} aria-labelledby={`academia-${u.id}`} className="space-y-3">
+          <h3 id={`academia-${u.id}`} className="m-0 text-[15px] font-semibold text-slate-900">
+            <span className="text-amber-800">Unidad {u.numero}.</span> {u.titulo}
+          </h3>
+          <ul className="m-0 p-0 list-none grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {u.lecciones.map(l => {
+              const esActual = l.id === actual.id;
               return (
-                <div
-                  key={v.id}
-                  onClick={() => setActiveVideoId(v.id)}
-                  className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                    isPlaying
-                      ? 'bg-slate-900 border-white/20'
-                      : 'bg-slate-950 border-slate-800 hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-xs font-mono text-slate-500">{v.duration}</span>
-                    {isDone && (
-                      <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Visto
+                <li key={l.id}>
+                  <button
+                    type="button"
+                    onClick={() => elegir(l)}
+                    aria-current={esActual ? 'true' : undefined}
+                    className={`w-full h-full text-left flex gap-3 p-3 rounded-xl border bg-white transition-colors ${
+                      esActual ? 'border-amber-700 ring-2 ring-amber-200' : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <span className="relative w-28 shrink-0 aspect-video rounded-lg overflow-hidden bg-slate-200">
+                      <img src={`https://i.ytimg.com/vi/${l.video.youtubeId}/mqdefault.jpg`} alt="" loading="lazy" className="w-full h-full object-cover" />
+                      <span className="absolute bottom-1 right-1 px-1 rounded bg-black/80 text-xs font-medium text-white tabular">{l.video.duracion}</span>
+                      {visto(l) && (
+                        <span className="absolute inset-0 bg-emerald-900/50 flex items-center justify-center" aria-hidden="true">
+                          <Check className="w-6 h-6 text-white" strokeWidth={3} />
+                        </span>
+                      )}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold text-slate-900 leading-snug line-clamp-2">{numero(l)}. {l.video.titulo}</span>
+                      <span className="block mt-1 text-xs text-slate-600">{l.video.canal}</span>
+                      <span className="mt-1 flex items-center gap-1 text-xs text-slate-600">
+                        {visto(l) ? <><Check className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" /> Visto</> : <><PlayCircle className="w-3.5 h-3.5" aria-hidden="true" /> Sin ver</>}
                       </span>
-                    )}
-                  </div>
-                  <h5 className={`text-xs font-bold mt-1 ${isPlaying ? 'text-white' : 'text-slate-200'}`}>
-                    {v.title}
-                  </h5>
-                  <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                    {v.subtitle}
-                  </p>
-                </div>
+                    </span>
+                  </button>
+                </li>
               );
             })}
-          </div>
-        </div>
-      </div>
+          </ul>
+        </section>
+      ))}
+
+      <p className="m-0 text-xs text-slate-500">
+        Los videos son de sus autores y se reproducen desde YouTube. Los elegimos por su claridad para quien empieza; no son recomendaciones de inversión.
+      </p>
     </div>
   );
 };
