@@ -44,6 +44,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
   onApplyMarkowitzAllocations,
   onNavigateToMethodology
 }) => {
+  const sinPosiciones = portfolio.holdings.length === 0;
   const [subView, setSubView] = useState<'trading' | 'markowitz'>('trading');
   const [tradeTicker, setTradeTicker] = useState(selectedTickerForTrade || 'BRK.B');
   const [tradeType, setTradeType] = useState<'BUY' | 'SELL'>('BUY');
@@ -133,7 +134,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
         </div>
         <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-slate-600 pr-3">
           <span>Sharpe Actual:</span>
-          <strong className="text-slate-900">{portfolio.sharpeRatio.toFixed(2)}</strong>
+          <strong className="text-slate-900">{sinPosiciones ? '—' : portfolio.sharpeRatio.toFixed(2)}</strong>
         </div>
       </div>
 
@@ -184,11 +185,15 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-semibold text-slate-900 font-mono">
-              {portfolio.sharpeRatio.toFixed(2)}
+              {sinPosiciones ? '—' : portfolio.sharpeRatio.toFixed(2)}
             </span>
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${getSharpeStatusColor(portfolio.sharpeRatio)}`}>
-              {portfolio.sharpeRatio >= 1.2 ? 'Excelente' : portfolio.sharpeRatio >= 0.7 ? 'Bueno' : 'Bajo'}
-            </span>
+            {sinPosiciones ? (
+              <span className="text-xs text-slate-600">sin posiciones</span>
+            ) : (
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${getSharpeStatusColor(portfolio.sharpeRatio)}`}>
+                {portfolio.sharpeRatio >= 1.2 ? 'Excelente' : portfolio.sharpeRatio >= 0.7 ? 'Bueno' : 'Bajo'}
+              </span>
+            )}
           </div>
           <div className="text-xs text-slate-600 font-mono">
             SR = (E(Rp) - Rf) / σ_p
@@ -208,15 +213,15 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-semibold text-slate-900 font-mono">
-              {(portfolio.volatilidadMuestral * 100).toFixed(2)}%
+              {sinPosiciones ? '—' : `${(portfolio.volatilidadMuestral * 100).toFixed(1)}%`}
             </span>
-            <span className="text-xs text-slate-600">desv. estándar</span>
+            <span className="text-xs text-slate-600">anual, último año</span>
           </div>
           <div className="text-xs text-slate-600 font-mono truncate">
             σ_p = √[ Σ(Rp,t - Rp_avg)² / (N-1) ]
           </div>
           <div className="pt-2 border-t border-slate-200 text-xs text-slate-600">
-            E(Rp): <strong className="text-slate-800">{(portfolio.expectedReturn * 100).toFixed(1)}%</strong> · Rf: <strong className="text-slate-800">4.0%</strong>
+            E(Rp) anual: <strong className="text-slate-800">{sinPosiciones ? '—' : `${(portfolio.expectedReturn * 100).toFixed(1)}%`}</strong> · Rf: <strong className="text-slate-800">{((portfolio.riskFreeRate ?? 0.04) * 100).toFixed(2)}%</strong>
           </div>
         </div>
 
@@ -230,7 +235,7 @@ export const PortfolioSimulator: React.FC<PortfolioSimulatorProps> = ({
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-semibold text-slate-900 font-mono">
-              {portfolio.averageCompanyScore.toFixed(0)}
+              {sinPosiciones ? '—' : portfolio.averageCompanyScore.toFixed(0)}
             </span>
             <span className="text-xs text-slate-600">/100 pts S(a)</span>
           </div>

@@ -116,7 +116,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onOpenSearch}
-              className="w-full max-w-[24rem] xl:w-80 flex items-center gap-2.5 h-11 pl-3.5 pr-2 max-[400px]:w-11 max-[400px]:px-0 max-[400px]:justify-center rounded-full border border-slate-300 bg-white text-left text-sm text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-colors"
+              className="w-full max-w-[24rem] xl:w-60 2xl:w-80 flex items-center gap-2.5 h-11 pl-3.5 pr-2 max-[400px]:w-11 max-[400px]:px-0 max-[400px]:justify-center rounded-full border border-slate-300 bg-white text-left text-sm text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-colors"
               title="Buscar una empresa (Ctrl K)"
               aria-label="Buscar una empresa"
               aria-haspopup="dialog"
@@ -126,7 +126,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="sm:hidden">Buscar</span>
                 <span className="hidden sm:inline">Busca una empresa</span>
               </span>
-              <kbd className="hidden lg:inline font-sans text-xs text-slate-500 border border-slate-200 rounded-full px-2 py-0.5">Ctrl K</kbd>
+              <kbd className="hidden lg:inline xl:hidden 2xl:inline font-sans text-xs text-slate-500 border border-slate-200 rounded-full px-2 py-0.5">Ctrl K</kbd>
             </button>
           </div>
 

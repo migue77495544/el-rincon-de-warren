@@ -3,6 +3,7 @@ import { getInfo, getStatements, Statement } from './yahoo';
 import { getRiskFreeRate, getHistimplErp, getSectorBenchmarks } from './damodaran';
 import { getBetaAndIndustry, getBetaAndIndustryAI } from './industry';
 import { getAnalystPriceTargets } from './market';
+import { getPerfilEs } from './perfilEs';
 import { cachedPersistent } from '../store';
 import { num, cleanVal, round, log } from './util';
 
@@ -106,7 +107,7 @@ export async function calcularValoracion(
     perTrailing: n('trailingPE'),
     perForward: n('forwardPE'),
     evEbitda: n('enterpriseToEbitda') || (ev && ebitda && ebitda > 0 ? round(ev / ebitda, 2) : null),
-    precioValorLibros: n('priceToBook'),
+    precioValorLibros: (n('priceToBook') ?? 0) > 0 ? n('priceToBook') : null,
     precioFcf: fcf && fcf > 0 && marketCap > 0 ? round(marketCap / fcf, 2) : null,
     fcfYieldPct: fcf && marketCap > 0 ? round((fcf / marketCap) * 100, 2) : null,
     margenBrutoPct: pct(n('grossMargins')),
@@ -134,7 +135,7 @@ const COMPANY_TTL_MS = 60 * 60 * 1000;
 /** Datos reales de la empresa con caché de 1 hora (solo se guardan respuestas correctas) */
 export function getCompanyData(rawTicker: string) {
   const ticker = rawTicker.toUpperCase().trim();
-  return cachedPersistent(`company-${ticker}`, COMPANY_TTL_MS, () => descargarCompanyData(ticker));
+  return cachedPersistent(`company-v3-${ticker}`, COMPANY_TTL_MS, () => descargarCompanyData(ticker));
 }
 
 async function descargarCompanyData(ticker: string): Promise<any> {
@@ -223,7 +224,7 @@ async function descargarCompanyData(ticker: string): Promise<any> {
   const hasMoat = roe >= 15 && debtToEquity <= 1.5 && ebitM > 0;
 
   // Benchmarks sectoriales, valoración y consenso en paralelo (antes eran secuenciales)
-  const [benchmarks, valoracion, targets] = await Promise.all([
+  const [benchmarks, valoracion, targets, perfil] = await Promise.all([
     getBetaAndIndustryAI(ticker)
       .then(ind => {
         const m = ind.matched_damodaran_industry;
@@ -236,8 +237,15 @@ async function descargarCompanyData(ticker: string): Promise<any> {
         log(`[VALORACION] No se pudo calcular para ${ticker}: ${err?.message}`);
         return null;
       }),
-    getAnalystPriceTargets(ticker).catch(() => null)
+    getAnalystPriceTargets(ticker).catch(() => null),
+    // Yahoo publica el perfil en inglés: se traduce una vez y se guarda en caché
+    getPerfilEs(ticker, nombre, sector, industria, info.longBusinessSummary || '')
   ]);
+  if (valoracion) {
+    (valoracion as any).dividendoPorAccion = rawDividendo > 0 ? round(rawDividendo, 2) : 0;
+    (valoracion as any).rentabilidadDividendoPct = divYield;
+    (valoracion as any).payoutPct = num(info.payoutRatio) !== null ? round((info.payoutRatio as number) * 100, 1) : null;
+  }
 
   let targetConsensus: any = null;
   if (targets?.success) {
@@ -256,14 +264,17 @@ async function descargarCompanyData(ticker: string): Promise<any> {
     engine: 'Node (yahoo-finance2)',
     ticker,
     nombre,
-    sector,
-    industria,
+    sector: perfil.sector,
+    industria: perfil.industria,
     pais,
     anioFundacion: info.yearFounded || info.foundedYear || null,
-    descripcion: resumen,
+    descripcion: perfil.descripcion,
+    queHace: perfil.queHace,
+    comoGanaDinero: perfil.comoGanaDinero,
+    // Texto original de Yahoo (en inglés): solo como referencia, nunca se muestra
     businessSummary: resumen,
-    modeloNegocio: sintetizarModeloNegocio(resumen, sector, industria),
-    moat: hasMoat ? 'Foso Amplio (Moat)' : roe >= 10 ? 'Foso Moderado' : 'Sin Foso',
+    modeloNegocio: `${perfil.queHace} ${perfil.comoGanaDinero}`.trim(),
+    moat: hasMoat ? 'Foso amplio' : roe >= 10 ? 'Foso Moderado' : 'Sin Foso',
     raw: {
       precioCotizacion: precio,
       efectivo: efectivoM,

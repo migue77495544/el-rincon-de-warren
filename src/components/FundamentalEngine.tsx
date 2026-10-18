@@ -1147,7 +1147,7 @@ export const FundamentalEngine: React.FC<FundamentalEngineProps> = ({
 
               {/* VISTA: ASESORES JAIRO Y GUILLERMO */}
               {(engineViewMode === 'advisors' || engineViewMode === 'all') && (
-                <JairoGuillermoConsult companies={companies} />
+                <JairoGuillermoConsult companies={companies} initialTicker={selectedCompany?.ticker} />
               )}
 
               {/* VISTA 3: GUÍA PEDAGÓGICA DE FÓRMULAS & UMBRALES VALUE */}

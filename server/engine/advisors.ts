@@ -1,14 +1,10 @@
 // Asesores Jairo Agudelo (fundamental) y Juan Guillermo Hernández (técnico).
-// Contexto con datos reales + Gemini; si Gemini no responde se usa el motor local dualAdvisorEngine.
+// Contexto con datos reales + Gemini; si Gemini no responde se usa el motor local de asesorLocal.ts.
 import { getCompanyData } from './company';
 import { getCandlestickData } from './market';
 import { generar, geminiDisponible } from './gemini';
 import { PERFIL_JAIRO, PERFIL_GUILLERMO, EJEMPLOS_RESOLUCION } from '../data/perfiles';
-import {
-  generateDualAdvisorConsultation,
-  generateJairoOnlyResponse,
-  generateGuillermoOnlyResponse
-} from '../../src/utils/dualAdvisorEngine';
+import { Fundamental, Tecnico, respuestaLocalJairo, respuestaLocalGuillermo, sintesisLocal } from './asesorLocal';
 import { cleanVal, num, round, mean, std, fmtMiles, fmtSigno } from './util';
 
 export const REGLA_DE_ORO_IDIOMA =
@@ -29,6 +25,11 @@ const REGLAS_RESPUESTA_ASESOR =
   'Cada cifra va con su lectura: contra qué umbral, costo de capital, media o nivel se compara y qué implica.\n' +
   '3. Nombra el riesgo principal que invalidaría tu conclusión y el dato concreto que te haría cambiar de opinión.\n' +
   '4. Cierra con la acción: qué haría un inversor disciplinado con esto y a qué precio o condición.\n\n' +
+  'CONCORDANCIA (lo más importante):\n' +
+  '- Responde SOLO al tema preguntado. Si preguntan por dividendos, habla de dividendos; si preguntan por deuda, de deuda. ' +
+  'No conviertas una pregunta puntual en un diagnóstico completo ni cambies de tema.\n' +
+  '- Si preguntan por otra empresa distinta a la del contexto, dilo en una frase: solo tienes datos de la empresa del contexto.\n' +
+  '- Si la pregunta no tiene relación con inversión o con esta empresa, dilo con amabilidad en una frase y sugiere qué sí puedes analizar.\n\n' +
   'RIGOR:\n' +
   '- Usa únicamente cifras del contexto. Si un dato figura como N/D o no está, dilo en una frase y razona con lo que hay; ' +
   'jamás inventes cifras, fechas, noticias ni resultados trimestrales.\n' +
@@ -39,6 +40,7 @@ const REGLAS_RESPUESTA_ASESOR =
   'FORMATO (la interfaz muestra texto plano):\n' +
   '- De 2 a 4 bloques cortos (los que pida el usuario si solicita un diagnóstico completo), cada uno con un título en ' +
   'MAYÚSCULAS seguido de dos puntos. Sin asteriscos, sin almohadillas, sin emojis.\n' +
+  '- Formato numérico español en todo el texto: coma decimal (29,47x; 2,3 %) y punto de miles (132.066 millones de dólares).\n' +
   '- Guiones solo para listar cifras. Pregunta puntual: 120-220 palabras. Diagnóstico completo: 350-500 palabras.\n' +
   '- Última línea, siempre: "Análisis educativo; no es una recomendación de inversión."';
 
@@ -125,6 +127,13 @@ function detectarTicker(pregunta: string, ticker?: string): string {
   return PALABRAS_TICKER.find(([kw]) => lower.includes(kw))?.[1] || '';
 }
 
+const mmTexto = (v: unknown) => (typeof v === 'number' ? `${fmtMiles(v, 0)} millones de dólares` : 'N/D');
+
+/** Pasa las cifras del contexto a formato español (1,234.56 → 1.234,56) para que el modelo no mezcle formatos */
+function aEspanol(texto: string): string {
+  return texto.replace(/\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d+/g, m => m.replace(/,/g, '§').replace('.', ',').replace(/§/g, '.'));
+}
+
 function formatearValoracion(v: any): string {
   if (!v) return 'VALORACIÓN Y COSTO DE CAPITAL: N/D (no se pudieron calcular múltiplos, ROIC, WACC ni DCF).\n';
   const f = (k: string, suf = '', pre = '') => (typeof v[k] === 'number' ? `${pre}${fmtMiles(v[k])}${suf}` : 'N/D');
@@ -134,8 +143,12 @@ function formatearValoracion(v: any): string {
     `Precio/Flujo de caja libre: ${f('precioFcf', 'x')} (rentabilidad por flujo libre ${f('fcfYieldPct', '%')})\n` +
     `  • Márgenes: bruto ${f('margenBrutoPct', '%')} · operativo ${f('margenOperativoPct', '%')} · neto ${f('margenNetoPct', '%')}\n` +
     `  • Crecimiento interanual: ingresos ${f('crecimientoIngresosPct', '%')} · beneficios ${f('crecimientoBeneficiosPct', '%')}\n` +
-    `  • Flujo de caja libre (último ejercicio):${f('fcfMM', ' MM', '$')} · Deuda neta: ${f('deudaNetaMM', ' MM', '$')} · ` +
+    `  • Flujo de caja libre (último ejercicio): ${mmTexto(v.fcfMM)} · ` +
+    (typeof v.deudaNetaMM === 'number' && v.deudaNetaMM < 0
+      ? `Caja neta (tiene más caja que deuda financiera): ${mmTexto(-v.deudaNetaMM)} · `
+      : `Deuda neta: ${mmTexto(v.deudaNetaMM)} · `) +
     `Deuda neta/EBITDA: ${f('deudaNetaEbitda', 'x')}\n` +
+    `  • Dividendo: ${typeof v.dividendoPorAccion === 'number' && v.dividendoPorAccion > 0 ? `$${fmtMiles(v.dividendoPorAccion)} por acción al año (rentabilidad ${f('rentabilidadDividendoPct', '%')}, reparte ${f('payoutPct', '%')} del beneficio)` : 'no reparte dividendo actualmente'}\n` +
     `  • ROIC: ${f('roicPct', '%')} frente a WACC: ${f('waccPct', '%')}\n` +
     `  • WACC — componentes: K_e ${f('kePct', '%')} (CAPM: libre de riesgo ${f('tasaLibreRiesgoPct', '%')} + ` +
     `beta ${f('beta')} × prima ${f('primaRiesgoPct', '%')}), K_d ${f('kdPct', '%')}, tasa impositiva ${f('tasaImpositivaPct', '%')}\n`;
@@ -145,19 +158,13 @@ function formatearValoracion(v: any): string {
   if (v.dcf) {
     const d = v.dcf;
     txt += `  • DCF de referencia (mecánico, NO es precio objetivo): $${fmtMiles(d.valorPorAccion)} por acción ` +
-      `(${fmtSigno(d.valorVsPrecioPct)}% frente al precio actual). Supuestos: flujo libre base ` +
+      `(${fmtSigno(d.valorVsPrecioPct)}% frente al precio actual: ${d.valorVsPrecioPct >= 0 ? 'el precio está POR DEBAJO de este valor' : 'el precio está POR ENCIMA de este valor, no hay descuento'}). Supuestos: flujo libre base ` +
       `$${fmtMiles(d.fcfBaseMM, 1)} MM (media de hasta 3 ejercicios), crecimiento ${d.crecimiento5aPct}% anual durante 5 años, ` +
       `${d.crecimientoTerminalPct}% perpetuo, descontado al WACC.\n`;
   } else if (!v.esFinanciera) {
     txt += '  • DCF de referencia: N/D (flujo de caja libre negativo o insuficiente).\n';
   }
   return txt;
-}
-
-interface Tecnico {
-  datosOk: boolean; precio: number; ema20: number; ema50: number; ema200: number; rsi: number;
-  macdLine: number; macdSignal: number; macdHist: number; soporte: number; resistencia: number;
-  stopLoss: number; ratioRb: number; extra: string;
 }
 
 async function obtenerContextoTecnico(ticker: string): Promise<Tecnico> {
@@ -222,13 +229,9 @@ function formatearContextoTecnico(m: Tecnico, nombre: string, t: string): string
     `  • Resistencia (máximo de 120 sesiones): $${m.resistencia.toFixed(2)}\n` +
     `  • Pérdida límite de referencia (2% bajo el soporte): $${m.stopLoss.toFixed(2)}\n` +
     `  • Relación riesgo/beneficio entrando al precio actual: ${m.ratioRb.toFixed(1)}:1\n` +
+    // (resistencia − E) = 2 × (E − pérdida límite)  →  E = (resistencia + 2 × pérdida límite) / 3
+    `  • Precio de entrada máximo para lograr 2 a 1 con esa pérdida límite y objetivo en la resistencia: $${((m.resistencia + 2 * m.stopLoss) / 3).toFixed(2)} (cálculo exacto; úsalo en vez de estimar otro)\n` +
     m.extra;
-}
-
-interface Fundamental {
-  datosOk: boolean; t: string; nombre: string; sector: string; precio: number; per: string; roe: number; liquidez: number;
-  deuda: string; cobertura: string; moat: string; potencial: number; precioObjetivo: number; recomendacion: string;
-  analistas: number; ke: number; queHace: string; comoGana: string; valoracion: any; tieneConsenso: boolean;
 }
 
 async function obtenerContextoFundamental(t: string): Promise<Fundamental> {
@@ -266,7 +269,9 @@ async function obtenerContextoFundamental(t: string): Promise<Fundamental> {
         if (tc.recommendation) f.recomendacion = tc.recommendation;
         if (tc.number_of_analysts) f.analistas = tc.number_of_analysts;
       }
-      if (d.descripcion && d.descripcion.length > 30 && !pre) f.queHace = d.descripcion;
+      // queHace / comoGanaDinero ya vienen traducidos al español (perfilEs.ts); la descripción de Yahoo está en inglés
+      if (!pre && d.queHace) f.queHace = d.queHace;
+      if (!pre && d.comoGanaDinero) f.comoGana = d.comoGanaDinero;
     }
   }
   return f;
@@ -300,40 +305,44 @@ function errorSinDatos(pregunta: string, t: string) {
   };
 }
 
-/** Empresa con datos reales en el formato que entiende el motor local (dualAdvisorEngine) */
-function empresaParaMotorLocal(f: Fundamental, tec: Tecnico) {
-  const moat = /Amplio/i.test(f.moat) ? 'Amplio' : /Moderado|Medio/i.test(f.moat) ? 'Medio' : 'Ninguno';
-  return {
-    ticker: f.t, nombre: f.nombre, sector: f.sector, descripcion: f.queHace, moat,
-    precio: tec.datosOk ? tec.precio : f.precio,
-    targetConsensus: f.tieneConsenso
-      ? { target_mean: f.precioObjetivo, upside_potential: f.potencial, recommendation: f.recomendacion, number_of_analysts: f.analistas }
-      : undefined,
-    roe: f.roe, liquidez: f.liquidez, deudaPatrimonio: f.deuda, ke: f.ke, per: f.per,
-    ema20: tec.ema20, ema50: tec.ema50, ema200: tec.ema200, rsi: tec.rsi,
-    macdLine: tec.macdLine, macdSignal: tec.macdSignal, macdHist: tec.macdHist,
-    soporte: tec.soporte, resistencia: tec.resistencia, stopLoss: tec.stopLoss
-  };
+const sinTildes = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+/** Solo es diagnóstico completo si se pide expresamente; cualquier otra pregunta se responde de forma puntual */
+function esConsultaGeneral(pregunta: string): boolean {
+  const q = sinTildes(pregunta).trim();
+  if (q.length < 4) return true;
+  return /\b(diagnostico|evaluacion completa|analisis (general|completo|integral)|vision general|panorama general|resumen (general|integral)|informe completo|como esta (el negocio|la empresa))\b/.test(q);
 }
 
-const RE = {
-  rsi: /\brsi\b/, roe: /\broe\b/,
-  liquidez: /\b(liquidez|razon corriente|prueba acida|capital de trabajo|current ratio)\b/,
-  apalancamiento: /\b(apalancamiento|deuda|endeudamiento|leverage)\b/,
-  margen: /\b(margen de seguridad|valor intrinseco|precio intrinseco|precio objetivo|consenso de analistas|potencial al alza|objetivo de analistas|objetivo medio|recomendacion de analistas)\b/,
-  ke: /\b(k_e|ke|costo de capital|costo del capital|cost of equity)\b/,
-  moat: /\b(moat|foso|ventaja competitiva)\b/,
-  ema: /\b(ema|medias moviles|media movil|promedios moviles)\b/,
-  macd: /\bmacd\b/,
-  precio: /\b(precio actual|accion del precio|cotizacion)\b/,
-  rb: /\b(stop loss|riesgo beneficio|riesgo\/beneficio)\b/
-};
+// Palabras muy frecuentes en inglés y casi inexistentes en español: delatan párrafos sin traducir
+const INGLES = /\b(the|and|with|which|its|their|this|that|from|has|have|is|are|was|were|will|would|company|revenue|growth|however|stock|price)\b/gi;
 
-function esConsultaGeneral(pregunta: string): boolean {
-  const q = pregunta.toLowerCase();
-  const puntual = Object.values(RE).some(re => re.test(q));
-  return /\b(diagnostico|general|evalua|evaluar|analisis general|analisis completo|vision general|panorama|como esta el negocio|resumen integral|informe)\b/.test(q)
-    || q.includes('diagnóstico') || (q.includes('análisis') && q.includes('general')) || !puntual;
+function pareceIngles(texto: string): boolean {
+  const palabras = texto.split(/\s+/).length;
+  const hits = (texto.match(INGLES) || []).length;
+  return palabras > 0 && hits >= 4 && hits / palabras > 0.02;
+}
+
+/** Texto plano (sin Markdown) y siempre en español: si se cuela inglés, se reescribe una vez */
+async function pulirRespuesta(texto: string): Promise<string> {
+  if (!texto) return texto;
+  let t = texto
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/^#{1,6}\s*/gm, '')
+    .replace(/^\s*\*\s+/gm, '- ')
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]\uFE0F?/gu, '')
+    .trim();
+  if (pareceIngles(t)) {
+    const traducido = await generar(t, {
+      systemInstruction: `${REGLA_DE_ORO_IDIOMA}\n\nReescribe el texto íntegramente en español neutro. Conserva exactamente las cifras, ` +
+        'los títulos en MAYÚSCULAS y la estructura. Texto plano, sin asteriscos ni emojis. Devuelve solo el texto reescrito.',
+      temperature: 0.1,
+      presupuestoMs: 15000,
+      timeoutPorModeloMs: 12000
+    });
+    if (traducido && !pareceIngles(traducido)) t = traducido.trim();
+  }
+  return t;
 }
 
 // ---------------------------------------------------------------
@@ -365,21 +374,22 @@ export async function consultarDual(pregunta: string, tickerIn?: string) {
       : pregunta;
     // Las dos consultas son independientes: en paralelo para no sumar latencias
     [rJairo, rGuillermo] = await Promise.all([
-      generar(msgJairo, { systemInstruction: construirPromptJairo(formatearContextoFundamental(f)), presupuestoMs: 32000 }),
-      generar(msgGuillermo, { systemInstruction: construirPromptGuillermo(formatearContextoTecnico(tec, f.nombre, t)), presupuestoMs: 32000 })
+      generar(msgJairo, { systemInstruction: construirPromptJairo(aEspanol(formatearContextoFundamental(f))), presupuestoMs: 32000 }),
+      generar(msgGuillermo, { systemInstruction: construirPromptGuillermo(aEspanol(formatearContextoTecnico(tec, f.nombre, t))), presupuestoMs: 32000 })
     ]);
   }
+  [rJairo, rGuillermo] = await Promise.all([pulirRespuesta(rJairo), pulirRespuesta(rGuillermo)]);
   const usaGemini = Boolean(rJairo && rGuillermo);
 
-  const local = generateDualAdvisorConsultation(pregunta, t, [empresaParaMotorLocal(f, tec)]);
-  rJairo = rJairo || local.respuesta_jairo;
-  rGuillermo = rGuillermo || local.respuesta_guillermo;
+  rJairo = rJairo || respuestaLocalJairo(general ? 'diagnóstico' : pregunta, f);
+  rGuillermo = rGuillermo || respuestaLocalGuillermo(general ? 'diagnóstico' : pregunta, tec);
+  const local = sintesisLocal(f, tec);
 
   let sintesis: string;
   let convergen: boolean;
   if (!general) {
-    sintesis = 'Respuesta directa y puntual: Jairo evalúa la métrica desde la solvencia, rentabilidad y creación de valor de la compañía, mientras que Juan Guillermo verifica el comportamiento de la variable en pantalla técnica y la gestión de riesgo.';
-    convergen = true;
+    sintesis = 'Pregunta puntual: Jairo la responde desde el negocio y sus cifras, y Juan Guillermo desde el gráfico y el riesgo de la operación.';
+    convergen = local.coinciden;
   } else {
     sintesis = '';
     if (usaGemini) {
@@ -399,7 +409,8 @@ export async function consultarDual(pregunta: string, tickerIn?: string) {
         }
       );
     }
-    if (!sintesis) sintesis = local.sintesis;
+    sintesis = await pulirRespuesta(sintesis);
+    if (!usaGemini || !sintesis) sintesis = local.texto;
 
     const lj = rJairo.toLowerCase();
     const lg = rGuillermo.toLowerCase();
@@ -434,13 +445,10 @@ export async function consultarJairo(pregunta: string, tickerIn?: string) {
 
   let respuesta = '';
   if (geminiDisponible()) {
-    respuesta = await generar(pregunta, { systemInstruction: construirPromptJairo(formatearContextoFundamental(f)), presupuestoMs: 40000 });
+    respuesta = await pulirRespuesta(await generar(pregunta, { systemInstruction: construirPromptJairo(aEspanol(formatearContextoFundamental(f))), presupuestoMs: 40000 }));
   }
   const usaGemini = Boolean(respuesta);
-  if (!respuesta) {
-    const tec = await obtenerContextoTecnico(t);
-    respuesta = generateJairoOnlyResponse(pregunta, t, [empresaParaMotorLocal(f, tec)]).respuesta;
-  }
+  if (!respuesta) respuesta = respuestaLocalJairo(pregunta, f);
   return {
     success: true,
     pregunta,
@@ -462,13 +470,10 @@ export async function consultarGuillermo(pregunta: string, tickerIn?: string) {
 
   let respuesta = '';
   if (geminiDisponible()) {
-    respuesta = await generar(pregunta, { systemInstruction: construirPromptGuillermo(formatearContextoTecnico(tec, nombre, t)), presupuestoMs: 40000 });
+    respuesta = await pulirRespuesta(await generar(pregunta, { systemInstruction: construirPromptGuillermo(aEspanol(formatearContextoTecnico(tec, nombre, t))), presupuestoMs: 40000 }));
   }
   const usaGemini = Boolean(respuesta);
-  if (!respuesta) {
-    const f = await obtenerContextoFundamental(t);
-    respuesta = generateGuillermoOnlyResponse(pregunta, t, [empresaParaMotorLocal({ ...f, nombre }, tec)]).respuesta;
-  }
+  if (!respuesta) respuesta = respuestaLocalGuillermo(pregunta, tec);
   return {
     success: true,
     pregunta,

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { CompanyAnalysis, SuperOpportunitiesScan, SuperOpportunity } from '../types';
 import { fetchJson, postJson, errorMessage } from '../utils/api';
+import { industriaEs } from '../utils/industrias';
 
 interface SuperOpportunitiesProps {
   /** Recibe la empresa importada con datos reales para abrirla en el análisis fundamental (DCF/CAPM). */
@@ -137,7 +138,7 @@ const OpportunityCard: React.FC<{
               <h3 className="font-bold text-slate-900 truncate">{op.nombre}</h3>
             </div>
             <p className="text-xs text-slate-500 truncate">
-              {op.ticker} · {SECTOR_LABELS[op.sector] || op.sector}{op.industria ? ` · ${op.industria}` : ''}
+              {op.ticker} · {SECTOR_LABELS[op.sector] || op.sector}{op.industria ? ` · ${industriaEs(op.industria)}` : ''}
             </p>
           </div>
         </div>

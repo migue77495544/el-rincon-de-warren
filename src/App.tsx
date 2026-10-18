@@ -133,11 +133,12 @@ function AppContent() {
     totalReturnPercent: 0,
     holdings: [],
     transactions: [],
-    sharpeRatio: 1.35,
-    volatilidadMuestral: 0.068,
-    expectedReturn: 0.132,
+    // Sin posiciones no hay riesgo que medir: las métricas llegan del servidor con el histórico real
+    sharpeRatio: 0,
+    volatilidadMuestral: 0,
+    expectedReturn: 0,
     riskFreeRate: 0.04,
-    averageCompanyScore: 84,
+    averageCompanyScore: 0,
     overtradingIndex: 0,
     detectedBiases: []
   });
@@ -299,8 +300,6 @@ function AppContent() {
           total: totalCost,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         }],
-        returnsHistory: [0.012, 0.008, 0.019, -0.004, 0.015, 0.021, 0.014, 0.009, 0.018, 0.011, 0.016, 0.02],
-        riskFreeRate: 0.04
       })
     })
       .then(res => res.json())
@@ -327,6 +326,7 @@ function AppContent() {
             sharpeRatio: data.metrics.sharpeRatio,
             volatilidadMuestral: data.metrics.volatilidadMuestral,
             expectedReturn: data.metrics.expectedReturn,
+            riskFreeRate: data.metrics.riskFreeRate ?? portfolio.riskFreeRate,
             averageCompanyScore: Math.round(avgScore),
             detectedBiases: data.detectedBiases
           });
@@ -358,10 +358,11 @@ function AppContent() {
       totalReturnPercent: 0,
       holdings: [],
       transactions: [],
-      sharpeRatio: 1.35,
-      volatilidadMuestral: 0.068,
-      expectedReturn: 0.132,
-      averageCompanyScore: 84,
+      sharpeRatio: 0,
+      volatilidadMuestral: 0,
+      expectedReturn: 0,
+      riskFreeRate: portfolio.riskFreeRate,
+      averageCompanyScore: 0,
       overtradingIndex: 0,
       detectedBiases: []
     });

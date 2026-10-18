@@ -433,7 +433,7 @@ export const SimpleViewMode: React.FC<SimpleViewModeProps> = ({
         </button>
         {verAsesores && (
           <div id="asesores-simple-panel" className="border-t border-slate-200 p-3 sm:p-4">
-            <JairoGuillermoConsult companies={companies} isSimpleView={true} />
+            <JairoGuillermoConsult companies={companies} isSimpleView={true} initialTicker={company.ticker} />
           </div>
         )}
       </section>

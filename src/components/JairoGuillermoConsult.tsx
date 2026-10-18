@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Send,
   Loader2,
@@ -19,7 +19,7 @@ import {
   Cpu
 } from 'lucide-react';
 import { CompanyAnalysis } from '../types';
-import { ModeloNegocio, identifyCompany } from '../utils/dualAdvisorEngine';
+import { ModeloNegocio } from '../utils/dualAdvisorEngine';
 import { postJson, errorMessage } from '../utils/api';
 
 // Algo por encima del timeout del servidor para los asesores (45 s)
@@ -29,6 +29,8 @@ const ADVISOR_CLIENT_TIMEOUT_MS = 58000;
 interface JairoGuillermoConsultProps {
   companies: CompanyAnalysis[];
   isSimpleView?: boolean;
+  /** Empresa abierta en la ficha: queda preseleccionada para el diagnóstico y las preguntas */
+  initialTicker?: string;
 }
 
 type ViewMode = 'initial' | 'diagnosis' | 'specific';
@@ -191,9 +193,12 @@ function AdvisorCard({
   );
 }
 
-export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ companies, isSimpleView = false }) => {
+export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ companies, isSimpleView = false, initialTicker }) => {
   const [pregunta, setPregunta] = useState('');
-  const [selectedTicker, setSelectedTicker] = useState('');
+  const [selectedTicker, setSelectedTicker] = useState(initialTicker || '');
+  useEffect(() => {
+    if (initialTicker) setSelectedTicker(initialTicker);
+  }, [initialTicker]);
   // Cada asesor tiene su propio chat: pregunta, respuesta, carga y error no se comparten
   const [chats, setChats] = useState<Record<Advisor, AdvisorChat>>({ jairo: EMPTY_CHAT, guillermo: EMPTY_CHAT });
   const [diagnosis, setDiagnosis] = useState<DualResponse | null>(null);
@@ -218,25 +223,29 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
     return set;
   }, [companies]);
 
+  // Empresa mencionada en la pregunta: tickers escritos en mayúsculas (AAPL, $V) o nombres de empresa.
+  // Distingue mayúsculas para que palabras como «meta», «ma» o «v» no se confundan con tickers.
   const detectTickerFromText = (text: string): string | null => {
-    const normalized = text.toUpperCase();
-    for (const ticker of knownTickers) {
-      const escapedTicker = ticker.replace('.', '\\.');
-      const regex = new RegExp(`\\b${escapedTicker}\\b`, 'i');
-      if (regex.test(normalized)) {
-        return ticker;
-      }
-    }
-    const wordRegex = /\b([A-Z]{2,5})(\.B)?\b/g;
+    const tokenRegex = /(\$?)\b([A-Z]{1,5}(?:\.[AB])?)\b/g;
     let match;
-    while ((match = wordRegex.exec(normalized)) !== null) {
-      const candidate = match[1] + (match[2] || '');
-      if (knownTickers.has(candidate)) {
-        return candidate;
-      }
+    while ((match = tokenRegex.exec(text)) !== null) {
+      const [, dolar, candidate] = match;
+      if (knownTickers.has(candidate) && (candidate.length >= 2 || dolar)) return candidate;
     }
-    const identified = identifyCompany(text, undefined, companies);
-    return identified?.ticker || null;
+    const normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    for (const c of companies) {
+      const base = (c.nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+        .replace(/[,.]|\b(inc|corp|corporation|company|co|ltd|plc|sa|group|holdings?|class [ab])\b/g, ' ').trim().split(/\s+/)[0];
+      if (base && base.length >= 4 && new RegExp(`\\b${base}\\b`).test(normalized)) return c.ticker.toUpperCase();
+    }
+    const nombres: Array<[RegExp, string]> = [
+      [/\bcoca[- ]?cola\b/, 'KO'], [/\bapple\b|\biphone\b/, 'AAPL'], [/\bmicrosoft\b/, 'MSFT'], [/\bnvidia\b/, 'NVDA'],
+      [/\bgoogle\b|\balphabet\b/, 'GOOGL'], [/\bamazon\b/, 'AMZN'], [/\btesla\b/, 'TSLA'], [/\bberkshire\b/, 'BRK.B'],
+      [/\bjohnson\b/, 'JNJ'], [/\bwalmart\b/, 'WMT'], [/\bdisney\b/, 'DIS'], [/\bnetflix\b/, 'NFLX'], [/\bnike\b/, 'NKE'],
+      [/\bmcdonald/, 'MCD'], [/\bstarbucks\b/, 'SBUX'], [/\bvisa\b/, 'V'], [/\bmastercard\b/, 'MA'], [/\bfacebook\b|\binstagram\b/, 'META'],
+      [/\bpalantir\b/, 'PLTR'], [/\bintel\b/, 'INTC'], [/\bexxon\b/, 'XOM'], [/\bjp ?morgan\b/, 'JPM'], [/\boracle\b/, 'ORCL']
+    ];
+    return nombres.find(([re]) => re.test(normalized))?.[1] || null;
   };
 
   const handleDiagnosis = async () => {
@@ -274,16 +283,14 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
     const q = (retryQuestion ?? pregunta).trim();
     if (!q) return;
 
-    let resolvedTicker = selectedTicker;
+    // Si la pregunta nombra otra empresa, se responde sobre esa (y pasa a ser la seleccionada)
+    const detected = detectTickerFromText(q);
+    const resolvedTicker = detected || selectedTicker;
     if (!resolvedTicker) {
-      const detected = detectTickerFromText(q);
-      if (!detected) {
-        setError('Por favor selecciona o menciona una empresa para realizar la consulta.');
-        return;
-      }
-      resolvedTicker = detected;
-      setSelectedTicker(detected);
+      setError('Elige una empresa con la lupa o menciónala en tu pregunta (por ejemplo, «¿Apple tiene mucha deuda?»).');
+      return;
     }
+    if (detected && detected !== selectedTicker) setSelectedTicker(detected);
 
     // Solo se toca el canal del asesor elegido; el chat del otro asesor queda intacto.
     const requestId = ++requestIds.current[advisor];
@@ -457,7 +464,7 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
               id="consult-pregunta-input-specific"
               value={pregunta}
               onChange={e => setPregunta(e.target.value)}
-              placeholder="¿Qué opinas del ROE de AAPL? ¿El momento es bueno para comprar?"
+              placeholder={`Por ejemplo: ¿${selectedTicker || "AAPL"} tiene mucha deuda? ¿Paga dividendos? ¿Es buen momento para comprar?`}
               rows={3}
               disabled={diagnosisLoading}
               className="flex-1 text-sm text-slate-800 bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400 resize-none transition-all placeholder:text-slate-500 shadow-2xs disabled:opacity-50"

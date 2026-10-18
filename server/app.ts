@@ -1222,7 +1222,7 @@ app.post('/api/market/import', async (req, res) => {
       nombre: data.nombre || resolved.formalName || ticker,
       sector: data.sector || resolved.sector || 'Renta Variable Global',
       descripcion: data.modeloNegocio || data.descripcion || '',
-      moat: moatLabel.includes('Amplio') ? 'Amplio' : moatLabel.includes('Moderado') ? 'Medio' : 'Ninguno',
+      moat: /amplio/i.test(moatLabel) ? 'Amplio' : /moderado/i.test(moatLabel) ? 'Medio' : 'Ninguno',
       raw: data.raw,
       targetConsensus: data.target_consensus || undefined,
       sectorBenchmarks: data.sector_benchmarks,
@@ -1279,14 +1279,51 @@ app.post('/api/companies/calculate', (req, res) => {
 // -------------------------------------------------------------
 // MÓDULO 2: Simulador de Inversiones, Sharpe y Sesgos Conductuales
 // -------------------------------------------------------------
-app.post('/api/portfolio/analyze', (req, res) => {
-  try {
-    const { holdings, transactions, returnsHistory, riskFreeRate } = req.body;
+/**
+ * Sharpe y volatilidad de la cartera con el histórico real de un año de cada posición:
+ * rentabilidades diarias ponderadas por valor, anualizadas (×252 y ×√252) y comparadas con el DGS10.
+ */
+async function metricasCarteraReales(holdings: any[]) {
+  const rf = await getRiskFreeRate();
+  const posiciones = (Array.isArray(holdings) ? holdings : []).filter(h => h?.ticker && Number(h.shares) > 0);
+  const vacio = { expectedReturn: 0, volatilidadMuestral: 0, sharpeRatio: 0, riskFreeRate: rf, verdict: 'Sin posiciones: compra alguna acción para medir el riesgo de tu cartera.' };
+  if (!posiciones.length) return vacio;
 
-    const riskMetrics = calculatePortfolioRiskMetrics(
-      returnsHistory || [0.012, -0.005, 0.021, 0.018, -0.01, 0.025, 0.014, 0.008, -0.004, 0.019, 0.015, 0.02],
-      riskFreeRate || 0.04
-    );
+  const series = await Promise.all(posiciones.map(async h => {
+    const c: any = await withTimeout(getCandlestickData(String(h.ticker).toUpperCase(), '1y', '1d'), 20000).catch(() => null);
+    const cierres = new Map<string, number>();
+    (c?.success ? c.points : []).forEach((p: any) => { if (p.close > 0) cierres.set(String(p.date), Number(p.close)); });
+    return { valor: Number(h.shares) * Number(h.currentPrice || h.avgBuyPrice || 0), cierres };
+  }));
+  const conDatos = series.filter(s => s.cierres.size > 30 && s.valor > 0);
+  if (!conDatos.length) return { ...calculatePortfolioRiskMetrics([], rf), riskFreeRate: rf };
+
+  const total = conDatos.reduce((a, s) => a + s.valor, 0);
+  // Solo las fechas que tienen todas las posiciones, para comparar días iguales
+  const fechas = [...conDatos[0].cierres.keys()].filter(d => conDatos.every(s => s.cierres.has(d))).sort();
+  const diarios: number[] = [];
+  for (let i = 1; i < fechas.length; i++) {
+    diarios.push(conDatos.reduce((a, s) => a + (s.valor / total) * (s.cierres.get(fechas[i])! / s.cierres.get(fechas[i - 1])! - 1), 0));
+  }
+  if (diarios.length < 20) return { ...calculatePortfolioRiskMetrics([], rf), riskFreeRate: rf };
+
+  const media = diarios.reduce((a, b) => a + b, 0) / diarios.length;
+  const varianza = diarios.reduce((a, b) => a + (b - media) ** 2, 0) / (diarios.length - 1);
+  const expectedReturn = media * 252;
+  const volatilidadMuestral = Math.sqrt(varianza) * Math.sqrt(252);
+  const sharpeRatio = volatilidadMuestral > 0 ? (expectedReturn - rf) / volatilidadMuestral : 0;
+  const verdict = sharpeRatio < 0 ? 'En el último año, esta cartera rindió menos que la renta fija sin riesgo.'
+    : sharpeRatio < 0.5 ? 'Rentabilidad baja para el riesgo asumido.'
+    : sharpeRatio < 1 ? 'Rentabilidad aceptable para el riesgo asumido.'
+    : 'Rentabilidad muy buena para el riesgo asumido.';
+  return { expectedReturn, volatilidadMuestral, sharpeRatio, riskFreeRate: rf, verdict };
+}
+
+app.post('/api/portfolio/analyze', async (req, res) => {
+  try {
+    const { holdings, transactions } = req.body;
+
+    const riskMetrics = await metricasCarteraReales(holdings);
 
     // Detección de sesgos conductuales
     const detectedBiases = [];
