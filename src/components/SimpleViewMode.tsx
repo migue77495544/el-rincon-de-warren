@@ -6,9 +6,11 @@ import {
   Check,
   ChevronDown,
   MessagesSquare,
+  Minus,
   Search,
   X
 } from 'lucide-react';
+import { calcularPilares, aprobadas, Pilar } from '../utils/pilares';
 import { abrirBuscador } from '../utils/events';
 import { JairoGuillermoConsult } from './JairoGuillermoConsult';
 import { CompanyPriceChart } from './CompanyPriceChart';
@@ -168,32 +170,109 @@ const ReglaMargen: React.FC<{ price: number; target: number; buyBelow: number }>
   );
 };
 
-/* ───────────────── Una clave: pregunta, respuesta y definición a un toque ───────────────── */
+/* ───────────────── Puntuación Warren: la nota y sus cuatro dimensiones ───────────────── */
 
-interface ClaveProps {
-  pregunta: string;
-  respuesta: string;
-  tono: Tono;
-  explicacion: string;
-  cifra: React.ReactNode;
-  definicion: string;
-  onAbrir: () => void;
-}
+const DIMENSIONES: Array<{ clave: 'liquidez' | 'solvencia' | 'rentabilidad' | 'valoracion'; nombre: string; ayuda: string }> = [
+  { clave: 'rentabilidad', nombre: 'Rentabilidad', ayuda: 'cuánto gana con su dinero' },
+  { clave: 'solvencia', nombre: 'Solvencia', ayuda: 'cuánto debe y si puede pagarlo' },
+  { clave: 'liquidez', nombre: 'Liquidez', ayuda: 'caja para el corto plazo' },
+  { clave: 'valoracion', nombre: 'Valoración', ayuda: 'si el precio es razonable' }
+];
 
-const Clave: React.FC<ClaveProps> = ({ pregunta, respuesta, tono, explicacion, cifra, definicion, onAbrir }) => {
-  const [abierta, setAbierta] = useState(false);
-  const id = useRef(`def-${Math.random().toString(36).slice(2, 8)}`).current;
+const lectura = (v: number) =>
+  v >= 80 ? { palabra: 'Muy bien', barra: 'bg-emerald-600', texto: 'text-emerald-800' }
+    : v >= 60 ? { palabra: 'Bien', barra: 'bg-emerald-500', texto: 'text-emerald-800' }
+    : v >= 40 ? { palabra: 'Regular', barra: 'bg-amber-500', texto: 'text-amber-900' }
+    : { palabra: 'Flojo', barra: 'bg-rose-500', texto: 'text-rose-800' };
+
+const PuntuacionWarren: React.FC<{ company: CompanyAnalysis }> = ({ company }) => {
+  const nota = company.linearScore;
+  const l = lectura(nota);
   return (
-    <li className="p-4 sm:p-5 flex flex-col gap-2">
-      <h3 className="m-0 text-[15px] font-semibold text-slate-900 leading-snug">{pregunta}</h3>
-      <p className="m-0 flex flex-wrap items-baseline gap-x-2">
-        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-sm font-semibold ${TONO[tono].chip}`}>
-          <span className={`w-2 h-2 rounded-full ${TONO[tono].dot}`} aria-hidden="true" />
-          {respuesta}
-        </span>
-        <span className="text-sm text-slate-700">{explicacion}</span>
-      </p>
-      <p className="m-0 text-sm text-slate-600">{cifra}</p>
+    <section aria-labelledby="puntuacion-titulo" className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-7">
+      <div className="grid gap-6 md:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] md:items-center">
+        <div>
+          <h2 id="puntuacion-titulo" className="m-0 text-sm font-medium text-slate-600">Puntuación Warren</h2>
+          <p className="m-0 mt-1 flex items-baseline gap-1.5">
+            <span className="cifra text-[56px] leading-none text-slate-900">{nota}</span>
+            <span className="text-lg text-slate-500">/100</span>
+          </p>
+          <p className={`m-0 mt-2 text-[15px] font-semibold ${l.texto}`}>
+            Nota {company.scoreGrade}: calidad {nota >= 80 ? 'alta' : nota >= 65 ? 'buena' : nota >= 50 ? 'irregular' : 'débil'}
+          </p>
+          <p className="m-0 mt-1 text-sm text-slate-600">Resume en un número la salud del negocio, de 0 a 100.</p>
+        </div>
+        <ul className="m-0 p-0 list-none grid gap-4">
+          {DIMENSIONES.map(d => {
+            const v = Math.round(company.dimensiones?.[d.clave]?.score ?? 0);
+            const lv = lectura(v);
+            return (
+              <li key={d.clave}>
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <span>
+                    <span className="font-semibold text-slate-900">{d.nombre}</span>
+                    <span className="hidden sm:inline text-slate-600">: {d.ayuda}</span>
+                  </span>
+                  <span className={`shrink-0 font-semibold ${lv.texto}`}>
+                    {lv.palabra} <span className="tabular text-slate-600 font-normal">{v}</span>
+                  </span>
+                </div>
+                <div className="mt-1.5 h-3 rounded-full bg-slate-100 overflow-hidden" role="meter" aria-label={d.nombre} aria-valuemin={0} aria-valuemax={100} aria-valuenow={v}>
+                  <div className={`h-full rounded-full ${lv.barra} motion-safe:transition-[width] motion-safe:duration-700`} style={{ width: `${v}%` }} />
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+};
+
+/* ───────────────── Un pilar: comprobaciones de sí/no y definición a un toque ───────────────── */
+
+const PilarFicha: React.FC<{ pilar: Pilar; onAbrir: () => void }> = ({ pilar, onAbrir }) => {
+  const [abierta, setAbierta] = useState(false);
+  const id = `def-${pilar.id}`;
+  const ok = aprobadas(pilar);
+  const total = pilar.comprobaciones.length;
+  const tono = ok / total >= 0.75 ? 'text-emerald-800' : ok / total >= 0.4 ? 'text-amber-900' : 'text-rose-800';
+  return (
+    <li className="p-5 sm:p-6 flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="m-0 font-serif text-lg font-semibold text-slate-900">{pilar.titulo}</h3>
+          <p className="m-0 text-sm text-slate-600">{pilar.pregunta}</p>
+        </div>
+        <p className={`m-0 shrink-0 text-right ${tono}`}>
+          <span className="cifra text-2xl">{ok}</span>
+          <span className="text-sm"> de {total}</span>
+          <span className="block text-xs text-slate-600">comprobaciones</span>
+        </p>
+      </div>
+      <div className="flex gap-1" aria-hidden="true">
+        {pilar.comprobaciones.map((c, i) => (
+          <span key={i} className={`h-2 flex-1 rounded-full ${c.ok === true ? 'bg-emerald-500' : c.ok === false ? 'bg-amber-300' : 'bg-slate-200'}`} />
+        ))}
+      </div>
+      <ul className="m-0 p-0 list-none grid gap-2">
+        {pilar.comprobaciones.map((c, i) => (
+          <li key={i} className="flex items-start gap-2.5 text-sm leading-snug text-slate-800">
+            <span
+              className={`mt-0.5 w-5 h-5 shrink-0 rounded-full flex items-center justify-center ${
+                c.ok === true ? 'bg-emerald-100 text-emerald-800' : c.ok === false ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-500'
+              }`}
+              aria-hidden="true"
+            >
+              {c.ok === true ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : c.ok === false ? <X className="w-3.5 h-3.5" strokeWidth={3} /> : <Minus className="w-3.5 h-3.5" />}
+            </span>
+            <span>
+              <span className="sr-only">{c.ok === true ? 'Cumple: ' : c.ok === false ? 'No cumple: ' : 'Sin datos: '}</span>
+              {c.texto}
+            </span>
+          </li>
+        ))}
+      </ul>
       <button
         type="button"
         onClick={() => { setAbierta(!abierta); if (!abierta) onAbrir(); }}
@@ -205,9 +284,7 @@ const Clave: React.FC<ClaveProps> = ({ pregunta, respuesta, tono, explicacion, c
         <ChevronDown className={`w-4 h-4 transition-transform ${abierta ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
       {abierta && (
-        <p id={id} className="m-0 text-sm text-slate-700 leading-relaxed border-l-2 border-amber-300 pl-3">
-          {definicion}
-        </p>
+        <p id={id} className="m-0 text-sm text-slate-700 leading-relaxed border-l-2 border-amber-300 pl-3">{pilar.definicion}</p>
       )}
     </li>
   );
@@ -242,21 +319,7 @@ export const SimpleViewMode: React.FC<SimpleViewModeProps> = ({
   const price = company.raw.precioCotizacion;
   const target = company.targetConsensus?.target_mean;
 
-  // Rentabilidad (ROE) y coste del capital
-  const rawRoe = company.ratios.roe?.value;
-  const roe = rawRoe != null ? (Math.abs(rawRoe) > 1 ? rawRoe : rawRoe * 100) : null;
-  const ke = Number((company as any)?.ke || 9.5);
-
-  // Liquidez y deuda
-  const liquidez = company.ratios.liquidezCorriente?.value ?? null;
-  const deuda = company.ratios.endeudamiento?.value ?? null;
-
-  const roeTono: Tono = roe === null ? 'sin-datos' : roe >= 15 ? 'bien' : roe >= 8 ? 'medio' : 'mal';
-  const valorTono: Tono = roe === null ? 'sin-datos' : roe - ke >= 2 ? 'bien' : roe - ke >= 0 ? 'medio' : 'mal';
-  const saludTono: Tono = liquidez === null || deuda === null ? 'sin-datos'
-    : liquidez >= 1.2 && deuda <= 1.5 ? 'bien'
-    : liquidez >= 1.0 && deuda <= 2.5 ? 'medio' : 'mal';
-  const fosoTono: Tono = company.moat === 'Amplio' ? 'bien' : company.moat === 'Medio' ? 'medio' : 'mal';
+  const pilares = calcularPilares(company);
 
   return (
     <div id="simple-view-mode" className="space-y-6">
@@ -279,7 +342,10 @@ export const SimpleViewMode: React.FC<SimpleViewModeProps> = ({
             </p>
           )}
         </div>
-
+        <p className="m-0 shrink-0 sm:text-right">
+          <span className="block text-sm text-slate-600">Precio hoy</span>
+          <span className="cifra text-[30px] leading-none text-slate-900">{fmt(price)}</span>
+        </p>
       </header>
 
       {/* ── La respuesta ── */}
@@ -330,55 +396,17 @@ export const SimpleViewMode: React.FC<SimpleViewModeProps> = ({
         </div>
       </section>
 
-      {/* ── Por qué ── */}
-      <section aria-labelledby="claves-titulo">
-        <h2 id="claves-titulo" className="m-0 mb-3 font-serif text-xl font-semibold text-slate-900">
-          Por qué: cuatro preguntas sobre el negocio
-        </h2>
+      {/* ── Puntuación Warren ── */}
+      <PuntuacionWarren company={company} />
+
+      {/* ── Los cuatro pilares ── */}
+      <section aria-labelledby="pilares-titulo">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+          <h2 id="pilares-titulo" className="m-0 font-serif text-xl font-semibold text-slate-900">Por qué: cuatro pilares del negocio</h2>
+          <p className="m-0 text-sm text-slate-600">Cada pilar suma las comprobaciones que supera.</p>
+        </div>
         <ul className="m-0 p-0 list-none grid grid-cols-1 md:grid-cols-2 gap-px bg-slate-200 rounded-2xl border border-slate-200 overflow-hidden [&>li]:bg-white">
-          <Clave
-            pregunta="¿Gana mucho con el dinero de sus dueños?"
-            respuesta={roeTono === 'bien' ? 'Sí' : roeTono === 'medio' ? 'Regular' : roeTono === 'mal' ? 'No' : 'Sin datos'}
-            tono={roeTono}
-            explicacion={roe === null ? 'No hay datos de beneficio.' : `Por cada $100 que han puesto, gana unos $${Math.max(0, roe).toFixed(0)} al año.`}
-            cifra={roe === null ? 'Rentabilidad sobre el patrimonio: sin datos' : <>Rentabilidad sobre el patrimonio (ROE): <strong className="tabular font-semibold text-slate-900">{pct(roe)}</strong>. Lo bueno: más del 15 %.</>}
-            definicion="El ROE mide cuánto beneficio saca la empresa del dinero que han aportado sus accionistas. Buffett busca empresas que superen el 15 % año tras año: es la huella de un buen negocio."
-            onAbrir={() => setAbrioDefinicion(true)}
-          />
-          <Clave
-            pregunta="¿Rinde más de lo que le cuesta su dinero?"
-            respuesta={valorTono === 'bien' ? 'Sí' : valorTono === 'medio' ? 'Justo' : valorTono === 'mal' ? 'No' : 'Sin datos'}
-            tono={valorTono}
-            explicacion={roe === null ? 'No se puede comparar.' : roe >= ke ? 'Cada año hace crecer la riqueza de sus accionistas.' : 'Tu dinero rendiría más en otra inversión de riesgo parecido.'}
-            cifra={roe === null ? '' : <>Gana un <strong className="tabular font-semibold text-slate-900">{pct(roe)}</strong> y un inversor exige al menos un <strong className="tabular font-semibold text-slate-900">{pct(ke)}</strong> por el riesgo.</>}
-            definicion="Invertir en una empresa tiene un coste: lo que podrías ganar en otra inversión de riesgo parecido (el «coste del capital»). Si la empresa rinde más que ese coste, crea valor; si rinde menos, lo destruye aunque tenga beneficios."
-            onAbrir={() => setAbrioDefinicion(true)}
-          />
-          <Clave
-            pregunta="¿Puede pagar sus deudas sin apuros?"
-            respuesta={saludTono === 'bien' ? 'Sí' : saludTono === 'medio' ? 'Con poco margen' : saludTono === 'mal' ? 'Con apuros' : 'Sin datos'}
-            tono={saludTono}
-            explicacion={
-              liquidez === null ? 'No hay datos del balance.'
-                : `Tiene $${liquidez.toFixed(2)} a mano por cada $1 que debe pagar este año${deuda !== null ? ` y debe $${deuda.toFixed(2)} por cada $1 que es suyo` : ''}.`
-            }
-            cifra={<>Lo bueno: más de $1,50 a mano por cada $1 que vence, y deber menos de $1 por cada $1 propio.</>}
-            definicion="Una empresa con poca caja o mucha deuda puede verse obligada a pedir prestado caro, vender activos o emitir acciones en una crisis. Las que aguantan sin apuros son las que sobreviven a los malos años."
-            onAbrir={() => setAbrioDefinicion(true)}
-          />
-          <Clave
-            pregunta="¿Tiene algo que la proteja de la competencia?"
-            respuesta={fosoTono === 'bien' ? 'Sí, mucho' : fosoTono === 'medio' ? 'Algo' : 'Poco'}
-            tono={fosoTono}
-            explicacion={
-              fosoTono === 'bien' ? 'Marca, tamaño o costes que a otros les costaría años igualar.'
-                : fosoTono === 'medio' ? 'Tiene ventajas, pero los competidores pueden alcanzarla.'
-                : 'Cualquiera podría quitarle clientes bajando precios.'
-            }
-            cifra={<>Foso defensivo: <strong className="font-semibold text-slate-900">{company.moat}</strong></>}
-            definicion="Buffett lo llama «foso»: lo que impide que otros copien el negocio (una marca querida, una red de clientes, costes más bajos). Con un foso ancho los beneficios duran; sin él, la competencia los erosiona."
-            onAbrir={() => setAbrioDefinicion(true)}
-          />
+          {pilares.map(p => <PilarFicha key={p.id} pilar={p} onAbrir={() => setAbrioDefinicion(true)} />)}
         </ul>
       </section>
 

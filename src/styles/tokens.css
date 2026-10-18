@@ -9,14 +9,14 @@
 
 :root {
   /* Alias semánticos para estilos en línea y var(--…) */
-  --color-bg: #F5F7F3;              /* papel */
+  --color-bg: #FFFFFF;              /* blanco */
   --color-bg-elevated: #FFFFFF;     /* hojas: tarjetas, modales */
-  --color-border: #DCE1DA;          /* regla */
-  --color-border-strong: #C2C9C0;
+  --color-border: #E4E7E5;          /* línea */
+  --color-border-strong: #CDD2CF;
 
-  --color-text: #1B231E;            /* tinta */
-  --color-text-muted: #5C665F;      /* grafito */
-  --color-text-faint: #8F9890;
+  --color-text: #18211C;            /* tinta */
+  --color-text-muted: #59645E;      /* grafito */
+  --color-text-faint: #6B756F;
 
   /* ── Espaciado: escala 4px ── */
   --space-1: 4px;

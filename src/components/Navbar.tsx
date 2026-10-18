@@ -112,17 +112,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* Buscador único de empresas, en forma de píldora y siempre visible */}
-          <div className="flex-1 min-w-0 flex xl:flex-none xl:order-none justify-center">
+          <div className="flex-1 min-w-0 flex xl:flex-none justify-center max-[400px]:justify-end">
             <button
               type="button"
               onClick={onOpenSearch}
-              className="w-full max-w-[22rem] xl:w-64 flex items-center gap-2.5 h-10 pl-3.5 pr-2 rounded-full border border-slate-300 bg-white text-left text-sm text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-colors"
+              className="w-full max-w-[24rem] xl:w-80 flex items-center gap-2.5 h-11 pl-3.5 pr-2 max-[400px]:w-11 max-[400px]:px-0 max-[400px]:justify-center rounded-full border border-slate-300 bg-white text-left text-sm text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-colors"
               title="Buscar una empresa (Ctrl K)"
               aria-label="Buscar una empresa"
               aria-haspopup="dialog"
             >
               <Search className="w-4 h-4 shrink-0 text-slate-700" />
-              <span className="flex-1 min-w-0 truncate">
+              <span className="flex-1 min-w-0 truncate max-[400px]:hidden">
                 <span className="sm:hidden">Buscar</span>
                 <span className="hidden sm:inline">Busca una empresa</span>
               </span>

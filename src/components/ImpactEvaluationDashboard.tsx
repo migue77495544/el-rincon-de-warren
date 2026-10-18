@@ -292,7 +292,7 @@ export const ImpactEvaluationDashboard: React.FC = () => {
                     y1={scaleY(val)}
                     x2={chartWidth - pad.right}
                     y2={scaleY(val)}
-                    stroke="#DCE1DA"
+                    stroke="#E4E7E5"
                     strokeDasharray="3 3"
                     strokeWidth="1"
                   />
