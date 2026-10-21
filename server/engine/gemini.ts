@@ -26,8 +26,15 @@ function getCliente(): GoogleGenAI | null {
   return cliente;
 }
 
+/** Turno previo de una conversación (para que el asesor recuerde lo ya hablado) */
+export interface TurnoChat {
+  rol: 'usuario' | 'asesor';
+  texto: string;
+}
+
 export interface OpcionesGenerar {
   systemInstruction?: string;
+  historial?: TurnoChat[];
   temperature?: number;
   maxOutputTokens?: number;
   modelos?: string[];
@@ -41,6 +48,7 @@ export interface OpcionesGenerar {
 export async function generar(mensaje: string, opciones: OpcionesGenerar = {}): Promise<string> {
   const {
     systemInstruction,
+    historial = [],
     temperature = 0.25,
     maxOutputTokens = 4096,
     modelos = MODELOS_ASESORES,
@@ -51,6 +59,13 @@ export async function generar(mensaje: string, opciones: OpcionesGenerar = {}): 
   const ai = getCliente();
   if (!ai) return '';
 
+  const contents = historial.length
+    ? [
+        ...historial.map(h => ({ role: h.rol === 'usuario' ? 'user' : 'model', parts: [{ text: h.texto }] })),
+        { role: 'user', parts: [{ text: mensaje }] }
+      ]
+    : mensaje;
+
   const limite = Date.now() + presupuestoMs;
   for (const modelo of modelos) {
     const restante = limite - Date.now();
@@ -58,7 +73,7 @@ export async function generar(mensaje: string, opciones: OpcionesGenerar = {}): 
     try {
       const response = await ai.models.generateContent({
         model: modelo,
-        contents: mensaje,
+        contents,
         config: {
           ...(systemInstruction ? { systemInstruction } : {}),
           temperature,

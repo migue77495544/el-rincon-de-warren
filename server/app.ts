@@ -22,6 +22,7 @@ import { computeMarkowitz, generatePlots, calculateTrackingError, calcularMedida
 import { getBetaAndIndustry, getBetaAndIndustryAI } from './engine/industry';
 import { getRiskFreeRate, getHistimplErp, calculateCapmCostOfEquity } from './engine/damodaran';
 import { consultarDual, consultarJairo, consultarGuillermo } from './engine/advisors';
+import type { TurnoChat } from './engine/gemini';
 import {
   avanzarEscaneo, estadoActual, iniciarEscaneo, leerResultado, resultadoGuardado, resultadoVigente, UNIVERSO_SP500
 } from './engine/scanner';
@@ -519,7 +520,16 @@ app.get('/api/analyst/super-opportunities', async (req, res) => {
 // Asesores Jairo / Juan Guillermo (datos reales + Gemini; motor local si Gemini no responde).
 // Sin datos reales se devuelve un error estructurado: nunca se responde con cifras estimadas.
 const ADVISOR_TIMEOUT_MS = 50000;
-function registerAdvisorEndpoint(route: string, fn: (p: string, t?: string) => Promise<any>, isComplete: (data: any) => boolean) {
+// Últimos turnos de la conversación con el asesor: acotados para no inflar el prompt ni aceptar cualquier cosa del cliente
+function leerHistorial(raw: unknown): TurnoChat[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((h: any) => (h?.rol === 'usuario' || h?.rol === 'asesor') && typeof h?.texto === 'string' && h.texto.trim())
+    .slice(-8)
+    .map((h: any) => ({ rol: h.rol, texto: h.texto.trim().slice(0, 3000) }));
+}
+
+function registerAdvisorEndpoint(route: string, fn: (p: string, t?: string, h?: TurnoChat[]) => Promise<any>, isComplete: (data: any) => boolean) {
   app.post(route, async (req, res) => {
     const pregunta: string = (req.body?.pregunta || '').trim();
     let ticker: string = (req.body?.ticker || '').trim();
@@ -531,7 +541,7 @@ function registerAdvisorEndpoint(route: string, fn: (p: string, t?: string) => P
       if (matched?.ticker) ticker = matched.ticker;
     }
     try {
-      const data = await withTimeout(fn(pregunta, ticker || undefined), ADVISOR_TIMEOUT_MS, TIMEOUT_MESSAGE);
+      const data = await withTimeout(fn(pregunta, ticker || undefined, leerHistorial(req.body?.historial)), ADVISOR_TIMEOUT_MS, TIMEOUT_MESSAGE);
       if (!data || data.success === false || !isComplete(data)) {
         return res.status(502).json({
           success: false,

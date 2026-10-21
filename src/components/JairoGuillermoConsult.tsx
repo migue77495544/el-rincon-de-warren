@@ -76,15 +76,24 @@ interface SingleResponse {
   error?: string;
 }
 
+// Pregunta y respuesta ya contestadas: el asesor las recibe para seguir el hilo de la conversación
+interface TurnoPrevio {
+  pregunta: string;
+  respuesta: string;
+}
+
 // Estado del chat puntual de un asesor (independiente del otro asesor)
 interface AdvisorChat {
   loading: boolean;
   pregunta: string;
   result: SingleResponse | null;
   error: string | null;
+  ticker: string;
+  historial: TurnoPrevio[];
 }
 
-const EMPTY_CHAT: AdvisorChat = { loading: false, pregunta: '', result: null, error: null };
+const EMPTY_CHAT: AdvisorChat = { loading: false, pregunta: '', result: null, error: null, ticker: '', historial: [] };
+const MAX_TURNOS_PREVIOS = 4;
 
 function AdvisorCard({
   name,
@@ -131,6 +140,16 @@ function AdvisorCard({
       </div>
 
       <div className="p-4.5 flex-1 min-h-[190px] flex flex-col justify-between">
+        {chat && chat.historial.length > 0 && (
+          <div className="mb-3 pb-3 border-b border-slate-100 space-y-3 max-h-64 overflow-y-auto">
+            {chat.historial.map((turno, i) => (
+              <div key={i} className="space-y-1">
+                <p className="text-xs text-slate-600"><strong className="text-slate-800">Tú:</strong> {turno.pregunta}</p>
+                <p className="text-xs text-slate-500 leading-relaxed whitespace-pre-wrap">{turno.respuesta}</p>
+              </div>
+            ))}
+          </div>
+        )}
         {chat?.pregunta && (
           <div className="mb-3 pb-3 border-b border-slate-100 space-y-1.5">
             <p className="text-xs text-slate-600 leading-relaxed">
@@ -295,7 +314,12 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
     // Solo se toca el canal del asesor elegido; el chat del otro asesor queda intacto.
     const requestId = ++requestIds.current[advisor];
     const isCurrent = () => requestIds.current[advisor] === requestId;
-    patchChat(advisor, { loading: true, pregunta: q, result: null, error: null });
+    // La respuesta anterior pasa al hilo si sigue siendo la misma empresa; si cambia, la conversación empieza de cero
+    const previo = chats[advisor];
+    const historial = previo.ticker === resolvedTicker
+      ? [...previo.historial, ...(previo.result && !retryQuestion ? [{ pregunta: previo.pregunta, respuesta: previo.result.respuesta }] : [])].slice(-MAX_TURNOS_PREVIOS)
+      : [];
+    patchChat(advisor, { loading: true, pregunta: q, result: null, error: null, ticker: resolvedTicker, historial });
     setError(null);
     if (diagnosis || diagnosisLoading) {
       requestIds.current.diagnosis++;
@@ -307,7 +331,8 @@ export const JairoGuillermoConsult: React.FC<JairoGuillermoConsultProps> = ({ co
     const endpoint = advisor === 'jairo' ? '/api/python/consulta-jairo' : '/api/python/consulta-guillermo';
 
     try {
-      const data = await postJson<SingleResponse>(endpoint, { pregunta: q, ticker: resolvedTicker || undefined }, ADVISOR_CLIENT_TIMEOUT_MS);
+      const turnos = historial.flatMap(h => [{ rol: 'usuario', texto: h.pregunta }, { rol: 'asesor', texto: h.respuesta }]);
+      const data = await postJson<SingleResponse>(endpoint, { pregunta: q, ticker: resolvedTicker || undefined, historial: turnos }, ADVISOR_CLIENT_TIMEOUT_MS);
       if (isCurrent()) patchChat(advisor, { result: data, loading: false });
     } catch (err) {
       if (isCurrent()) {
