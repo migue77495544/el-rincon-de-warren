@@ -37,7 +37,7 @@ import {
   TrendingUp,
   XCircle,
   Zap, X } from 'lucide-react';
-import { CompanyPriceChart } from './CompanyPriceChart';
+import { CompanyPriceChart } from './CompanyPriceChartLazy';
 import { VitalSigns } from './VitalSigns';
 import { InfoTooltip } from './SmartTooltip';
 import { SimpleViewMode, SkeletonCard } from './SimpleViewMode';

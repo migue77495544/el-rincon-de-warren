@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { CompanyAnalysis } from '../types';
 import { useFeatureFlags } from '../context/ViewModeContext';
 import {
@@ -12,9 +12,11 @@ import {
 } from 'lucide-react';
 import { calcularPilares, aprobadas, Pilar } from '../utils/pilares';
 import { abrirBuscador } from '../utils/events';
-import { JairoGuillermoConsult } from './JairoGuillermoConsult';
-import { CompanyPriceChart } from './CompanyPriceChart';
+import { CompanyPriceChart } from './CompanyPriceChartLazy';
 import { plainVerdict, MARGEN_EXIGIDO } from '../utils/verdict';
+
+// Los asesores solo se ven al desplegarlos: se descargan entonces
+const JairoGuillermoConsult = lazy(() => import('./JairoGuillermoConsult').then(m => ({ default: m.JairoGuillermoConsult })));
 
 interface SimpleViewModeProps {
   company: CompanyAnalysis;
@@ -433,7 +435,9 @@ export const SimpleViewMode: React.FC<SimpleViewModeProps> = ({
         </button>
         {verAsesores && (
           <div id="asesores-simple-panel" className="border-t border-slate-200 p-3 sm:p-4">
-            <JairoGuillermoConsult companies={companies} isSimpleView={true} initialTicker={company.ticker} />
+            <Suspense fallback={<SkeletonCard lines={3} />}>
+              <JairoGuillermoConsult companies={companies} isSimpleView={true} initialTicker={company.ticker} />
+            </Suspense>
           </div>
         )}
       </section>

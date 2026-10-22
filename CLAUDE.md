@@ -16,6 +16,7 @@ npm run dev               # tsx server.ts → http://localhost:3000 (API + front
 npm run lint              # tsc --noEmit — única verificación; no hay tests
 npm run build:netlify     # vite build (lo que ejecuta Netlify; la función la empaqueta Netlify)
 npm run build && npm start   # servidor Node autónomo (build/server.cjs + dist/)
+npm run movil             # lo mismo, para abrirla rápido desde el celular (imprime la IP de la Wi-Fi)
 npm run datos:referencia  # regenera server/data/damodaran-snapshot.json (copia de respaldo)
 npx netlify-cli build --offline   # reproduce la compilación de Netlify en local
 ```

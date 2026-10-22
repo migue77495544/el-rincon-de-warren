@@ -1,7 +1,7 @@
 import React from 'react';
 import { TrendingUp, Sparkles, X } from 'lucide-react';
 import { CompanyAnalysis } from '../../types';
-import { CompanyPriceChart } from '../CompanyPriceChart';
+import { CompanyPriceChart } from '../CompanyPriceChartLazy';
 import { InfoTooltip } from '../SmartTooltip';
 import { deriveVerdict } from '../../utils/verdict';
 
