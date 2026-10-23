@@ -12,3 +12,6 @@ coverage/
 !.env.example
 python/cache/scan/
 python/cache/super_opportunities.json
+
+# Episodios generados por la skill podcast-estudio
+podcasts-estudio/
