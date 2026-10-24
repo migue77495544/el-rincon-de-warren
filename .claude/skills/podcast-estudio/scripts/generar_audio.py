@@ -16,6 +16,7 @@ Solo usa la biblioteca estándar más ffmpeg. Los avisos van por stderr.
 import argparse
 import asyncio
 import base64
+import hashlib
 import json
 import os
 import re
@@ -109,7 +110,7 @@ def cargar_clave():
     return None
 
 
-def peticion_gemini(url, clave, cuerpo=None, intentos=4):
+def peticion_gemini(url, clave, cuerpo=None, intentos=6):
     datos = json.dumps(cuerpo).encode('utf-8') if cuerpo is not None else None
     for intento in range(intentos):
         req = urllib.request.Request(url, data=datos, headers={
@@ -282,20 +283,28 @@ def main():
         modelos = modelos_tts(clave)
         log(f'Modelos TTS a probar: {", ".join(modelos)}')
 
+    # Los bloques terminados se guardan junto al guion: si algo falla, el reintento continúa donde quedó.
+    cache = ruta_guion.parent / '.bloques'
+    cache.mkdir(exist_ok=True)
+    motor = 'simulado' if args.simular else args.motor
     with tempfile.TemporaryDirectory(prefix='podcast_') as tmp:
         carpeta = Path(tmp)
         partes = []
         for i, bloque in enumerate(bloques, 1):
-            log(f'Bloque {i}/{len(bloques)}…')
-            if args.simular:
-                destino = carpeta / f'bloque_{i:03d}.wav'
-                simular_bloque(bloque, destino)
-            elif args.motor == 'gemini':
-                destino = carpeta / f'bloque_{i:03d}.wav'
-                gemini_bloque(bloque, voces, args.estilo, clave, modelos, destino)
+            firma = json.dumps([motor, args.estilo, voces, bloque], ensure_ascii=False)
+            destino = cache / f'{i:03d}_{hashlib.sha1(firma.encode()).hexdigest()[:12]}.wav'
+            if destino.exists():
+                log(f'Bloque {i}/{len(bloques)} ya generado')
             else:
-                destino = carpeta / f'bloque_{i:03d}.wav'
-                asyncio.run(edge_bloque(bloque, voces, destino, carpeta))
+                log(f'Bloque {i}/{len(bloques)}…')
+                temporal = carpeta / destino.name
+                if args.simular:
+                    simular_bloque(bloque, temporal)
+                elif args.motor == 'gemini':
+                    gemini_bloque(bloque, voces, args.estilo, clave, modelos, temporal)
+                else:
+                    asyncio.run(edge_bloque(bloque, voces, temporal, carpeta))
+                shutil.move(temporal, destino)
             partes.append(destino)
         salida.parent.mkdir(parents=True, exist_ok=True)
         concatenar(partes, salida, PAUSA_ENTRE_BLOQUES, carpeta, titulo)
