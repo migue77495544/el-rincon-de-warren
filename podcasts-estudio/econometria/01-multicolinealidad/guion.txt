@@ -1,0 +1,114 @@
+# Quiz 3 de Econometría · Episodio 1 de 3 · Multicolinealidad
+PROFESOR: Imagina que estás en el examen, corres tu regresión en R y la salida te dice que el modelo explica casi el noventa y siete por ciento de la rentabilidad del portafolio. La prueba F sale significativa, con un p-valor prácticamente cero. Y sin embargo, cuando bajas la mirada a las variables, ninguna es significativa por sí sola. ¿Cómo puede un modelo funcionar tan bien en conjunto y tan mal por partes?
+ESTUDIANTE: Eso suena a que algo está mal con los datos.
+PROFESOR: Algo está pasando, sí, y tiene nombre: multicolinealidad. Ese es el tema del Punto 1 del Quiz 3. Este es el primer episodio de tres. Hoy vemos multicolinealidad. En el segundo, normalidad del error, logaritmos, Box-Cox y predicción. Y el tercero es un repaso exprés para escuchar la mañana del examen.
+ESTUDIANTE: Antes de empezar, recuérdame cómo es el quiz.
+PROFESOR: Es de máximo una hora, en R con RStudio. Tiene espacios para llenar, preguntas de opción múltiple de la a a la d y recuadros de argumente. Y hay un dato que vale oro: la profesora suele hacer exámenes muy parecidos al anterior. Cambia la base y los nombres de las variables, pero la estructura se repite.
+ESTUDIANTE: O sea que si entiendo el quiz pasado, tengo medio examen ganado.
+PROFESOR: Exacto. Y hay una historia que se repite en todo examen de este tipo. Te la digo y la vamos a repetir varias veces: corres un modelo, detectas un problema, lo diagnosticas con una prueba, lo arreglas y vuelves a revisar. Modelo, problema, prueba, arreglo, revisión.
+ESTUDIANTE: Modelo, problema, prueba, arreglo, revisión. Anotado.
+
+# Bloque 1 · Qué es la multicolinealidad
+PROFESOR: Empecemos por la idea. Hay multicolinealidad cuando las variables explicativas, las X, están muy correlacionadas entre sí. Ojo: entre ellas, no con la Y.
+ESTUDIANTE: ¿Y por qué eso es un problema? Si todas explican la Y, mejor, ¿no?
+PROFESOR: Piénsalo así. Si dos variables se mueven siempre juntas, cuando la Y sube el modelo no sabe a cuál de las dos atribuirle el efecto. Es como si dos amigos empujaran un carro siempre al mismo tiempo: ves que el carro avanza, pero no puedes saber cuánta fuerza puso cada uno.
+ESTUDIANTE: Entonces el modelo sabe que entre los dos mueven el carro, pero no sabe repartir el mérito.
+PROFESOR: Perfecto, esa es la intuición. En términos técnicos, la multicolinealidad infla la varianza de los coeficientes. Sube el error estándar, entonces baja el estadístico t, y entonces sube el p-valor. Por eso las variables parecen no significativas una por una, aunque el modelo en conjunto funcione.
+ESTUDIANTE: Error estándar sube, t baja, p sube.
+PROFESOR: Esa cadena es la respuesta de la pregunta 1.2 del quiz pasado. Ahora, aquí viene el error típico, y la profesora lo pone como distractor. ¿La multicolinealidad sesga a los estimadores de mínimos cuadrados ordinarios?
+ESTUDIANTE: Yo diría que sí, porque los coeficientes salen raros.
+PROFESOR: Esa es la trampa. No, la multicolinealidad no sesga a MCO. Los estimadores siguen siendo insesgados. Lo que pasa es que son imprecisos: tienen mucha varianza, son inestables y pueden salir con signos raros. Pero en promedio no están corridos.
+ESTUDIANTE: Insesgados pero imprecisos. Como un tirador que en promedio le apunta al centro, pero cada disparo cae lejos.
+PROFESOR: Me encanta esa imagen. Te hago la lista completa de lo que sí hace y lo que no hace, porque de aquí salen los distractores. La multicolinealidad sí infla la varianza y los errores estándar. Sí hace que los t sean pequeños y los p grandes. Sí produce coeficientes inestables y signos raros. Y sí hace que los intervalos de confianza sean anchos.
+ESTUDIANTE: ¿Y lo que no hace?
+PROFESOR: No sesga a MCO. No baja el R cuadrado: de hecho, el R cuadrado sigue alto. No es lo mismo que heterocedasticidad. Y no se arregla cambiando la Y, porque el problema está entre las X.
+ESTUDIANTE: Resumo: varianza inflada, t pequeños, signos raros, intervalos anchos. Pero ni sesgo, ni R cuadrado bajo, ni se arregla tocando la Y.
+
+# Bloque 2 · Los datos del quiz pasado
+PROFESOR: Vamos al Punto 1 del quiz pasado. Eran sesenta meses de datos. La Y era la rentabilidad mensual de un portafolio. Las X eran tres: X1, el riesgo de mercado; X2, la tasa de los TES, que son los títulos de deuda pública de Colombia; y X3, un índice de liquidez.
+ESTUDIANTE: ¿Y qué salió?
+PROFESOR: En ese punto la salida de summary y de confint venía impresa en el examen. Tú solo tenías que correr el VIF y el kappa con la base. El R cuadrado era de cero coma nueve seis seis nueve, o sea, casi el noventa y siete por ciento. La F era de quinientos cuarenta y cinco con nueve, con un p-valor prácticamente cero. Pero los p-valores individuales eran cero coma uno tres seis para X1, cero coma cinco cinco dos para X2 y cero coma uno dos cuatro para X3. Todos por encima de cero coma cero cinco.
+ESTUDIANTE: Ninguna significativa. Es justo lo del principio.
+PROFESOR: Esa es la firma de la multicolinealidad, y es el síntoma que la profesora quiere que veas: R cuadrado altísimo y F significativa, pero ninguna variable significativa sola. Y además hay un signo raro: el coeficiente de X2, la tasa de los TES, salía negativo, menos cero coma dos siete cero cero.
+ESTUDIANTE: Y las correlaciones entre las X, ¿de cuánto eran?
+PROFESOR: Altísimas: cero coma nueve nueve siete, cero coma nueve nueve siete y cero coma nueve nueve cero. Prácticamente una línea recta.
+PROFESOR: Y aquí va una advertencia que está en tus apuntes. En la hoja de un compañero, el modelo ajustado estaba escrito con más cero coma dos siete por X2. Eso está mal. El signo correcto es negativo. El modelo ajustado queda así: Y estimada igual a cero coma ocho nueve tres, más cero coma siete tres uno nueve por X1, menos cero coma dos siete por X2, más cero coma tres cuatro tres tres por X3.
+ESTUDIANTE: Copiar los signos tal cual salen en el summary. Me queda claro.
+
+# Bloque 3 · Las herramientas de diagnóstico
+PROFESOR: Ahora, ¿cómo se diagnostica? Hay tres herramientas: la matriz de gráficos, el VIF y el índice de condición.
+PROFESOR: La primera es la matriz de gráficos, que en R sale con la función ggpairs, de la librería GGally. Abajo te muestra las nubes de puntos entre cada par de variables, en la diagonal los histogramas y arriba las correlaciones. La regla de lectura es: si la correlación entre dos X pasa de cero coma ocho, alarma; si pasa de cero coma nueve, es grave. Y si la nube de puntos parece una línea recta, esas dos variables se mueven juntas.
+ESTUDIANTE: Y en el quiz pasado, con correlaciones de cero coma nueve nueve, la nube debía ser casi una línea.
+PROFESOR: Así es. Por eso la pregunta 1.1, que preguntaba qué muestra la matriz de gráficos, tenía como respuesta la b: alta multicolinealidad. Los distractores: independencia sería una correlación cercana a cero, moderada estaría entre cero coma cuatro y cero coma siete, y la heterocedasticidad no se mira aquí, se mira en los residuales.
+ESTUDIANTE: Bien. ¿Y el VIF?
+PROFESOR: VIF significa factor de inflación de varianza. Te dice cuántas veces se infla la varianza de un coeficiente por culpa de la correlación con las otras X. Se calcula así: para cada variable X, haces una regresión auxiliar de esa X contra las demás X y sacas su R cuadrado. El VIF es uno dividido entre uno menos ese R cuadrado auxiliar.
+ESTUDIANTE: Uno sobre uno menos R cuadrado auxiliar.
+PROFESOR: Y de ahí se despeja lo contrario, que es justo lo que pregunta la 1.4: el R cuadrado auxiliar es igual a uno menos uno sobre el VIF. En R se escribe uno menos uno sobre vif de regresion. Ejemplo: si el VIF es diez, el R cuadrado auxiliar es uno menos un décimo, o sea cero coma nueve.
+ESTUDIANTE: ¿Y cómo se lee el VIF?
+PROFESOR: Cerca de uno, no hay problema. Entre cinco y diez, multicolinealidad alta. Mayor que diez, severa. En el quiz pasado, la pregunta 1.5 preguntaba por el nivel de los VIF, y la respuesta era la c: muy altos, mayores que diez.
+ESTUDIANTE: Y la 1.4, la del R cuadrado auxiliar, ¿cuánto daba?
+PROFESOR: La respuesta fue la c, cero coma nueve nueve seis siete. Eso corresponde a un VIF de más o menos trescientos. Y si no tienes el número a mano, piensa así: con correlaciones de cero coma nueve nueve entre las X, el R cuadrado auxiliar tiene que estar muy cerca de uno.
+ESTUDIANTE: ¿Y la tercera herramienta?
+PROFESOR: El índice de condición. En R se calcula con la función kappa aplicada a la matriz de correlaciones de las X. Ojo con esto: solo de las X, nunca con la Y, y en la base de sesenta meses tampoco con la columna Periodo. El kappa se lee así: por encima de cien, multicolinealidad moderada a fuerte; por encima de mil, severa. Hay otra versión que es la raíz cuadrada del cociente entre el valor propio más grande y el más pequeño. Para esa versión los umbrales son diez y treinta.
+ESTUDIANTE: Kappa: más de cien moderada a fuerte, más de mil severa. Su raíz: más de diez y más de treinta.
+PROFESOR: La pregunta 1.6 del quiz pasado era sobre el índice de condición, y la respuesta fue la c: la matriz es casi singular, hay multicolinealidad severa. Los distractores a y b minimizaban el problema, y la d decía que un índice alto significa ajuste perfecto, lo cual es falso.
+ESTUDIANTE: ¿Qué quiere decir casi singular?
+PROFESOR: Que las columnas de las X son casi combinaciones lineales unas de otras. Si fueran exactamente combinaciones lineales, la matriz no se podría invertir y MCO no podría calcular los coeficientes. Casi singular quiere decir que estás muy cerca de ese punto.
+
+# Bloque 4 · El remedio y la conclusión
+PROFESOR: Diagnosticado el problema, ¿cómo se arregla? La pregunta 1.3 lo preguntaba, y la respuesta fue la b: eliminar o combinar las variables altamente correlacionadas.
+ESTUDIANTE: ¿Y los distractores?
+PROFESOR: Agregar más variables o reducir la muestra lo empeoran. Y cambiar la Y no arregla nada, porque, repito, el problema está entre las X.
+ESTUDIANTE: ¿Y la conclusión global, la 1.7?
+PROFESOR: La respuesta fue la b: hay multicolinealidad severa, que infla la varianza y explica por qué las variables no son significativas individualmente aunque el modelo sí lo sea en conjunto. Los distractores: la a niega el problema. La c dice que la multicolinealidad sesga a MCO, y ya sabemos que no. Y la d confunde no ser significativa con no tener relación con la Y, que no es lo mismo.
+ESTUDIANTE: No ser significativa no quiere decir que no tenga relación. Puede tener relación, pero el modelo no la logra separar de las demás.
+PROFESOR: Exacto. Vamos a hacer un mini resumen de las respuestas del quiz pasado del Punto 1, porque probablemente se parezcan: 1.1, b, alta multicolinealidad. 1.2, d, errores estándar elevados que afectan la significancia individual. 1.3, b, eliminar o combinar variables. 1.4, c, cero coma nueve nueve seis siete. 1.5, c, VIF muy altos, mayores que diez. 1.6, c, matriz casi singular. 1.7, b, infla la varianza y explica la falta de significancia individual.
+ESTUDIANTE: Y antes de todas esas preguntas había unos espacios para llenar, ¿no?
+PROFESOR: Sí: los VIF de X1, X2 y X3 y el índice de condición. Salen de correr vif sobre la regresión y kappa sobre la correlación de solo las X. No los sabemos de memoria porque dependen de la base del día. Por eso hay que dominar el código.
+
+# Bloque 5 · El ejemplo resuelto: la base de publicidad
+PROFESOR: Para ver la historia completa con números, en tus apuntes está la base de publicidad de la profesora, con cien observaciones. La Y son las Ventas, y las X son Medios, Línea y Redes.
+PROFESOR: El modelo uno, con las tres variables, explica el ochenta y nueve por ciento de las ventas: R cuadrado de cero coma ocho nueve dos seis. La F es de doscientos sesenta y cinco, muy significativa. Pero Medios tiene un p-valor de cero coma uno ocho cinco y Redes de cero coma dos cinco nueve. No son significativas. Y sus intervalos de confianza contienen el cero.
+ESTUDIANTE: ¿Por qué importa que el intervalo contenga el cero?
+PROFESOR: Porque si el cero está dentro del intervalo, no puedes descartar que el efecto real de esa variable sea nulo. Por eso es la misma conclusión que dar no significativa. Esa es la regla de lectura de confint.
+ESTUDIANTE: ¿Y cuánto daban las correlaciones y los VIF?
+PROFESOR: Línea y Redes tenían una correlación de cero coma nueve cinco cuatro. El VIF de Línea era veintiuno coma cinco y el de Redes catorce coma tres; los dos, mayores que diez. Y el kappa de las tres X era de ciento doce coma nueve nueve, más o menos ciento trece.
+ESTUDIANTE: Un VIF de veintiuno coma cinco quiere decir que la varianza del coeficiente de Línea está inflada veintiuna veces y media.
+PROFESOR: Así se dice en un argumente. Y fíjate en cómo se interpreta un coeficiente en este modelo: por cada unidad adicional en Línea, las ventas suben en promedio cinco coma uno unidades, manteniendo Medios y Redes constantes. Esa coletilla, manteniendo lo demás constante, no se puede olvidar.
+PROFESOR: Ahora el arreglo: se elimina Línea. Queda el modelo dos, Ventas explicadas por Medios y Redes. Los VIF bajan de veintiuno coma cinco a uno coma ocho siete. Las dos variables quedan muy significativas. Y el R cuadrado solo baja de cero coma ocho nueve tres a cero coma ocho seis siete.
+ESTUDIANTE: O sea que perdimos muy poco poder explicativo y ganamos mucha precisión.
+PROFESOR: Esa es la conclusión que tienes que saber decir. Y un detalle curioso: cuando el modelo tiene solo dos X, los dos VIF son iguales, porque cada uno es uno sobre uno menos la correlación al cuadrado entre ellas. Con una correlación de cero coma seis ocho tres, da uno coma ocho siete para ambas. Por eso en el script de la profesora hay un comentario que dice: deben dar iguales.
+ESTUDIANTE: ¿Y luego se revisa algo más?
+PROFESOR: Sí, la revisión final de la historia: la normalidad de los residuales con Jarque-Bera. Dio un p-valor de cero coma dos siete. Como es mayor que cero coma cero cinco, no se rechaza la normalidad, y las pruebas t y F del modelo dos son válidas. Eso lo explicamos a fondo en el siguiente episodio.
+ESTUDIANTE: Déjame contar la historia en cuatro líneas. Uno: R cuadrado alto y F significativa, pero dos variables no significativas. Dos: correlación de cero coma nueve cinco, VIF de veintiuno y catorce, kappa de ciento trece. Multicolinealidad. Tres: se elimina Línea, los VIF bajan a uno coma ocho siete y todo queda significativo. Cuatro: Jarque-Bera con p de cero coma dos siete, residuales normales, inferencia válida.
+PROFESOR: Perfecta. Esa historia es la que vas a contar en los recuadros de argumente.
+
+# Bloque 6 · Las trampas del código
+PROFESOR: Ahora, lo que más puntos te puede costar en el examen no es la teoría: es el código. En tus apuntes hay errores encontrados que hay que tener muy presentes.
+ESTUDIANTE: ¿Cuál es el más grave?
+PROFESOR: El orden de las columnas. En la base de la profesora, publicidad, la Y va al final: primero las tres X y luego las ventas. Su script calcula la correlación con datos corchete uno dos puntos tres, o sea, las tres primeras columnas, que en su base son justo las X. Pero en el Excel propio, la Y va de primera. Entonces ese mismo código toma Ventas, Medios y Línea, mezcla la Y con las X, y el kappa da cuarenta y ocho, un valor equivocado.
+ESTUDIANTE: ¿Y cuál es el correcto?
+PROFESOR: En esa base, las columnas dos a cuatro, que dan el kappa de ciento doce coma nueve nueve. Y hay otra trampa parecida: el script de la profesora calcula la correlación entre la columna uno y la tres, y un comentario dice: debe dar uno. Como es una correlación entre solo dos columnas, da un único número, y el kappa de un solo número es siempre uno. Si el examen te pide el valor de ese código, escribes uno. Pero el kappa real entre Medios y Redes es de más o menos cinco coma tres.
+ESTUDIANTE: ¿Y cómo evito caer en eso con una base nueva?
+PROFESOR: Con la regla de oro del código: antes de usar cor, corre names de datos para ver los nombres y el orden de las columnas, y selecciona las X por su nombre, nunca por su posición.
+ESTUDIANTE: names de datos primero, y las X por nombre. ¿Hay más errores?
+PROFESOR: Cuatro más, que salieron del historial de R. Uno: setwd debe apuntar a la carpeta, no al archivo de Excel. Dos: en las rutas de R se usa la barra normal, no la barra invertida de Windows. Tres: si escribes un comentario como intervalos de confianza sin el numeral delante, R intenta ejecutarlo y da error. Y cuatro, este no hace daño: cargar las librerías tres o cuatro veces no rompe nada, basta con una.
+ESTUDIANTE: Y si el examen cambia la base, ¿qué cambio del script?
+PROFESOR: Solo tres cosas: la carpeta del setwd, el nombre del archivo y los nombres de las columnas, que confirmas con names de datos.
+
+# Repaso activo
+PROFESOR: Vamos con preguntas de práctica. Pausa si quieres pensar más. Primera: el modelo tiene un R cuadrado de cero coma nueve cinco y una F significativa, pero ninguna variable tiene un p-valor menor que cero coma cero cinco. ¿Qué sospechas? Piénsalo un momento.
+PROFESOR: Multicolinealidad. Es la firma clásica: bien en conjunto, mal por partes. Y se confirma con VIF mayores que diez.
+PROFESOR: Segunda: una variable tiene un VIF de veinte. ¿Cuál es su R cuadrado auxiliar? Piénsalo un momento.
+ESTUDIANTE: Uno menos uno sobre veinte. Uno menos cero coma cero cinco. Cero coma nueve cinco.
+PROFESOR: Correcto. Tercera: ¿la multicolinealidad sesga a los estimadores de MCO? Piénsalo.
+ESTUDIANTE: No. Siguen siendo insesgados, pero con mucha varianza.
+PROFESOR: Muy bien. Cuarta: un compañero sugiere cambiar la variable dependiente para arreglar la multicolinealidad. ¿Qué le dices? Piénsalo.
+ESTUDIANTE: Que no sirve, porque el problema está entre las X. Hay que eliminar o combinar las X correlacionadas.
+PROFESOR: Y quinta: abres una base nueva en el examen y vas a calcular el kappa. ¿Qué haces antes de escribir cor? Piénsalo.
+ESTUDIANTE: Corro names de datos y selecciono las X por nombre. Nada de la Y ni de Periodo.
+
+# Cierre
+PROFESOR: Para cerrar, las tres ideas que tienes que llevar sí o sí al examen. Primera: multicolinealidad es R cuadrado alto, F significativa, t no significativos y VIF mayores que diez. Segunda: infla la varianza, pero no sesga a MCO; afecta la inferencia, no el insesgamiento. Tercera: en el código, names de datos primero y las X por nombre en cor, y copiar los signos tal cual del summary.
+ESTUDIANTE: Y en el siguiente episodio, el Punto 2.
+PROFESOR: Exacto: por qué importa la normalidad del error, cómo leer Jarque-Bera, cuándo usar logaritmos, qué es el lambda de Box-Cox y cómo hacer la predicción sin olvidar el paso que casi todo el mundo olvida. Nos escuchamos allí.

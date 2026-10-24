@@ -1,0 +1,40 @@
+# Quiz 3 de Econometría · Episodio 3 de 3 · Repaso exprés
+PROFESOR: Faltan pocas horas para el quiz y no hay tiempo para volver a estudiar todo. Así que vamos con lo que resuelve casi todo el examen: ocho reglas de oro. Ocho ideas, en pocos minutos.
+ESTUDIANTE: Listo. Y antes, recuérdame la historia de siempre.
+PROFESOR: Corres un modelo, detectas un problema, lo diagnosticas con una prueba, lo arreglas y vuelves a revisar. En el Punto 1 el problema es la multicolinealidad. En el Punto 2, la falta de normalidad.
+
+# Las ocho reglas
+PROFESOR: Regla uno. Si el p-valor es menor que cero coma cero cinco, se rechaza la hipótesis nula. Sirve para la t, la F, Jarque-Bera y Breusch-Pagan. Lo que cambia es la hipótesis nula: en la t, que el coeficiente es cero; en la F, que todos los coeficientes son cero; en Jarque-Bera, que hay normalidad; en Breusch-Pagan, que hay homocedasticidad.
+ESTUDIANTE: Regla dos.
+PROFESOR: Multicolinealidad es R cuadrado alto, más F significativa, más t no significativos, más VIF mayores que diez. Si ves las cuatro cosas juntas, ya sabes qué pasa.
+ESTUDIANTE: Y el kappa confirma: más de cien, moderada a fuerte; más de mil, severa.
+PROFESOR: Regla tres. Ni la multicolinealidad ni la falta de normalidad sesgan a MCO. Las dos afectan la inferencia: las t, las F y los intervalos. Si una opción dice que sesga, es un distractor.
+ESTUDIANTE: Regla cuatro.
+PROFESOR: Nunca se acepta la hipótesis nula. Si el p es mayor que cero coma cero cinco, se dice: no hay evidencia suficiente para rechazar.
+ESTUDIANTE: Regla cinco.
+PROFESOR: Log-log es elasticidad: si la X sube un uno por ciento, la Y cambia b por ciento. Log-nivel: si la X sube una unidad, la Y cambia cien por b por ciento.
+ESTUDIANTE: Regla seis.
+PROFESOR: El lambda de Box-Cox. Cerca de cero, logaritmo. Cerca de cero coma cinco, raíz cuadrada. Cerca de uno, no transformar. Y menos uno sería la inversa.
+ESTUDIANTE: Regla siete.
+PROFESOR: Predicción. Con Box-Cox, elevas a uno sobre lambda. Con logaritmo, aplicas la exponencial. Y se hace con los tres números: fit, lwr y upr. Además, el examen pide el intervalo de predicción, el que lleva el uno más dentro de la raíz, no el de confianza.
+ESTUDIANTE: Y regla ocho.
+PROFESOR: Copia los signos de los coeficientes tal cual salen en el summary, y selecciona las X por nombre en cor, nunca por posición. Antes de todo, corre names de datos. Y no metas en el kappa ni la Y ni la columna Periodo.
+
+# Las fórmulas que más salen
+PROFESOR: Dos fórmulas rápidas. El VIF es uno sobre uno menos el R cuadrado auxiliar. Y al revés: el R cuadrado auxiliar es uno menos uno sobre el VIF. Con un VIF de diez, el R cuadrado auxiliar es cero coma nueve.
+ESTUDIANTE: Y Jarque-Bera siempre con dos grados de libertad.
+PROFESOR: Siempre dos. Y el argumente de Jarque-Bera lleva seis piezas: hipótesis nula, hipótesis alternativa, estadístico con sus grados de libertad, p-valor, decisión y consecuencia para las pruebas t y F. Si puedes, agrega lo que muestran el histograma y el Q-Q plot.
+
+# Repaso relámpago
+PROFESOR: Cuatro preguntas relámpago. VIF de cincuenta: ¿cuál es el nivel? Piénsalo.
+ESTUDIANTE: Severo, mayor que diez.
+PROFESOR: Jarque-Bera con p de cero coma cero cero uno. Piénsalo.
+ESTUDIANTE: Se rechaza la normalidad. Las pruebas t y F no son confiables.
+PROFESOR: Lambda de cero coma cero nueve. Piénsalo.
+ESTUDIANTE: Cerca de cero: logaritmo.
+PROFESOR: Y el remedio de la multicolinealidad. Piénsalo.
+ESTUDIANTE: Eliminar o combinar las X muy correlacionadas. Nunca cambiar la Y.
+
+# Cierre
+PROFESOR: Eso es todo. Respira, abre la base, corre names de datos y cuenta la historia: modelo, problema, prueba, arreglo, revisión. Mucha suerte en el quiz.
+ESTUDIANTE: Gracias. A sacarlo adelante.

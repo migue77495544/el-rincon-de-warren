@@ -1,0 +1,99 @@
+# Quiz 3 de Econometría · Episodio 2 de 3 · Normalidad, logaritmos, Box-Cox y predicción
+PROFESOR: Un banco aprueba créditos a mil clientes. La mayoría pide montos modestos, pero unos pocos piden montos enormes. Si haces la regresión así, tal cual, los errores del modelo salen torcidos, con una cola larga hacia la derecha. Y cuando los errores están torcidos, las pruebas t y F en las que confías dejan de ser confiables.
+ESTUDIANTE: Y supongo que hoy vamos a ver cómo enderezarlos.
+PROFESOR: Exacto. Este es el episodio dos de tres, sobre el Punto 2 del Quiz 3: normalidad del error, transformaciones con logaritmo y con Box-Cox, y predicción. Es el punto más pesado: se resuelve todo en R y trae las dos preguntas que más pesan, la 2.4 y la 2.8, con quince por ciento cada una.
+ESTUDIANTE: Treinta por ciento del examen en dos preguntas. Hay que dominarlas.
+PROFESOR: Y la historia es la misma del episodio anterior: modelo, problema, prueba, arreglo, revisión. Aquí el problema es que los errores no son normales, la prueba es Jarque-Bera, el arreglo es transformar la Y con logaritmo o con Box-Cox, y la revisión es volver a correr Jarque-Bera.
+
+# Bloque 1 · Los datos y los tres modelos
+PROFESOR: En el quiz pasado la base tenía mil clientes. La variable dependiente era el monto de crédito aprobado, en pesos. Las explicativas eran cuatro: el ingreso mensual, los activos, el score crediticio y la razón de endeudamiento.
+ESTUDIANTE: ¿Y por qué los errores salen torcidos?
+PROFESOR: Porque los montos, los ingresos y los activos están sesgados a la derecha: muchos valores pequeños y unos pocos valores muy grandes. Por eso el modelo en niveles no tiene errores normales. Y el logaritmo y Box-Cox lo corrigen.
+PROFESOR: Hay tres modelos, y te conviene tenerlos claros. El modelo uno, en niveles: el monto explicado por ingreso, activos, score y deuda, todo tal cual. Es el modelo inicial, el que tiene el problema. El modelo dos, con logaritmos: el logaritmo del monto explicado por el logaritmo del ingreso, el logaritmo de los activos, el score y la deuda. Ojo: el score y la deuda quedan en niveles. Es el primer arreglo. Y el modelo tres, con Box-Cox: el monto elevado a lambda explicado por las cuatro variables en niveles. Es el arreglo con el lambda óptimo.
+ESTUDIANTE: Niveles, log, Box-Cox. Uno, dos, tres.
+
+# Bloque 2 · Para qué sirve la normalidad
+PROFESOR: Primera pregunta de concepto, la 2.1: ¿para qué se necesita que los errores sean normales? La respuesta fue la b: para que las pruebas t y F sean válidas.
+ESTUDIANTE: ¿Y cuál era la trampa?
+PROFESOR: La opción a, que decía algo como que la normalidad hace que MCO sea insesgado. Falso. MCO es insesgado aun sin normalidad. La normalidad no tiene que ver con el sesgo, ni con la multicolinealidad, ni con la homocedasticidad. Tiene que ver con la inferencia: que los t, las F y los intervalos digan la verdad.
+ESTUDIANTE: Igual que la multicolinealidad: ninguna de las dos sesga a MCO, las dos afectan la inferencia.
+PROFESOR: Exacto. Esa es una de las reglas de oro de tus apuntes.
+
+# Bloque 3 · Cómo se diagnostica: gráficos y Jarque-Bera
+PROFESOR: ¿Cómo se ve si los residuales son normales? Primero, con gráficos. El histograma de los residuales: si ves una campana simétrica, bien; si ves una cola larga, hay asimetría. El gráfico Q-Q normal: si los puntos caen sobre la recta, bien; si se despegan en las puntas, hay colas. Y el gráfico de valores ajustados contra residuales: si ves una nube sin forma, bien; si ves un embudo, hay heterocedasticidad. Esa la confirmarías con la prueba de Breusch-Pagan, cuya hipótesis nula es la homocedasticidad.
+ESTUDIANTE: Y después de los gráficos, la prueba formal.
+PROFESOR: La prueba de Jarque-Bera, que en R se corre con jarque punto bera punto test, de la librería tseries. Combina dos cosas: la asimetría y la curtosis de los residuales. Una distribución normal tiene asimetría cero y curtosis tres. El estadístico es n sobre seis, multiplicado por la asimetría al cuadrado más la curtosis menos tres al cuadrado dividida entre cuatro. Y se distribuye como una chi cuadrado con dos grados de libertad.
+ESTUDIANTE: ¿Siempre dos grados de libertad?
+PROFESOR: Siempre dos, uno por la asimetría y otro por la curtosis. Eso lo escribes en el argumente sin dudar. Y la regla para leer cualquier prueba, que sirve para todas: si el p-valor es menor que cero coma cero cinco, se rechaza la hipótesis nula. Lo único que cambia es qué dice la hipótesis nula en cada prueba. En Jarque-Bera, la hipótesis nula es que los residuales son normales.
+ESTUDIANTE: Entonces si el p es menor que cero coma cero cinco, rechazo la normalidad.
+PROFESOR: Así es. Y ahora el error que más cuesta puntos. Si el p-valor es mayor que cero coma cero cinco, ¿qué dices?
+ESTUDIANTE: Que se acepta la normalidad.
+PROFESOR: Eso nunca. Nunca se acepta la hipótesis nula. Se dice: no hay evidencia suficiente para rechazar la normalidad. Y si hay una opción que dice se acepta la normalidad, desconfía.
+ESTUDIANTE: No se acepta, no se rechaza. Me lo grabo.
+
+# Bloque 4 · La pregunta 2.2 y su plantilla
+PROFESOR: La 2.2 pedía interpretar los gráficos y el Jarque-Bera del modelo uno. El estadístico salió en ciento cincuenta y nueve coma siete uno, con un p-valor menor que dos coma dos por diez a la menos dieciséis.
+ESTUDIANTE: Eso es prácticamente cero.
+PROFESOR: Exacto. Cuando R escribe dos punto dos e menos dieciséis, léelo como cero. La respuesta fue la c, se rechaza la normalidad, y además había que argumentar. Te leo la plantilla de tus apuntes, porque la puedes usar casi palabra por palabra.
+PROFESOR: Hipótesis nula: los residuales siguen una distribución normal. Hipótesis alternativa: no la siguen. El estadístico de Jarque-Bera es ciento cincuenta y nueve coma siete uno, con dos grados de libertad y un p-valor menor que dos coma dos por diez a la menos dieciséis. Como el p-valor es menor que cero coma cero cinco, se rechaza la hipótesis nula: los residuales no son normales. El histograma es asimétrico, con una cola larga a la derecha, y en el Q-Q plot los puntos se alejan de la recta en los extremos. Por esto, las pruebas t y F del modelo uno no son confiables.
+ESTUDIANTE: Hipótesis, estadístico con grados de libertad, p-valor, decisión, lo que muestran los gráficos y la consecuencia. Seis piezas.
+PROFESOR: Muy buen resumen. Esas seis piezas son las que hacen un argumente completo.
+
+# Bloque 5 · El logaritmo y cómo se interpreta
+PROFESOR: Vamos al primer arreglo. La 2.3 preguntaba qué ventaja tiene el logaritmo. La respuesta fue la c: reduce la asimetría y mejora la normalidad del error.
+ESTUDIANTE: ¿Por qué el logaritmo hace eso?
+PROFESOR: Porque comprime los valores grandes. Mira este ejemplo de tus apuntes: el logaritmo natural de un millón es trece coma ocho, y el de cien millones es dieciocho coma cuatro. Entre un millón y cien millones hay cien veces de diferencia, pero en logaritmo solo hay unos cuatro puntos y medio. Esa cola larga a la derecha queda recogida.
+ESTUDIANTE: ¿Y el logaritmo también arregla otras cosas?
+PROFESOR: No. Los distractores decían que elimina la multicolinealidad o que sube el R cuadrado automáticamente. Ninguna de las dos es cierta.
+PROFESOR: Ahora la 2.4, la de quince por ciento. Se corre en R y pide dos elementos. El primero es el modelo ajustado, copiado del summary del modelo dos, con sus signos: el logaritmo estimado del monto es igual a b cero, más b uno por el logaritmo del ingreso, más b dos por el logaritmo de los activos, más b tres por el score, más b cuatro por la deuda, con los números y signos que te dé R. El segundo es el Jarque-Bera completo: hipótesis nula, hipótesis alternativa, estadístico, dos grados de libertad, p-valor y conclusión.
+ESTUDIANTE: ¿Y cuál opción marco?
+PROFESOR: Depende de lo que te dé R. Si el p-valor es mayor que cero coma cero cinco, la c, no se rechaza la normalidad. Si es menor, la a, se rechaza.
+ESTUDIANTE: ¿Y cómo se interpretan los coeficientes con logaritmos? Siempre me enredo.
+PROFESOR: Es la 2.5, y vale la pena ir despacio. Hay cuatro casos, según dónde esté el logaritmo. Caso uno, log-log: logaritmo en la Y y logaritmo en la X. Es el caso del ingreso y los activos en el modelo dos. El coeficiente es una elasticidad: si la X sube un uno por ciento, la Y cambia b por ciento.
+ESTUDIANTE: Por ciento a por ciento.
+PROFESOR: Exacto. Por eso la 2.5 tenía como respuesta la c: elasticidad. Ejemplo de tus apuntes: si b uno vale cero coma siete cuatro, se dice: si el ingreso aumenta un uno por ciento, el monto aprobado aumenta en promedio cero coma siete cuatro por ciento, manteniendo lo demás constante.
+PROFESOR: Caso dos, log-nivel: logaritmo en la Y, pero la X en niveles. Es el caso del score y la deuda. Si la X sube una unidad, la Y cambia cien por b por ciento. Ejemplo: si el coeficiente de la deuda es menos cero coma ocho y la razón de endeudamiento sube cero coma uno, el monto cae en promedio un ocho por ciento. Sale de multiplicar cien por menos cero coma ocho por cero coma uno.
+ESTUDIANTE: Log-nivel: cien por b por ciento por unidad.
+PROFESOR: Caso tres, nivel-log: la Y en niveles y la X en logaritmo. Si la X sube un uno por ciento, la Y cambia b dividido entre cien unidades. Y caso cuatro, nivel-nivel, como el modelo uno: si la X sube una unidad, la Y cambia b unidades.
+ESTUDIANTE: Resumo: log-log, elasticidad, por ciento a por ciento. Log-nivel, cien por b por ciento por unidad. Nivel-log, b sobre cien unidades por cada uno por ciento. Nivel-nivel, b unidades por unidad.
+
+# Bloque 6 · Box-Cox y el lambda
+PROFESOR: El segundo arreglo es Box-Cox. La 2.6 preguntaba su objetivo, y la respuesta fue la b: encontrar una transformación óptima que aproxime la normalidad del error.
+ESTUDIANTE: ¿Óptima en qué sentido?
+PROFESOR: Box-Cox prueba muchas potencias de la Y, es decir, Y elevado a lambda, y busca el lambda que mejor normaliza los errores. En R se hace con la función boxcox, de la librería MASS. Te dibuja una curva: la cima de la curva es el lambda óptimo, y las líneas laterales marcan su intervalo de confianza del noventa y cinco por ciento. Para sacar el número exacto, en tus apuntes está el código: lam igual a bc x en la posición donde bc y es máximo.
+ESTUDIANTE: ¿Y cómo se lee el lambda?
+PROFESOR: Con esta tabla, que te recomiendo aprender de memoria. Lambda igual a uno: no hace falta transformar. Lambda cero coma cinco: raíz cuadrada. Lambda cero: logaritmo. Lambda menos uno: la inversa.
+ESTUDIANTE: Uno, nada. Medio, raíz. Cero, logaritmo. Menos uno, inversa.
+PROFESOR: En el quiz pasado, la 2.7, que valía diez por ciento, dio un lambda de cero coma uno ocho. La respuesta fue la c: aproximadamente logarítmica, porque cero coma uno ocho está cerca de cero. Los distractores: lambda igual a uno diría que no hace falta transformar, y el Jarque-Bera ya demostró que sí hace falta. Decir que lambda siempre es cero es falso. Y lambda menos uno no salió.
+ESTUDIANTE: ¿Y la 2.7 pedía algo más?
+PROFESOR: Sí, escribir el modelo tres ajustado: el monto elevado a cero coma uno ocho igual a b cero más b uno por el ingreso, más b dos por los activos, más b tres por el score, más b cuatro por la deuda. Y una cosa que te puede asustar: los coeficientes del ingreso y los activos salen muy pequeños, del orden de diez a la menos cinco. Es normal: la Y transformada es un número pequeño y las X siguen en millones de pesos.
+
+# Bloque 7 · La predicción
+PROFESOR: Llegamos a la 2.8, la otra de quince por ciento: predicción puntual e intervalo con el modelo tres. En el quiz pasado, el cliente a predecir tenía un ingreso de un millón quinientos mil pesos, activos de diez millones, un score de trescientos y una razón de endeudamiento de cero coma setenta.
+ESTUDIANTE: ¿Y cómo se hace?
+PROFESOR: En tres pasos. Paso uno, la predicción puntual: se reemplazan los valores del cliente en el modelo ajustado. Ojo: el resultado queda en la escala transformada, o sea, en monto elevado a lambda. Paso dos, el intervalo de predicción, que lo calcula R con la función predict y la opción interval igual a prediction. R te devuelve tres números: fit, que es la predicción puntual; lwr, el límite inferior; y upr, el límite superior.
+ESTUDIANTE: ¿Y el paso tres?
+PROFESOR: El paso tres es el que casi todo el mundo olvida: devolver los resultados a pesos. Como el modelo predice monto elevado a lambda, hay que elevar el resultado a uno sobre lambda. Y eso se aplica a los tres números: fit, lwr y upr. Si el modelo fuera el logarítmico, en vez de elevar a uno sobre lambda usarías la exponencial.
+ESTUDIANTE: Box-Cox: elevar a uno sobre lambda. Log: exponencial. A los tres números.
+PROFESOR: Exacto. Ahora, ¿por qué es intervalo de predicción y no de confianza? La fórmula del intervalo es la predicción puntual, más o menos el valor t, por s, que es el error estándar de los residuales, por la raíz cuadrada de uno más un término que depende de los datos del cliente. Ese uno más es la clave. Hace que sea un intervalo de predicción, para un cliente individual: incluye la incertidumbre de los coeficientes más el error propio de ese cliente. Sin el uno, sería un intervalo de confianza para el promedio, más angosto. El examen pide el de predicción.
+ESTUDIANTE: ¿Y cómo se escribe la respuesta?
+PROFESOR: Con esta plantilla de tus apuntes: para un cliente con un ingreso mensual de un millón quinientos mil pesos, activos por diez millones, un score de trescientos y una razón de endeudamiento de cero coma setenta, el monto de crédito aprobado estimado es de tantos pesos. Con un noventa y cinco por ciento de confianza, el monto que se le aprobaría a ese cliente estaría entre tantos y tantos pesos. Los números los pones con lo que te dé R, ya devueltos a pesos.
+
+# Repaso activo
+PROFESOR: Preguntas de práctica. Pausa si necesitas. Primera: el Jarque-Bera da un p-valor de cero coma tres. ¿Cómo lo dices? Piénsalo un momento.
+ESTUDIANTE: No hay evidencia suficiente para rechazar la normalidad de los residuales. Y nunca se acepta la normalidad.
+PROFESOR: Segunda: ¿cuántos grados de libertad tiene Jarque-Bera? Piénsalo.
+ESTUDIANTE: Siempre dos.
+PROFESOR: Tercera: en un modelo log-log, el coeficiente del ingreso es cero coma seis. Interprétalo. Piénsalo un momento.
+ESTUDIANTE: Si el ingreso aumenta un uno por ciento, la Y aumenta en promedio cero coma seis por ciento, manteniendo lo demás constante.
+PROFESOR: Cuarta: Box-Cox te da un lambda de cero coma cuatro siete. ¿Qué transformación sugiere? Piénsalo.
+ESTUDIANTE: Está cerca de cero coma cinco, así que la raíz cuadrada.
+PROFESOR: Quinta: ya tienes fit, lwr y upr del modelo Box-Cox. ¿Qué te falta? Piénsalo.
+ESTUDIANTE: Elevar los tres a uno sobre lambda para devolverlos a pesos.
+PROFESOR: Y sexta, para cerrar: ¿la falta de normalidad sesga a MCO? Piénsalo.
+ESTUDIANTE: No. Afecta las pruebas t y F, pero MCO sigue siendo insesgado.
+
+# Cierre
+PROFESOR: Las tres ideas que te llevas de este episodio. Primera: la normalidad sirve para que las pruebas t y F sean válidas; con p menor que cero coma cero cinco en Jarque-Bera se rechaza la normalidad, y nunca se acepta. Segunda: log-log es elasticidad, por ciento a por ciento, y log-nivel es cien por b por ciento por unidad. Tercera: lambda cerca de cero es logaritmo, cerca de cero coma cinco es raíz, cerca de uno es no transformar; y en la predicción hay que elevar a uno sobre lambda los tres números.
+ESTUDIANTE: ¿Y el último episodio?
+PROFESOR: El tercero es el repaso exprés: las ocho reglas de oro, en pocos minutos, para escuchar antes de entrar al examen. Y un consejo: tienes un simulacro preparado en tus apuntes, con dos bases nuevas. Preséntalo en una hora antes de mirar la clave. Nos escuchamos en el repaso.
