@@ -1,0 +1,84 @@
+# Quiz 3 de Econometría · Episodio 5 · Guía de R para el examen: cada función, el orden y las trampas
+PROFESOR: El día del examen tienes una hora, una base nueva y un script. El script no te va a fallar. Lo que puede fallar es correrlo en el orden equivocado, sobre las columnas equivocadas o con el modelo equivocado. Este episodio es para que eso no pase.
+ESTUDIANTE: Justo lo que me preocupa. A veces corro una parte, veo los resultados y ya no sé qué poner en el siguiente modelo.
+PROFESOR: Vamos a recorrer el script de tu documento, el Script de Examen del Quiz 3, de arriba abajo. Para cada función: qué hace, cómo se lee y qué cuidado tener. Y al final, la duda de qué variables dejar en el segundo modelo, porque ahí hay una confusión muy común.
+
+# Bloque 1 · Antes de empezar: cómo se corre
+PROFESOR: Primero, la mecánica. En RStudio no corres todo de una. Pones el cursor en una línea, o seleccionas varias, y presionas control más enter. Esto no está en tus apuntes, pero es el atajo estándar de RStudio. Así avanzas por partes y vas mirando cada resultado en la consola.
+ESTUDIANTE: Por partes, mirando cada resultado.
+PROFESOR: Exacto. Segundo: los comentarios. Todo lo que va después del numeral es un comentario, y R no lo ejecuta. Tus apuntes cuentan un error real del historial: alguien escribió intervalos de confianza sin el numeral, R intentó ejecutarlo como código y dio error. Si escribes una nota, siempre con el numeral delante.
+PROFESOR: Tercero, en el examen solo cambias tres cosas: la carpeta del setwd, el nombre del archivo y los nombres de las columnas, después de mirarlos con names de datos.
+
+# Bloque 2 · Librerías y carga de datos
+PROFESOR: El script empieza cargando librerías con la función library. Cada una trae funciones que vas a usar. MASS trae boxcox. readxl trae read_excel, para leer Excel. tseries trae jarque punto bera punto test. lmtest trae bptest, la prueba de Breusch-Pagan. car trae vif. Y GGally trae ggpairs, la matriz de gráficos.
+ESTUDIANTE: ¿Y si me sale un error de que no encuentra la función?
+PROFESOR: Casi siempre es porque no cargaste la librería, o porque no está instalada. Instalar se hace una vez con install punto packages; cargar se hace en cada sesión con library. Y según tus apuntes, cargar una librería tres o cuatro veces no hace daño, basta con una.
+PROFESOR: Después viene setwd, que fija la carpeta de trabajo. Dos trampas de tus apuntes. Una: setwd va con la carpeta, no con el archivo de Excel. Dos: las rutas en R van con la barra normal, la que se inclina hacia la derecha, no con la barra invertida que usa Windows. Si copias la ruta del explorador de Windows, cambia las barras.
+ESTUDIANTE: Carpeta, no archivo. Y barras normales.
+PROFESOR: Luego read_excel, con el nombre del archivo, carga la base en un objeto llamado datos. Y la línea más importante de todo el script: names de datos. Te muestra los nombres y el orden de las columnas. También está head de datos, que te muestra las primeras filas para ver que todo cargó bien.
+ESTUDIANTE: ¿Por qué names es tan importante?
+PROFESOR: Porque todo lo que viene después depende de los nombres y del orden. En el episodio uno vimos el desastre: en una base la Y iba al final y en otra iba de primera, y el mismo código de correlación mezclaba la Y con las X. Por eso, primero names, siempre.
+PROFESOR: Después vienen las líneas que crean variables cortas, con el signo de dólar. Y flechita datos dólar Y quiere decir: saca la columna Y de la base datos y guárdala con el nombre Y. En el examen, lo que va después del dólar lo cambias por el nombre real de la columna, tal como lo mostró names, con mayúsculas y guiones bajos exactos.
+
+# Bloque 3 · El Punto 1, paso a paso
+PROFESOR: Primero, ggpairs, la matriz de gráficos. La lees como en el episodio uno: correlaciones entre X mayores que cero coma ocho son alarma, y nubes en línea recta quieren decir que se mueven juntas.
+PROFESOR: Segundo, lm, el corazón de todo. Regresion flechita lm de Y virgulilla X1 más X2 más X3. Crea el modelo y lo guarda en un objeto llamado regresion. Ojo: lm no muestra nada en pantalla, solo lo guarda. Para ver los resultados corres summary de regresion.
+ESTUDIANTE: lm guarda, summary muestra.
+PROFESOR: Exacto. En el summary miras cuatro cosas: la columna Estimate, que son los coeficientes con su signo; la columna del p-valor de cada variable; el R cuadrado y el ajustado; y la F con su p-valor al final. Luego confint de regresion te da los intervalos de confianza: si un intervalo contiene el cero, esa variable no es significativa.
+PROFESOR: Tercero, vif de regresion, que da un VIF por cada X. Y la línea siguiente, uno menos uno sobre vif de regresion, da directamente los R cuadrados auxiliares, por si preguntan algo como la 1.4.
+PROFESOR: Cuarto, la correlación y el kappa. Fíjate cómo está escrito en tu script corregido: cor de data punto frame de X1, X2 y X3. Selecciona las X por su nombre, no por la posición de las columnas. Así no importa si la Y está al principio o al final. Luego kappa de esa matriz te da el índice de condición. Y eigen te da los valores propios, para el número de condición exacto y su raíz.
+ESTUDIANTE: Y nunca metas la Y ni la columna Periodo.
+PROFESOR: Nunca. Si la base trae Periodo, no va en la correlación ni en el modelo.
+
+# Bloque 4 · La gran duda: qué variables van en el segundo modelo
+PROFESOR: Ahora tu pregunta: después del primer modelo, ¿qué variables dejas en el segundo? Tú decías: dejo solo las significativas. Y aquí hay que tener cuidado, porque en multicolinealidad no es así.
+ESTUDIANTE: ¿No? Yo pensaba que se quitaban las que no son significativas.
+PROFESOR: Mira lo que dice tu propio script en la línea del segundo modelo: quitar la de mayor VIF. Y mira lo que pasó en la base de publicidad. En el modelo uno, la única variable significativa era Línea, con un p-valor de cero coma cero cero cero cero cero siete. Medios y Redes no eran significativas. Si hubieras dejado solo las significativas, te habrías quedado solo con Línea.
+ESTUDIANTE: Pero se eliminó Línea.
+PROFESOR: Exacto: se eliminó Línea, la significativa, porque tenía el VIF más alto, veintiuno coma cinco, y una correlación de cero coma nueve cinco con Redes. Era la variable redundante. Y al quitarla, Medios y Redes, que antes no eran significativas, pasaron a serlo, con VIF de uno coma ocho siete.
+ESTUDIANTE: O sea que no eran inútiles. Estaban tapadas por la multicolinealidad.
+PROFESOR: Esa es la idea clave. En multicolinealidad, la falta de significancia es un síntoma del problema, no una prueba de que la variable no sirva. Si quitas las no significativas, estás quitando justo las variables que el problema tapó. La regla es: quita la X con el VIF más alto, la más redundante. En el simulacro de tu documento la pregunta es parecida: qué variable eliminar.
+ESTUDIANTE: ¿Y siempre se quita una sola?
+PROFESOR: En los ejemplos de tus apuntes, una sola, y luego se revisa. Corres el nuevo modelo con lm, miras summary, confint y vif otra vez, y compruebas que los VIF bajaron y que las variables quedaron significativas. Es el paso de revisión de la historia.
+PROFESOR: Y un cuidado práctico: dale al segundo modelo un nombre nuevo. En el script se llama regresion1, no regresion. Si reutilizas el mismo nombre, sobrescribes el primer modelo y ya no puedes comparar.
+ESTUDIANTE: Y en el Punto 2 se llaman modelo1, modelo2 y modelo3.
+PROFESOR: Exacto, un nombre por modelo. Y lo mismo con los residuales: res1, res2 y res3. Así nunca le corres Jarque-Bera al modelo equivocado.
+
+# Bloque 5 · Residuales y gráficos
+PROFESOR: Después del segundo modelo, el script saca los residuales con regresion1 dólar residuals, los residuales estandarizados con rstandard y los valores ajustados con fitted. Fíjate en que son del modelo uno corregido, regresion1. Ese es un error fácil: sacar los residuales del modelo original cuando la pregunta es sobre el corregido.
+PROFESOR: Luego viene par de mfrow igual a c de uno, tres. Esa línea divide la ventana de gráficos en una fila y tres columnas, para ver los tres gráficos juntos. Después hist da el histograma, qqnorm y qqline dan el Q-Q plot, y plot de ajustados contra residuales con abline en cero da el gráfico para buscar embudos. Al final, par de mfrow igual a c de uno, uno devuelve la ventana a la normalidad.
+ESTUDIANTE: ¿Y si no lo devuelvo?
+PROFESOR: Los gráficos siguientes saldrían diminutos, apretados en una cuadrícula. No es grave, pero confunde.
+PROFESOR: Y al final del Punto 1, jarque punto bera punto test de residuales. Te da el X cuadrado, los grados de libertad, que siempre son dos, y el p-valor.
+
+# Bloque 6 · El Punto 2, paso a paso
+PROFESOR: En el Punto 2, después de cargar la base con un nombre nuevo, datos2, hay una línea que mucha gente se salta: summary de datos2. Te muestra el mínimo y el máximo de cada columna. El comentario de tu script dice: sin ceros ni negativos, porque el logaritmo y Box-Cox necesitan valores mayores que cero.
+ESTUDIANTE: ¿Qué pasa si hay un cero?
+PROFESOR: El logaritmo de cero no existe, y R te dará menos infinito o un error. Box-Cox ni siquiera corre. Por eso se revisa antes.
+PROFESOR: Luego los tres modelos. Modelo1 en niveles. Modelo2 con log de Monto, log de Ingreso, log de Activos, más Score y Deuda en niveles. En R, log es el logaritmo natural. Y para cada modelo: summary, residuales, los gráficos y Jarque-Bera. Al modelo1 también se le corre bptest, la prueba de Breusch-Pagan.
+PROFESOR: Para el modelo3, primero boxcox de modelo1, con lambda desde menos dos hasta dos en pasos de cero coma cero uno. Ojo: boxcox se aplica al modelo en niveles, modelo1. Te dibuja la curva. Luego la línea lam flechita bc dólar x, en la posición donde bc dólar y es máximo, guarda el lambda exacto en lam. Y la línea con range y qchisq te da el intervalo del noventa y cinco por ciento de lambda.
+ESTUDIANTE: ¿Y después?
+PROFESOR: Creas la Y transformada, MontoBC igual a Monto elevado a lam, con el símbolo del acento circunflejo. Y corres modelo3 con MontoBC explicado por las cuatro variables en niveles. Luego summary, residuales y Jarque-Bera.
+
+# Bloque 7 · La predicción, sin errores
+PROFESOR: La predicción tiene la trampa técnica más traicionera. Primero creas el cliente nuevo con data punto frame: Ingreso igual a un millón quinientos mil, Activos igual a diez millones, Score igual a trescientos y Deuda igual a cero coma setenta. El comentario de tu script dice: nombres iguales a los del lm.
+ESTUDIANTE: ¿Por qué importa tanto?
+PROFESOR: Porque predict busca en ese data frame las variables con los mismos nombres que usaste en el modelo. Si en el lm escribiste Ingreso con mayúscula y en el data frame escribes ingreso con minúscula, R no lo encuentra y da error. Y fíjate en los números: un millón quinientos mil va sin puntos de miles. En R el punto es el separador decimal, así que se escribe uno, cinco, cero, cero, cero, cero, cero, todo seguido. Y cero coma setenta se escribe cero punto siete.
+ESTUDIANTE: Sin puntos de miles, y el decimal con punto, no con coma.
+PROFESOR: Exacto. Esto último no está en tus apuntes, pero es un error muy común en Colombia, donde usamos la coma para los decimales. Luego, predict de modelo3, nuevo, interval igual a prediction, y level igual a cero punto noventa y cinco. Lo guardas en p3. Al mostrar p3 ves fit, lwr y upr en la escala transformada. Y la línea siguiente, p3 elevado a uno sobre lam, te los da en pesos. Esos son los números que van en la respuesta.
+PROFESOR: Tu script trae además tres líneas extra. Exp de predict del modelo2, para devolver a pesos la predicción del modelo con logaritmos. Predict del modelo1, que ya está en pesos. Y predict del modelo3 con interval igual a confidence, que es el intervalo de confianza de la media, el más angosto. El examen pide el de predicción, así que no confundas cuál copias.
+
+# Repaso activo
+PROFESOR: Preguntas de práctica. Abres una base nueva. ¿Qué corres primero, después de read_excel? Piénsalo un momento.
+ESTUDIANTE: names de datos, para ver nombres y orden de las columnas.
+PROFESOR: En el modelo uno hay multicolinealidad: una variable significativa con VIF de veinte y dos no significativas con VIF de tres y doce. ¿Cuál quitas? Piénsalo.
+ESTUDIANTE: La de VIF de veinte, aunque sea la significativa. La más redundante.
+PROFESOR: Corriste regresion y luego quieres el modelo sin esa variable. ¿Cómo lo nombras? Piénsalo.
+ESTUDIANTE: Con un nombre nuevo, como regresion1, para no sobrescribir el primero.
+PROFESOR: predict te da un error de que no encuentra la variable Score. ¿Qué revisas? Piénsalo.
+ESTUDIANTE: Que en el data frame del cliente el nombre sea exactamente igual al del lm, con mayúsculas.
+PROFESOR: Y ya tienes p3. ¿Qué número va en la respuesta? Piénsalo.
+ESTUDIANTE: p3 elevado a uno sobre lam: los tres valores, ya en pesos.
+
+# Cierre
+PROFESOR: Tres ideas para llevar. Uno: names de datos primero, y las X por nombre. Dos: en multicolinealidad no dejas solo las significativas; quitas la de mayor VIF y revisas, con un nombre nuevo para cada modelo. Tres: en la predicción, los nombres del data frame iguales a los del lm, números sin puntos de miles, y al final elevar a uno sobre lambda. Con eso, el código no te va a ganar. Mucha suerte.

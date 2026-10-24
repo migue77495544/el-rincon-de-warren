@@ -1,0 +1,94 @@
+# Quiz 3 de Econometría · Episodio 4 · Glosario: los términos explicados desde cero
+PROFESOR: Hay palabras que uno repite en clase sin entenderlas del todo. Homocedasticidad, VIF, prueba t, p-valor, grados de libertad. Las dices, pero si alguien te pregunta qué significan, te quedas en blanco.
+ESTUDIANTE: Me pasa todo el tiempo. Sobre todo con homocedasticidad y heterocedasticidad. Y con eso que escucho como "bit".
+PROFESOR: Seguramente es el VIF, que se pronuncia "vif". Lo vemos. Este episodio es un glosario: cada término en palabras sencillas, con un ejemplo y la frase que dirías en el examen. Vamos de lo más básico a lo más avanzado, porque cada término se apoya en el anterior.
+
+# Bloque 1 · La regresión y sus piezas
+PROFESOR: Empecemos por la base. Una regresión es una ecuación que intenta explicar una variable con otras. La variable que quieres explicar se llama variable dependiente, la Y. Por ejemplo, el monto de crédito aprobado. Las que usas para explicarla son las variables explicativas o independientes, las X. Por ejemplo, el ingreso, los activos, el score y la deuda.
+ESTUDIANTE: Y es la que depende, X son las que explican.
+PROFESOR: Exacto. Y en R, el signo de la virgulilla, ese que parece una ola, se lee "explicado por". Monto virgulilla Ingreso más Activos se lee: el monto explicado por el ingreso y los activos.
+PROFESOR: Segundo término: MCO, mínimos cuadrados ordinarios. Es el método que usa R para encontrar los coeficientes. La idea es sencilla: busca la línea que deja los errores más pequeños posibles. Más precisamente, la que hace mínima la suma de los errores al cuadrado. De ahí el nombre.
+ESTUDIANTE: ¿Y por qué al cuadrado?
+PROFESOR: Porque algunos errores son positivos y otros negativos, y si los sumas tal cual se cancelan. Al elevarlos al cuadrado todos quedan positivos. Esto no está en tus apuntes, pero ayuda a entender el nombre.
+PROFESOR: Tercero: los coeficientes, que se escriben con la letra griega beta. Beta gorro, con el sombrerito encima, es el coeficiente estimado, el que te da R en la columna Estimate. Te dice cuánto cambia la Y cuando esa X sube una unidad, manteniendo las demás constantes. El intercepto, o beta cero, es el valor de la Y cuando todas las X valen cero.
+ESTUDIANTE: El sombrerito siempre quiere decir estimado, ¿no? Como Y gorro.
+PROFESOR: Así es. Y gorro es el valor que predice el modelo. Y eso nos lleva al cuarto término: el residual, o error. Es la diferencia entre la Y real y la Y gorro, lo que el modelo no logró explicar. Si un cliente recibió un crédito de cinco millones y el modelo predijo cuatro y medio, el residual es medio millón.
+ESTUDIANTE: Residual igual a lo real menos lo predicho.
+PROFESOR: Perfecto. Casi todas las pruebas del Punto 2 son pruebas sobre los residuales. Por eso es clave entenderlo.
+
+# Bloque 2 · Qué tan bien explica el modelo
+PROFESOR: Quinto término: el R cuadrado. Es el porcentaje de la variación de la Y que explica el modelo. Va de cero a uno. Un R cuadrado de cero coma ocho nueve quiere decir que el modelo explica el ochenta y nueve por ciento de las ventas.
+ESTUDIANTE: ¿Y el R cuadrado ajustado?
+PROFESOR: Es parecido, pero castiga por meter variables. El R cuadrado normal siempre sube cuando agregas una X, aunque no sirva para nada. El ajustado solo sube si la variable aporta de verdad. Por eso tus apuntes dicen: para comparar modelos se usa el R cuadrado ajustado.
+PROFESOR: Sexto: s, el error estándar de los residuales. En el summary aparece como Residual standard error. Es el tamaño típico del error del modelo, en las mismas unidades de la Y. Si s vale diez coma cuatro, el modelo se equivoca típicamente en unas diez unidades. Y se usa en la predicción.
+
+# Bloque 3 · Hipótesis, p-valor y significancia
+PROFESOR: Ahora viene lo que más confunde, así que voy despacio. Séptimo término: la hipótesis nula, H cero. Es la afirmación que la prueba pone a prueba, y casi siempre dice "no pasa nada". En la prueba t, H cero dice que el coeficiente es cero, o sea, que esa X no sirve. La hipótesis alternativa, H uno, dice lo contrario.
+ESTUDIANTE: H cero es el escenario aburrido.
+PROFESOR: Buena forma de recordarlo. Octavo: el p-valor. Es la probabilidad de ver un resultado tan extremo como el que obtuviste si H cero fuera cierta. Si el p-valor es muy pequeño, lo que viste sería muy raro en un mundo donde H cero es verdad. Entonces dudas de H cero y la rechazas.
+ESTUDIANTE: ¿Y qué tan pequeño es muy pequeño?
+PROFESOR: Ahí entra el noveno término: el nivel de significancia, que en tu curso es del cinco por ciento, cero coma cero cinco. La regla de tus apuntes sirve para todas las pruebas: si el p-valor es menor que cero coma cero cinco, se rechaza H cero.
+ESTUDIANTE: Entonces "significativa" quiere decir que su p-valor es menor que cero coma cero cinco.
+PROFESOR: Exacto. Una variable significativa es una variable que sirve sola para explicar la Y, porque rechazaste que su coeficiente fuera cero. Y recuerda: si el p es mayor que cero coma cero cinco, nunca se acepta H cero. Se dice: no hay evidencia suficiente para rechazarla.
+ESTUDIANTE: ¿Por qué no se puede aceptar?
+PROFESOR: Porque no encontrar pruebas de algo no demuestra que no exista. Es como en un juicio: si no hay pruebas, el acusado sale no culpable, pero eso no demuestra que sea inocente. Esto tampoco está en tus apuntes, pero es la idea detrás de la regla.
+
+# Bloque 4 · De dónde sale la prueba t
+PROFESOR: Décimo término, el que preguntabas: la prueba t. ¿De dónde sale? Empecemos por el error estándar del coeficiente, la columna Std. Error del summary. Mide la incertidumbre de cada beta gorro. Si tomaras otra muestra, el coeficiente saldría un poco distinto; el error estándar dice cuánto variaría.
+ESTUDIANTE: Error estándar grande quiere decir estimación imprecisa.
+PROFESOR: Exacto. Ahora, el estadístico t es el coeficiente dividido entre su error estándar. Fíjate en lo que mide: cuántos errores estándar está el coeficiente lejos de cero. Si el coeficiente vale cinco y su error estándar vale uno, está a cinco errores estándar del cero. Es muy difícil que el verdadero sea cero. Si el coeficiente vale cero coma ocho y su error estándar cero coma seis, está a poco más de uno. Podría perfectamente ser cero.
+ESTUDIANTE: O sea que la t compara la señal con el ruido.
+PROFESOR: Esa es la mejor forma de decirlo: señal entre ruido. Por eso tus apuntes dicen que una t mayor que dos, más o menos, en valor absoluto, indica que la variable es significativa.
+ESTUDIANTE: ¿Y por qué se llama t?
+PROFESOR: Porque ese cociente sigue una distribución llamada t de Student. Es parecida a la campana normal, pero con colas un poco más gruesas. El nombre viene de un químico que trabajaba en la cervecería Guinness y publicó con el seudónimo Student. Esto no está en tus apuntes, es solo una curiosidad. Lo importante: R compara tu t con esa distribución y de ahí saca el p-valor de la columna Pr mayor que valor absoluto de t.
+ESTUDIANTE: Y la prueba F, ¿es lo mismo?
+PROFESOR: Es parecida pero para todo el modelo a la vez. Su H cero dice que todos los coeficientes son cero. Si el p de la F es menor que cero coma cero cinco, el modelo sirve en conjunto. Por eso puede pasar lo que vimos en multicolinealidad: F significativa, pero ninguna t significativa.
+
+# Bloque 5 · Grados de libertad e intervalos
+PROFESOR: Undécimo: los grados de libertad. Piénsalos como la cantidad de información que te sobra después de estimar el modelo. Cada coeficiente que estimas gasta un dato. Por eso son n menos k menos uno: el número de observaciones, menos el número de X, menos uno por el intercepto. Con sesenta meses y tres X: sesenta menos tres menos uno, cincuenta y seis.
+ESTUDIANTE: Cincuenta y seis, como en el quiz pasado.
+PROFESOR: Exacto. Duodécimo: el intervalo de confianza, que en R sale con confint. Es un rango donde, con un noventa y cinco por ciento de confianza, está el verdadero coeficiente. Y la regla: si el intervalo contiene el cero, la variable no es significativa, porque no puedes descartar que su efecto real sea cero.
+ESTUDIANTE: Y no es lo mismo que el intervalo de predicción.
+PROFESOR: Bien que lo recuerdes. El intervalo de confianza de la predicción es para el promedio de muchos clientes parecidos. El de predicción es para un cliente individual, y es más ancho porque suma el error propio de ese cliente. El examen pide el de predicción.
+
+# Bloque 6 · Los problemas: multicolinealidad y VIF
+PROFESOR: Decimotercero: multicolinealidad, cuando las X están muy correlacionadas entre sí. Y la correlación, de paso, es un número entre menos uno y uno que mide qué tanto se mueven juntas dos variables. Cerca de uno, se mueven juntas; cerca de cero, nada que ver; negativa, una sube cuando la otra baja.
+ESTUDIANTE: Y aquí entra el "bit".
+PROFESOR: El VIF, factor de inflación de varianza. Dice cuántas veces se infla la varianza de un coeficiente por la correlación con las otras X. Un VIF de uno quiere decir que no se infla nada. Un VIF de veintiuno coma cinco quiere decir que se infla veintiuna veces y media. Y la escala de tus apuntes: cerca de uno, nada; de cinco a diez, alta; más de diez, severa.
+ESTUDIANTE: ¿Y el R cuadrado auxiliar?
+PROFESOR: Es el R cuadrado de explicar una X con las otras X. Si es alto, esa X es casi una copia de las demás. Se relaciona con el VIF así: el R cuadrado auxiliar es uno menos uno sobre el VIF.
+PROFESOR: Decimocuarto: el índice de condición, el kappa. Mide qué tan cerca está la matriz de correlaciones de las X de ser singular, es decir, de que una X sea una combinación exacta de las otras. Los valores propios, que salen con eigen, son la materia prima: el cociente entre el más grande y el más pequeño es el número de condición. Para el kappa, más de cien es moderada a fuerte y más de mil es severa.
+
+# Bloque 7 · Los problemas: homocedasticidad y normalidad
+PROFESOR: Decimoquinto, el que más te confunde: homocedasticidad y heterocedasticidad. Las palabras vienen del griego: homo es igual, hetero es diferente, y cedasticidad tiene que ver con la dispersión. Homocedasticidad quiere decir dispersión igual: los errores tienen más o menos el mismo tamaño para todos los valores de la X.
+ESTUDIANTE: ¿Y heterocedasticidad es lo contrario?
+PROFESOR: Dispersión diferente: el tamaño de los errores cambia según la X. Ejemplo: si predices el gasto en restaurantes, a la gente de ingresos bajos el modelo le acierta bastante, porque todos gastan poco. Pero a la gente de ingresos altos se equivoca mucho, porque unos gastan muchísimo y otros casi nada. Los errores crecen con el ingreso.
+ESTUDIANTE: ¿Y cómo se ve en un gráfico?
+PROFESOR: En el gráfico de valores ajustados contra residuales. Si ves una nube sin forma, del mismo ancho de izquierda a derecha, hay homocedasticidad, que es lo bueno. Si ves un embudo, angosto de un lado y ancho del otro, hay heterocedasticidad. Y la prueba formal es Breusch-Pagan, bptest en R, cuya H cero es la homocedasticidad.
+ESTUDIANTE: Homo, igual, nube pareja, bien. Hetero, diferente, embudo, problema.
+PROFESOR: Perfecto. Y ojo con un distractor: la heterocedasticidad no es multicolinealidad. La multicolinealidad se mira entre las X; la heterocedasticidad, en los residuales.
+PROFESOR: Decimosexto: normalidad del error. Quiere decir que los residuales tienen forma de campana simétrica. Dos palabras asociadas. La asimetría mide si la distribución está torcida: cero es simétrica; positiva, cola larga a la derecha. Y la curtosis mide qué tan gruesas son las colas: una normal tiene curtosis tres. Jarque-Bera combina las dos para decirte si los residuales son normales. Su H cero es la normalidad, y siempre tiene dos grados de libertad.
+ESTUDIANTE: ¿Y chi cuadrado?
+PROFESOR: Es la distribución que sigue el estadístico de Jarque-Bera, igual que la t sigue la t de Student. Por eso R escribe X cuadrado, que es la letra griega ji, en la salida.
+PROFESOR: Y decimoséptimo, insesgado. Un estimador es insesgado si en promedio le atina al valor verdadero. MCO es insesgado aunque haya multicolinealidad o falta de normalidad. Esos problemas afectan la precisión y la inferencia, no el sesgo.
+
+# Bloque 8 · Transformaciones
+PROFESOR: Últimos términos. Transformar es aplicarle una función a la variable, como el logaritmo. El logaritmo comprime los valores grandes y reduce la asimetría.
+PROFESOR: Elasticidad: el cambio porcentual de la Y cuando la X sube un uno por ciento. Es lo que mide el coeficiente en un modelo log-log.
+PROFESOR: Y lambda, en Box-Cox, es la potencia a la que se eleva la Y para normalizar los errores. Lambda uno es no transformar; cero coma cinco, raíz; cero, logaritmo; menos uno, inversa.
+PROFESOR: Y un último término del código: el residual estandarizado, que sale con rstandard. Es el residual medido en desviaciones estándar. Si su valor absoluto pasa de tres, ese dato es un posible atípico, un dato raro.
+
+# Repaso activo
+PROFESOR: Comprobemos. ¿Qué es un residual? Piénsalo un momento.
+ESTUDIANTE: Lo real menos lo predicho por el modelo.
+PROFESOR: ¿Qué mide el estadístico t? Piénsalo.
+ESTUDIANTE: El coeficiente entre su error estándar. Señal entre ruido. Si pasa de dos en valor absoluto, la variable es significativa.
+PROFESOR: Un gráfico de ajustados contra residuales tiene forma de embudo. ¿Qué es? Piénsalo.
+ESTUDIANTE: Heterocedasticidad. Se confirma con Breusch-Pagan.
+PROFESOR: ¿Qué significa un p-valor de cero coma tres en una prueba t? Piénsalo.
+ESTUDIANTE: Que no hay evidencia suficiente para rechazar que el coeficiente sea cero. La variable no es significativa.
+PROFESOR: Y un VIF de quince. Piénsalo.
+ESTUDIANTE: Multicolinealidad severa. La varianza del coeficiente está inflada quince veces.
+
+# Cierre
+PROFESOR: Si te quedas con tres ideas: la t es señal entre ruido, el coeficiente entre su error estándar. Homocedasticidad es dispersión pareja de los errores, y heterocedasticidad es el embudo. Y el p-valor menor que cero coma cero cinco rechaza H cero, en todas las pruebas. En el siguiente episodio: cómo se usa cada función de R en el examen, en qué orden y qué cuidados tener.
