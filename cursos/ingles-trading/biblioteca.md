@@ -1,6 +1,6 @@
 # Biblioteca del curso: inglés + trading + inversiones
 
-Fuente: carpeta **LIBROS** de Google Drive de Migue (16 PDF) y el reporte de Farley que adjuntó en el chat. Revisado el 25-oct-2026.
+Fuente: carpeta **LIBROS** de Google Drive de Migue (16 PDF) y dos documentos en inglés que adjuntó en el chat: el reporte de Farley y la recopilación *Trading Rules*. Revisado el 25-oct-2026.
 
 > **Límite técnico importante.** Desde Drive solo puedo leer el texto de las **primeras ~80 páginas** de cada PDF; lo comprobé con Kostolany, Lynch, Williams y Gladwell, que se cortan en la página 79-80. Tampoco puedo descargar archivos de más de 10 MB. Para avanzar más allá de esas páginas, Migue tendrá que adjuntar el PDF en el chat o subirlo dividido en partes de menos de 10 MB.
 > Las páginas marcadas con "≈" se estimaron a partir del índice interno del PDF. Si dice "s/d", no se pudo determinar.
@@ -25,6 +25,7 @@ Fuente: carpeta **LIBROS** de Google Drive de Migue (16 PDF) y el reporte de Far
 | 14 | El punto clave (*The Tipping Point*) | Malcolm Gladwell | ≈206 | Seleccionable (ePub) | Español (orig. inglés) | Sociología de las tendencias y epidemias sociales | Principiante | Complementario |
 | 15 | $100M Offers (Ofertas de $100M) | Alex Hormozi | s/d | Seleccionable | Español, **traducción automática de Google** (calidad baja) | Negocios: cómo diseñar ofertas | Principiante | Fuera del eje |
 | 17 | 20 Rules for the Master Swing Trader | Alan Farley | 4 | Seleccionable | **Inglés** | 20 reglas cortas de swing trading: soportes y resistencias, pullbacks, media de 200 días, riesgo, salida | Principiante-intermedio | **Trading** (complemento del mes 1) |
+| 18 | Trading Rules (recopilación) | Linda Raschke, Jesse Livermore y otros | 5 | Seleccionable | **Inglés** | 12 reglas técnicas de Raschke (muchas intradía), 10 reglas de Livermore, 10 reglas de oro de riesgo y 10 cualidades del trader | Principiante-intermedio | **Trading** (lectura de los sábados del mes 1) |
 | 16 | $100M Leads | Alex Hormozi | ≈382 | Seleccionable | **Inglés** | Negocios: captación de clientes | Principiante | Fuera del eje (útil para leer en inglés) |
 
 Observaciones:

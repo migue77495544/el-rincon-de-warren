@@ -68,7 +68,7 @@
 
 ## Reglas de Farley por episodio
 
-Las 20 reglas cubren exactamente los 20 episodios de libro y de mercado del mes. Los sábados no llevan regla nueva: se repasan las de la semana.
+Las 20 reglas cubren exactamente los 20 episodios de libro y de mercado del mes. Los sábados no llevan regla de Farley: tienen su propia lectura en inglés, la de la sección siguiente.
 
 | Ep. | Regla | Ep. | Regla |
 |-----|-------|-----|-------|
@@ -82,5 +82,16 @@ Las 20 reglas cubren exactamente los 20 episodios de libro y de mercado del mes.
 | 9 | 12: The best trades show major convergence | 21 | 20: See the exit door before the trade |
 | 10 | 10: Avoid the open | 22 | 9: Manage time as efficiently as price |
 | 11 | 13: Don't confuse execution with opportunity | 23 | 4: Profit and discomfort stand side by side |
+
+## Lectura en inglés de los sábados (*Trading Rules*)
+
+En cada repaso del sábado se leen en inglés las reglas de una sección de la recopilación *Trading Rules* que conectan con la semana, y se comentan en español.
+
+| Ep. | Sección | Por qué esa semana |
+|-----|---------|--------------------|
+| 6 | The 10 Trading Rules of Jesse Livermore | Operar a favor de la tendencia general y de la acción líder conecta con las etapas del mercado |
+| 12 | 10 Qualities That Successful Traders Have | No perseguir el precio y tener paciencia antes de poner órdenes |
+| 18 | Linda Raschke's Technical Trading Rules (reglas 1, 4, 11 y 12) | El primer pullback, *momentum precedes price* y la alternancia entre expansión y contracción. Se omiten las reglas intradía, que no aplican al swing |
+| 24 | Ten Golden Trading Rules | Riesgo del 1-2 % por operación y plan de trading escrito: el cierre del mes |
 
 **Mes 2 (avance):** caps. 10-12 de González (indicadores intermercado, materias primas y divisas), según su utilidad, y después *Cómo piensan los ricos* de Housel.
