@@ -1,6 +1,6 @@
 # Biblioteca del curso: inglés + trading + inversiones
 
-Fuente: carpeta **LIBROS** de Google Drive de Migue (16 PDF). Revisado el 25-oct-2026.
+Fuente: carpeta **LIBROS** de Google Drive de Migue (16 PDF) y el reporte de Farley que adjuntó en el chat. Revisado el 25-oct-2026.
 
 > **Límite técnico importante.** Desde Drive solo puedo leer el texto de las **primeras ~80 páginas** de cada PDF; lo comprobé con Kostolany, Lynch, Williams y Gladwell, que se cortan en la página 79-80. Tampoco puedo descargar archivos de más de 10 MB. Para avanzar más allá de esas páginas, Migue tendrá que adjuntar el PDF en el chat o subirlo dividido en partes de menos de 10 MB.
 > Las páginas marcadas con "≈" se estimaron a partir del índice interno del PDF. Si dice "s/d", no se pudo determinar.
@@ -24,6 +24,7 @@ Fuente: carpeta **LIBROS** de Google Drive de Migue (16 PDF). Revisado el 25-oct
 | 13 | Los judíos, el mundo y el dinero | Jacques Attali | 554 | Escaneado con OCR ruidoso | Español (orig. francés) | Historia económica | Intermedio | Complementario |
 | 14 | El punto clave (*The Tipping Point*) | Malcolm Gladwell | ≈206 | Seleccionable (ePub) | Español (orig. inglés) | Sociología de las tendencias y epidemias sociales | Principiante | Complementario |
 | 15 | $100M Offers (Ofertas de $100M) | Alex Hormozi | s/d | Seleccionable | Español, **traducción automática de Google** (calidad baja) | Negocios: cómo diseñar ofertas | Principiante | Fuera del eje |
+| 17 | 20 Rules for the Master Swing Trader | Alan Farley | 4 | Seleccionable | **Inglés** | 20 reglas cortas de swing trading: soportes y resistencias, pullbacks, media de 200 días, riesgo, salida | Principiante-intermedio | **Trading** (complemento del mes 1) |
 | 16 | $100M Leads | Alex Hormozi | ≈382 | Seleccionable | **Inglés** | Negocios: captación de clientes | Principiante | Fuera del eje (útil para leer en inglés) |
 
 Observaciones:
@@ -32,10 +33,15 @@ Observaciones:
 - **Libros que no sirven bien para el núcleo del curso:** Hormozi (los dos) y Gladwell son de negocios y sociología; Attali es historia y su OCR está muy sucio. Quedan como lectura libre.
 - **Lo que reemplaza a la lista sugerida.** *Trading in the Zone* lo reemplaza Housel en la parte de mentalidad. A O'Neil y a Murphy los cubren González y los dos de Wyckoff. A Graham lo cubren Lynch, Hagstrom y Buffettología.
 
+## Por conseguir (swing trading, mejor en inglés)
+
+Minervini, *Trade Like a Stock Market Wizard* · Weinstein, *Secrets for Profiting in Bull and Bear Markets* · Douglas, *Trading in the Zone* · Turner, *A Beginner's Guide to Short-Term Trading* · Farley, *The Master Swing Trader* (el libro completo; lo que subió Migue es el reporte de 4 páginas) · O'Neil, *How to Make Money in Stocks*.
+
 ## Orden de lectura propuesto
 
 | Orden | Libro | Por qué en este lugar |
 |-------|-------|----------------------|
+| 1 + | *20 Rules* (Farley), en paralelo | Una regla por episodio en inglés original. Es el primer contacto con swing trading real en inglés. |
 | 1 | El código de Wall Street (González) | Es práctico y tiene ejercicios: enseña a leer un gráfico, las órdenes y los stops desde cero. Sirve para empezar en la cuenta de papel. |
 | 2 | Cómo piensan los ricos (Housel) | Llega justo cuando empiezas a operar en papel y aparecen el miedo y la codicia. Los capítulos son cortos y fáciles para episodios de 15 minutos. |
 | 3 | Un paso por delante de Wall Street (Lynch) | Abre el eje de inversión con el autor más fácil de leer. Conecta con *El Rincón de Warren*. |

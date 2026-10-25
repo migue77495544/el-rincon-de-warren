@@ -13,6 +13,7 @@
 | Capítulo | 15 | El tramo del libro que toca, explicado por las dos voces con ejemplos |
 | Vocabulario | 4 | 6-8 términos en inglés: definición, frase de ejemplo y pausa para repetir |
 | Preguntas | 3 | 3 preguntas para responder en voz alta. La última, en inglés |
+| Regla del día | ~1 | Una de las *20 Rules for the Master Swing Trader* (Alan Farley), leída **en inglés original**, con traducción y pausa para repetirla |
 
 - **Lunes a jueves:** libro.
 - **Viernes:** mercado real de la semana, aplicando lo aprendido sobre gráficos reales (S&P 500 y 2-3 acciones), con tareas en la cuenta de papel.
@@ -64,5 +65,22 @@
 | J | 22 | **Integración:** el plan de trading y el diario de operaciones | trading plan, trading journal, edge, discipline |
 | V | 23 | **Mercado real:** primera operación completa en papel (entrada, stop y salida planificados) | — |
 | S | 24 | **Repaso del mes**, autoevaluación de inglés y ajuste del mes 2 | — |
+
+## Reglas de Farley por episodio
+
+Las 20 reglas cubren exactamente los 20 episodios de libro y de mercado del mes. Los sábados no llevan regla nueva: se repasan las de la semana.
+
+| Ep. | Regla | Ep. | Regla |
+|-----|-------|-----|-------|
+| 1 | 5: Stand apart from the crowd at all times | 13 | 17: Enter in mild times, exit in wild times |
+| 2 | 3: Price has memory | 14 | 6: Buy the first pullback from a new high… |
+| 3 | 19: Trends rarely turn on a dime | 15 | 7: Buy at support. Sell at resistance |
+| 4 | 15: Big losses rarely come without warning | 16 | 1: If you have to look, it isn't there |
+| 5 | 2: Trends depend on their time frame | 17 | 18: Perfect patterns carry the greatest risk for failure |
+| 7 | 16: Bulls live above the 200-day moving average… | 19 | 8: Short rallies, not selloffs |
+| 8 | 11: Trades that work in hot markets destroy accounts in cool ones | 20 | 14: Control risk before seeking reward |
+| 9 | 12: The best trades show major convergence | 21 | 20: See the exit door before the trade |
+| 10 | 10: Avoid the open | 22 | 9: Manage time as efficiently as price |
+| 11 | 13: Don't confuse execution with opportunity | 23 | 4: Profit and discomfort stand side by side |
 
 **Mes 2 (avance):** caps. 10-12 de González (indicadores intermercado, materias primas y divisas), según su utilidad, y después *Cómo piensan los ricos* de Housel.
