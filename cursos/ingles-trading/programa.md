@@ -1,0 +1,68 @@
+# Programa del primer mes: propuesta pendiente de aprobación
+
+**Libro del mes:** *El código de Wall Street*, de Ricardo González (análisis por etapas de Weinstein, medio plazo/swing).
+**Mezcla de idiomas:** ≈70 % español y 30 % inglés. Cada concepto difícil se explica primero en español y después en inglés. Los términos clave se repiten en inglés con pausa para *shadowing*.
+**Uso:** es educativo, no es asesoría de inversión. Todo se practica en **cuenta de papel**.
+**Arranque:** "Semana 1" es la semana en que Migue decida empezar. Si prefiere, después de finales.
+
+## Estructura de cada episodio (~25 min)
+
+| Bloque | Min | Contenido |
+|--------|-----|-----------|
+| Repaso | 3 | Las 3 ideas y 3 palabras del episodio anterior |
+| Capítulo | 15 | El tramo del libro que toca, explicado por las dos voces con ejemplos |
+| Vocabulario | 4 | 6-8 términos en inglés: definición, frase de ejemplo y pausa para repetir |
+| Preguntas | 3 | 3 preguntas para responder en voz alta. La última, en inglés |
+
+- **Lunes a jueves:** libro.
+- **Viernes:** mercado real de la semana, aplicando lo aprendido sobre gráficos reales (S&P 500 y 2-3 acciones), con tareas en la cuenta de papel.
+- **Sábado:** repaso de la semana y mini quiz.
+- **Domingo:** descanso.
+
+## Semana 1: Leer el gráfico y las etapas del mercado
+
+| Día | Episodio | Contenido | Vocabulario clave |
+|-----|----------|-----------|-------------------|
+| L | 1 | Cap. 1: Mi filosofía de inversión. Gráficos frente a noticias | chart, price action, trend, headline, noise |
+| M | 2 | Cap. 1: Interpretando el gráfico y ejercicios | candlestick, support, resistance, timeframe, weekly chart |
+| X | 3 | Cap. 2: Fase 1 (suelo) y fase 2 (alcista) | basing, base, uptrend, breakout, stage analysis |
+| J | 4 | Cap. 2: Fase 3 (techo) y fase 4 (bajista), con ejercicios | top, topping, downtrend, distribution, market cycle |
+| V | 5 | **Mercado real:** ¿en qué etapa está el S&P 500? ¿Y 3 acciones conocidas? | bull market, bear market, index, ticker |
+| S | 6 | **Repaso semana 1** y quiz de 10 preguntas | — |
+
+## Semana 2: Herramientas: media de 30 semanas, fuerza relativa y órdenes
+
+| Día | Episodio | Contenido | Vocabulario clave |
+|-----|----------|-----------|-------------------|
+| L | 7 | Cap. 3: La media móvil de 30 semanas como guía | moving average, slope, crossover, above/below |
+| M | 8 | Cap. 3: Fuerza relativa de Mansfield | relative strength, outperform, underperform, benchmark |
+| X | 9 | Cap. 4: Adelantarse a los movimientos y la discusión sobre el volumen | volume, leading indicator, lagging indicator, signal |
+| J | 10 | Cap. 5: Tipos de órdenes (mercado, limitada, stop, enlazadas) | market order, limit order, stop order, OCO, fill, slippage |
+| V | 11 | **Mercado real:** colocar órdenes de práctica en la cuenta de papel | paper trading, bid, ask, spread |
+| S | 12 | **Repaso semana 2** y quiz | — |
+
+## Semana 3: Operar la ruptura y elegir qué operar
+
+| Día | Episodio | Contenido | Vocabulario clave |
+|-----|----------|-----------|-------------------|
+| L | 13 | Cap. 6: Operando la ruptura de medio plazo | breakout, entry, confirmation, false breakout |
+| M | 14 | Cap. 6: Esperar la ruptura (paciencia y *pullbacks*) y ejercicios | pullback, patience, setup, trigger |
+| X | 15 | Cap. 7: Filtro 1, la tendencia global del mercado | top-down approach, market breadth, overall trend |
+| J | 16 | Cap. 7: Filtros 2 y 3, del sector a la acción | sector, sector rotation, stock picking, watchlist, screener |
+| V | 17 | **Mercado real:** armar una *watchlist* de 5 acciones con los tres filtros | — |
+| S | 18 | **Repaso semana 3** y quiz | — |
+
+## Semana 4: Vender, proteger y armar el plan
+
+> Los capítulos 8 y 9 están **más allá de lo que Drive me deja leer** (~80 páginas). Para esta semana necesito el PDF completo: adjúntalo en el chat o súbelo dividido en partes de menos de 10 MB.
+
+| Día | Episodio | Contenido | Vocabulario clave |
+|-----|----------|-----------|-------------------|
+| L | 19 | Cap. 8: Cuándo vender en corto | short selling, short position, borrow, cover |
+| M | 20 | Cap. 9: El stop inicial en operaciones alcistas y bajistas | stop-loss, risk per trade, position sizing, risk/reward |
+| X | 21 | Cap. 9: Los stops en mercados alcistas y bajistas | trailing stop, exit strategy, lock in profits, drawdown |
+| J | 22 | **Integración:** el plan de trading y el diario de operaciones | trading plan, trading journal, edge, discipline |
+| V | 23 | **Mercado real:** primera operación completa en papel (entrada, stop y salida planificados) | — |
+| S | 24 | **Repaso del mes**, autoevaluación de inglés y ajuste del mes 2 | — |
+
+**Mes 2 (avance):** caps. 10-12 de González (indicadores intermercado, materias primas y divisas), según su utilidad, y después *Cómo piensan los ricos* de Housel.
