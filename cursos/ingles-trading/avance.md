@@ -5,10 +5,9 @@
 
 ## Estado actual
 
-- **Estado del plan:** propuesta enviada (25-oct-2026), **pendiente de aprobación** de Migue.
+- **Estado del plan:** el curso completo está en `curso.md` (13 módulos, 48 semanas). El mes 1 está detallado en `programa.md`. Todo **pendiente de aprobación** de Migue.
 - **Fecha de inicio:** por definir. Migue está en semana de finales.
-- **Libro en curso:** *El código de Wall Street*, de Ricardo González (todavía sin empezar).
-- **Próximo episodio:** 1, cap. 1 "Mi filosofía de inversión".
+- **Próximo episodio:** 1, "Qué es la bolsa y quién juega en ella" (M1).
 - **Mezcla de idiomas actual:** 70 % español / 30 % inglés (meses 1-2).
 - **Audio:** no generar hasta que Migue lo pida.
 
@@ -18,11 +17,12 @@
 - Hora del episodio diario: _pendiente_
 - Zona horaria: _pendiente (probablemente Colombia, UTC-5)_
 
-## Libros en Drive
+## Textos de los libros
 
-Carpeta **LIBROS** (id `1WtEkIWyaQNkA10ajXYUQgGnAfdwIxVop`).
-- *El código de Wall Street*: id `1z7_IEdMH56NwPeBjahEs1fI4MWFCe_F_`. Pesa 11,7 MB, más que el límite de descarga de 10 MB. Por texto, Drive llega hasta el cap. 7. Para los caps. 8-12 se necesita el PDF completo.
-- Límite: la lectura de texto desde Drive llega a ~80 páginas por libro.
+- **Completos (14):** en `scratchpad/texto/`. Están en `curso.md` → "Fuentes completas". Se generaron el 27-oct-2026: pdftotext para los PDF con texto y Tesseract OCR (spa) para Murphy y Elder.
+- **Parciales (8):** en `scratchpad/texto/parciales/`, solo ~80 páginas. Son González, Villahermosa, Williams, Hagstrom, Buffettología, Attali y los dos de Hormozi. Hace falta que Migue adjunte esos PDF en el chat; desde Drive no se pueden bajar archivos de más de ~6 MB.
+- **Riesgo:** el scratchpad es temporal y el repo es **público**, así que los libros completos no pueden ir al repo. Pendiente: que Migue cree un repo **privado** para guardarlos. Si en una sesión nueva faltan los textos, hay que pedir de nuevo los PDF.
+- **Carpeta LIBROS en Drive:** id `1WtEkIWyaQNkA10ajXYUQgGnAfdwIxVop`.
 
 ## Registro de episodios
 

@@ -38,7 +38,14 @@ Observaciones:
 
 Minervini, *Trade Like a Stock Market Wizard* · Weinstein, *Secrets for Profiting in Bull and Bear Markets* · Douglas, *Trading in the Zone* · Turner, *A Beginner's Guide to Short-Term Trading* · Farley, *The Master Swing Trader* (el libro completo; lo que subió Migue es el reporte de 4 páginas) · O'Neil, *How to Make Money in Stocks*.
 
-## Orden de lectura propuesto
+## Estado de los textos (27-oct-2026)
+
+**Completos en texto (14):** Douglas, Murphy, Elder, Díaz Valdecantos, Lynch, Munger (*Poor Charlie's Almanack*, en inglés), Kostolany, Housel (2), Gladwell, Pita, Tracy, Farley y *Trading Rules*.
+**Parciales:** González, Villahermosa, Williams, Hagstrom, Buffettología, Attali y Hormozi (2).
+
+> El curso ya no sigue un libro tras otro. Va por módulos que cruzan los libros: ver `curso.md`. La tabla de abajo queda como referencia histórica.
+
+## Orden de lectura propuesto (versión inicial, reemplazada por `curso.md`)
 
 | Orden | Libro | Por qué en este lugar |
 |-------|-------|----------------------|

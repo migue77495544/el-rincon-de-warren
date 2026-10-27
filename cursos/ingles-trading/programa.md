@@ -1,97 +1,67 @@
-# Programa del primer mes: propuesta pendiente de aprobación
+# Programa del primer mes (semanas 1-4): pendiente de aprobación
 
-**Libro del mes:** *El código de Wall Street*, de Ricardo González (análisis por etapas de Weinstein, medio plazo/swing).
-**Mezcla de idiomas:** ≈70 % español y 30 % inglés. Cada concepto difícil se explica primero en español y después en inglés. Los términos clave se repiten en inglés con pausa para *shadowing*.
+**Módulos:** M1 (cómo funciona el mercado y el análisis técnico) y M2 (la mente del trader). Ver `curso.md`.
+**Mezcla de idiomas:** ≈70 % español y 30 % inglés. Cada concepto difícil se explica primero en español y después en inglés, y los términos clave se repiten con pausa para *shadowing*.
 **Uso:** es educativo, no es asesoría de inversión. Todo se practica en **cuenta de papel**.
-**Arranque:** "Semana 1" es la semana en que Migue decida empezar. Si prefiere, después de finales.
+**Arranque:** "Semana 1" es la semana que Migue elija para empezar; puede ser después de finales.
 
 ## Estructura de cada episodio (~25 min)
 
 | Bloque | Min | Contenido |
 |--------|-----|-----------|
 | Repaso | 3 | Las 3 ideas y 3 palabras del episodio anterior |
-| Capítulo | 15 | El tramo del libro que toca, explicado por las dos voces con ejemplos |
+| Lección | 15 | El tema del día, que cruza varios libros, más una ampliación propia |
 | Vocabulario | 4 | 6-8 términos en inglés: definición, frase de ejemplo y pausa para repetir |
-| Preguntas | 3 | 3 preguntas para responder en voz alta. La última, en inglés |
-| Regla del día | ~1 | Una de las *20 Rules for the Master Swing Trader* (Alan Farley), leída **en inglés original**, con traducción y pausa para repetirla |
+| Preguntas | 2 | 3 preguntas para responder en voz alta. La última, en inglés |
+| Regla del día | 1 | Una de las *20 Rules* de Farley, leída en inglés original y traducida |
 
-- **Lunes a jueves:** libro.
-- **Viernes:** mercado real de la semana, aplicando lo aprendido sobre gráficos reales (S&P 500 y 2-3 acciones), con tareas en la cuenta de papel.
-- **Sábado:** repaso de la semana y mini quiz.
+- **Lunes a jueves:** lección.
+- **Viernes:** mercado real de la semana, con tareas en la cuenta de papel.
+- **Sábado:** repaso de la semana, mini quiz y lectura en inglés de *Trading Rules*.
 - **Domingo:** descanso.
 
-## Semana 1: Leer el gráfico y las etapas del mercado
+## Semana 1: El mercado y la filosofía técnica (M1)
 
-| Día | Episodio | Contenido | Vocabulario clave |
-|-----|----------|-----------|-------------------|
-| L | 1 | Cap. 1: Mi filosofía de inversión. Gráficos frente a noticias | chart, price action, trend, headline, noise |
-| M | 2 | Cap. 1: Interpretando el gráfico y ejercicios | candlestick, support, resistance, timeframe, weekly chart |
-| X | 3 | Cap. 2: Fase 1 (suelo) y fase 2 (alcista) | basing, base, uptrend, breakout, stage analysis |
-| J | 4 | Cap. 2: Fase 3 (techo) y fase 4 (bajista), con ejercicios | top, topping, downtrend, distribution, market cycle |
-| V | 5 | **Mercado real:** ¿en qué etapa está el S&P 500? ¿Y 3 acciones conocidas? | bull market, bear market, index, ticker |
-| S | 6 | **Repaso semana 1** y quiz de 10 preguntas | — |
+| Ep. | Día | Lección (fuentes) | Vocabulario | Regla de Farley |
+|-----|-----|-------------------|-------------|-----------------|
+| 1 | L | Qué es la bolsa y quién juega en ella: acciones, índices, el aficionado frente al profesional, los tenaces y los temblorosos (LYN parte I, KOS) | stock, share, index, exchange, retail investor | 5: Stand apart from the crowd |
+| 2 | M | El trading como competencia de suma negativa: comisiones, *spread*, *slippage*. Quién gana y por qué (ELD Introducción, [+] microestructura) | commission, spread, slippage, market maker, edge | 13: Don't confuse execution with opportunity |
+| 3 | X | La filosofía del análisis técnico: el precio lo descuenta todo, hay tendencias y la historia se repite (MUR cap. 1) | price action, trend, chart, discount, crowd behavior | 3: Price has memory |
+| 4 | J | La teoría de Dow: tres tendencias, tres fases, confirmación y volumen (MUR cap. 2) | primary trend, correction, accumulation, confirmation | 19: Trends rarely turn on a dime |
+| 5 | V | **Mercado:** abrir la cuenta de papel. ¿Cuál es la tendencia primaria del S&P 500? | paper trading, bull/bear market, ticker | 2: Trends depend on their time frame |
+| 6 | S | **Repaso** + *Trading Rules*: las 10 reglas de Livermore | — | — |
 
-## Semana 2: Herramientas: media de 30 semanas, fuerza relativa y órdenes
+## Semana 2: Leer el gráfico (M1)
 
-| Día | Episodio | Contenido | Vocabulario clave |
-|-----|----------|-----------|-------------------|
-| L | 7 | Cap. 3: La media móvil de 30 semanas como guía | moving average, slope, crossover, above/below |
-| M | 8 | Cap. 3: Fuerza relativa de Mansfield | relative strength, outperform, underperform, benchmark |
-| X | 9 | Cap. 4: Adelantarse a los movimientos y la discusión sobre el volumen | volume, leading indicator, lagging indicator, signal |
-| J | 10 | Cap. 5: Tipos de órdenes (mercado, limitada, stop, enlazadas) | market order, limit order, stop order, OCO, fill, slippage |
-| V | 11 | **Mercado real:** colocar órdenes de práctica en la cuenta de papel | paper trading, bid, ask, spread |
-| S | 12 | **Repaso semana 2** y quiz | — |
+| Ep. | Día | Lección (fuentes) | Vocabulario | Regla de Farley |
+|-----|-----|-------------------|-------------|-----------------|
+| 7 | L | Tipos de gráfico: líneas, barras y velas; escala aritmética y logarítmica; temporalidades (MUR cap. 3) | candlestick, bar chart, log scale, timeframe | 16: Bulls live above the 200-day MA |
+| 8 | M | Soportes y resistencias, y el cambio de roles (MUR cap. 4) | support, resistance, role reversal, breakout | 7: Buy at support, sell at resistance |
+| 9 | X | Líneas de tendencia y canales (MUR cap. 4) | trendline, channel, slope, fan line | 6: Buy the first pullback |
+| 10 | J | Retrocesos del 33-50-66 %, días de reversión y huecos (*gaps*) (MUR cap. 4) | retracement, reversal day, gap, exhaustion | 10: Avoid the open |
+| 11 | V | **Mercado:** dibujar soportes, resistencias y tendencias en 3 acciones. Órdenes de mercado, limitadas y stop en papel | market order, limit order, stop order | 12: The best trades show convergence |
+| 12 | S | **Repaso** + *Trading Rules*: Raschke (reglas 1, 4, 11 y 12) | — | — |
 
-## Semana 3: Operar la ruptura y elegir qué operar
+## Semana 3: La mente del trader I (M2)
 
-| Día | Episodio | Contenido | Vocabulario clave |
-|-----|----------|-----------|-------------------|
-| L | 13 | Cap. 6: Operando la ruptura de medio plazo | breakout, entry, confirmation, false breakout |
-| M | 14 | Cap. 6: Esperar la ruptura (paciencia y *pullbacks*) y ejercicios | pullback, patience, setup, trigger |
-| X | 15 | Cap. 7: Filtro 1, la tendencia global del mercado | top-down approach, market breadth, overall trend |
-| J | 16 | Cap. 7: Filtros 2 y 3, del sector a la acción | sector, sector rotation, stock picking, watchlist, screener |
-| V | 17 | **Mercado real:** armar una *watchlist* de 5 acciones con los tres filtros | — |
-| S | 18 | **Repaso semana 3** y quiz | — |
+| Ep. | Día | Lección (fuentes) | Vocabulario | Regla de Farley |
+|-----|-----|-------------------|-------------|-----------------|
+| 13 | L | Por qué el análisis no basta. Los peligros: operar sin reglas, no asumir la responsabilidad, las recompensas aleatorias (DOU caps. 1-2) | rules, accountability, random reward, discipline | 14: Control risk before seeking reward |
+| 14 | M | Asumir la responsabilidad. La consistencia como estado mental. Qué es de verdad el riesgo (DOU caps. 3-4) | consistency, mindset, accept the risk | 15: Big losses rarely come without warning |
+| 15 | X | Percepción e incertidumbre: "cualquier cosa puede pasar" (DOU caps. 5-6) | uncertainty, perception, bias, outcome | 18: Perfect patterns carry the greatest risk |
+| 16 | J | Pensar en probabilidades: **las 5 verdades fundamentales** y la paradoja de los resultados aleatorios con resultados consistentes (DOU cap. 7) | probability, edge, sample size, expectancy | 4: Profit and discomfort stand side by side |
+| 17 | V | **Mercado:** empezar la serie de 20 operaciones en papel con reglas fijas (el ejercicio del casino de Douglas) | trade log, entry, exit, setup | 11: Hot markets vs. cool markets |
+| 18 | S | **Repaso** + *Trading Rules*: las 10 cualidades del trader | — | — |
 
-## Semana 4: Vender, proteger y armar el plan
+## Semana 4: La mente del trader II (M2)
 
-> Los capítulos 8 y 9 están **más allá de lo que Drive me deja leer** (~80 páginas). Para esta semana necesito el PDF completo: adjúntalo en el chat o súbelo dividido en partes de menos de 10 MB.
+| Ep. | Día | Lección (fuentes) | Vocabulario | Regla de Farley |
+|-----|-----|-------------------|-------------|-----------------|
+| 19 | L | Las creencias: de dónde vienen y cómo sabotean el trading (DOU caps. 8-10) | belief, self-sabotage, self-evaluation | 1: If you have to look, it isn't there |
+| 20 | M | La etapa mecánica y la autodisciplina: operar como un casino (DOU cap. 11) | mechanical stage, self-discipline, casino edge | 20: See the exit door before the trade |
+| 21 | X | Por qué pierde la mayoría: autosabotaje y el modelo de pérdidas (ELD "Psicología del individuo") | loser's mindset, denial, gambling, self-destructive | 9: Manage time as efficiently as price |
+| 22 | J | Los sesgos según Munger: tendencias de la mala decisión humana, en una selección (MUN *Psychology of Human Misjudgment*, [+] Kahneman) | loss aversion, confirmation bias, overconfidence, anchoring | 17: Enter in mild times, exit in wild times |
+| 23 | V | **Mercado:** revisar el diario de operaciones y de emociones de la serie de 20 | journal, review, emotional state | 8: Short rallies, not selloffs |
+| 24 | S | **Repaso del mes** + *Trading Rules*: las 10 reglas de oro, prueba de inglés y ajuste del mes 2 | — | — |
 
-| Día | Episodio | Contenido | Vocabulario clave |
-|-----|----------|-----------|-------------------|
-| L | 19 | Cap. 8: Cuándo vender en corto | short selling, short position, borrow, cover |
-| M | 20 | Cap. 9: El stop inicial en operaciones alcistas y bajistas | stop-loss, risk per trade, position sizing, risk/reward |
-| X | 21 | Cap. 9: Los stops en mercados alcistas y bajistas | trailing stop, exit strategy, lock in profits, drawdown |
-| J | 22 | **Integración:** el plan de trading y el diario de operaciones | trading plan, trading journal, edge, discipline |
-| V | 23 | **Mercado real:** primera operación completa en papel (entrada, stop y salida planificados) | — |
-| S | 24 | **Repaso del mes**, autoevaluación de inglés y ajuste del mes 2 | — |
-
-## Reglas de Farley por episodio
-
-Las 20 reglas cubren exactamente los 20 episodios de libro y de mercado del mes. Los sábados no llevan regla de Farley: tienen su propia lectura en inglés, la de la sección siguiente.
-
-| Ep. | Regla | Ep. | Regla |
-|-----|-------|-----|-------|
-| 1 | 5: Stand apart from the crowd at all times | 13 | 17: Enter in mild times, exit in wild times |
-| 2 | 3: Price has memory | 14 | 6: Buy the first pullback from a new high… |
-| 3 | 19: Trends rarely turn on a dime | 15 | 7: Buy at support. Sell at resistance |
-| 4 | 15: Big losses rarely come without warning | 16 | 1: If you have to look, it isn't there |
-| 5 | 2: Trends depend on their time frame | 17 | 18: Perfect patterns carry the greatest risk for failure |
-| 7 | 16: Bulls live above the 200-day moving average… | 19 | 8: Short rallies, not selloffs |
-| 8 | 11: Trades that work in hot markets destroy accounts in cool ones | 20 | 14: Control risk before seeking reward |
-| 9 | 12: The best trades show major convergence | 21 | 20: See the exit door before the trade |
-| 10 | 10: Avoid the open | 22 | 9: Manage time as efficiently as price |
-| 11 | 13: Don't confuse execution with opportunity | 23 | 4: Profit and discomfort stand side by side |
-
-## Lectura en inglés de los sábados (*Trading Rules*)
-
-En cada repaso del sábado se leen en inglés las reglas de una sección de la recopilación *Trading Rules* que conectan con la semana, y se comentan en español.
-
-| Ep. | Sección | Por qué esa semana |
-|-----|---------|--------------------|
-| 6 | The 10 Trading Rules of Jesse Livermore | Operar a favor de la tendencia general y de la acción líder conecta con las etapas del mercado |
-| 12 | 10 Qualities That Successful Traders Have | No perseguir el precio y tener paciencia antes de poner órdenes |
-| 18 | Linda Raschke's Technical Trading Rules (reglas 1, 4, 11 y 12) | El primer pullback, *momentum precedes price* y la alternancia entre expansión y contracción. Se omiten las reglas intradía, que no aplican al swing |
-| 24 | Ten Golden Trading Rules | Riesgo del 1-2 % por operación y plan de trading escrito: el cierre del mes |
-
-**Mes 2 (avance):** caps. 10-12 de González (indicadores intermercado, materias primas y divisas), según su utilidad, y después *Cómo piensan los ricos* de Housel.
+**Mes 2:** termina M2 (Housel y Elder, psicología de masas) y empieza M3 (patrones de Murphy y velas japonesas).
