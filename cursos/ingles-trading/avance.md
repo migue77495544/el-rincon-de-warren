@@ -24,8 +24,12 @@
 - **Riesgo:** el scratchpad es temporal y el repo es **público**, así que los libros completos no pueden ir al repo. Pendiente: que Migue cree un repo **privado** para guardarlos. Si en una sesión nueva faltan los textos, hay que pedir de nuevo los PDF.
 - **Carpeta LIBROS en Drive:** id `1WtEkIWyaQNkA10ajXYUQgGnAfdwIxVop`.
 
+## Errores frecuentes de inglés (de las notas)
+
+_Ninguno todavía._
+
 ## Registro de episodios
 
-| # | Fecha | Libro / tramo | Vocabulario | Notas |
-|---|-------|---------------|-------------|-------|
-| — | — | — | — | — |
+| # | Fecha | Lección | Vocabulario | Nota de Migue | Observaciones |
+|---|-------|---------|-------------|---------------|---------------|
+| — | — | — | — | — | — |

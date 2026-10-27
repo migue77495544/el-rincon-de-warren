@@ -36,6 +36,11 @@ Parciales (`texto/parciales/`, solo ~80 páginas): González, Villahermosa, Will
 | 3-6 | 50 / 50 | Bloques alternos. Las preguntas finales van en inglés |
 | 7-12 | 20 / 80 | Episodio en inglés. El español solo aclara conceptos difíciles. Munger se lee en original |
 
+## Volumen total
+
+- 48 semanas × 6 episodios = **288 episodios**: 192 lecciones (lunes a jueves), 48 de mercado real (viernes) y 48 repasos (sábados).
+- Unas **120 horas de audio**, más 288 notas en inglés de Migue (≈29.000 palabras escritas y corregidas).
+
 ## Estructura: 13 módulos, 48 semanas
 
 Cada semana tiene 4 episodios de contenido (lunes a jueves), uno de mercado real (viernes) y un repaso (sábado).

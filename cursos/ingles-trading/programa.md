@@ -20,6 +20,12 @@
 - **Sábado:** repaso de la semana, mini quiz y lectura en inglés de *Trading Rules*.
 - **Domingo:** descanso.
 
+### Nota en inglés de Migue (después de cada episodio, 5 min)
+- Al terminar cada episodio, Migue escribe un **mini resumen de ~100 palabras en inglés** con las ideas del día, usando al menos 3 palabras del vocabulario. Lo envía al chat.
+- Claude devuelve: (1) **el texto corregido**, con los errores marcados y explicados en una línea; (2) **una versión modelo** de ~100 palabras; (3) 2 o 3 expresiones nuevas para reutilizar.
+- Se guarda en `notas/ep-XXX.md` (la nota original, la corrección y el modelo). Los errores que se repitan se anotan en `avance.md` para reforzarlos en los repasos de los sábados.
+- Los sábados, la nota es un resumen de toda la semana (~150 palabras).
+
 ## Semana 1: El mercado y la filosofía técnica (M1)
 
 | Ep. | Día | Lección (fuentes) | Vocabulario | Regla de Farley |
