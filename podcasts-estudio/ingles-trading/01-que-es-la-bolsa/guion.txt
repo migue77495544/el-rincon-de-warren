@@ -1,0 +1,166 @@
+# Episodio 1 · Qué es la bolsa y quién juega en ella
+# Curso de inglés, trading e inversiones · Módulo 1 · Semana 1, lunes
+# Fuentes: Lynch, Un paso por delante de Wall Street (parte I); Kostolany, El fabuloso mundo del dinero y la Bolsa (duros y blandos, las cuatro ges); Elder, El nuevo vivir del trading (introducción: suma cero, suma negativa, comisiones y deslizamiento); Farley, regla 5.
+PROFESOR: Hola, Migue. Bienvenido al episodio uno de tu curso. Hoy empieza un viaje de un año. Al final vas a saber leer un gráfico, diseñar tu propio sistema de trading, analizar una empresa como lo hacen los grandes inversores, y vas a entender todo eso también en inglés.
+ESTUDIANTE: Y yo voy a estar aquí contigo, aprendiendo al mismo ritmo. Yo hago las preguntas que seguramente tú también te estás haciendo.
+PROFESOR: Antes de empezar, una advertencia importante. Este curso es educativo. No es una recomendación para comprar ni vender nada. Todo lo vas a practicar primero en una cuenta de papel, es decir, con dinero de mentira.
+ESTUDIANTE: En inglés eso se llama paper trading.
+PROFESOR: Exacto. Y ahí va la primera palabra en inglés del curso. Escucha y repite.
+PROFESOR: Paper trading.
+PAUSA: 3
+PROFESOR: Muy bien. Te cuento cómo funciona cada episodio. Primero hacemos un repaso corto del día anterior. Después viene la lección, unos quince minutos. Luego el vocabulario en inglés, con pausas para que repitas en voz alta. Después tres preguntas para pensar. Y al final, una regla de trading en inglés original.
+ESTUDIANTE: Y después de cada episodio tienes una tarea pequeña. Escribes tres a cinco frases en inglés, unas cincuenta palabras, resumiendo lo que aprendiste. Me las mandas por el chat y te las devuelvo corregidas.
+PROFESOR: Esa nota es lo que más te va a hacer avanzar en inglés, porque te obliga a producir, no solo a escuchar. Hoy no hay repaso porque es el primer día. Así que vamos directo a la pregunta del día.
+ESTUDIANTE: Que es una pregunta muy básica, ¿no? Qué es la bolsa.
+PROFESOR: Parece básica, pero casi todo el mundo la responde mal. Hoy vamos a ver cuatro cosas. Uno, qué compras de verdad cuando compras una acción. Dos, qué es un índice. Tres, quién juega en la bolsa, y por qué un inversor pequeño como tú puede tener ventaja. Y cuatro, por qué la mayoría de los traders pierde dinero.
+ESTUDIANTE: Empecemos por la uno. ¿Qué es una acción?
+PROFESOR: Una acción es un pedacito de una empresa. Si una empresa se divide en un millón de partes iguales, y tú compras una, eres dueño de una millonésima parte de esa empresa. Eres socio. Pequeñito, pero socio.
+ESTUDIANTE: O sea, si compro una acción de Apple, soy dueño de un pedacito de Apple.
+PROFESOR: Exacto. Y eso tiene consecuencias. Si a Apple le va bien y gana más dinero cada año, tu pedacito vale más. Si a Apple le va mal, tu pedacito vale menos. Peter Lynch, uno de los gestores de fondos más exitosos de la historia, insiste mucho en esto: detrás de cada acción hay una empresa de verdad.
+ESTUDIANTE: Lynch es el autor de uno de los libros del curso, ¿no?
+PROFESOR: Sí. Su libro se llama en español Un paso por delante de Wall Street. En inglés, One Up on Wall Street. Lynch dirigió un fondo llamado Magellan, de la empresa Fidelity, y le fue extraordinariamente bien durante trece años.
+ESTUDIANTE: Bueno, y en inglés, ¿cómo se dice acción?
+PROFESOR: Hay dos palabras y se usan casi igual. La primera es stock. La segunda es share. Escucha y repite.
+PROFESOR: Stock.
+PAUSA: 2
+PROFESOR: Share.
+PAUSA: 2
+ESTUDIANTE: ¿Y cuál es la diferencia?
+PROFESOR: En la práctica, muy poca. Stock se usa más para hablar de las acciones en general. Por ejemplo: I like to invest in stocks. Me gusta invertir en acciones. Share se usa más cuando cuentas cuántas tienes. Por ejemplo: I bought ten shares of Apple. Compré diez acciones de Apple.
+ESTUDIANTE: Entonces, si cuento, digo shares. Si hablo en general, digo stocks.
+PROFESOR: Perfecto. Ese es un buen truco para recordarlo. Ahora, ¿dónde se compran y se venden esas acciones?
+ESTUDIANTE: En la bolsa.
+PROFESOR: Sí. La bolsa es un mercado organizado, como una plaza de mercado, pero en lugar de frutas se compran y venden pedacitos de empresas. Hoy casi todo es electrónico. Las más grandes del mundo están en Estados Unidos: la Bolsa de Nueva York y el Nasdaq. En Colombia tenemos la Bolsa de Valores de Colombia.
+ESTUDIANTE: ¿Y bolsa en inglés?
+PROFESOR: Stock exchange. Exchange significa intercambio. Es el lugar donde se intercambian acciones. Escucha y repite.
+PROFESOR: Stock exchange.
+PAUSA: 3
+PROFESOR: The New York Stock Exchange.
+PAUSA: 3
+ESTUDIANTE: Vamos con la segunda cosa. ¿Qué es un índice? Siempre escucho en las noticias que el S and P quinientos subió o bajó.
+PROFESOR: Un índice es como un termómetro del mercado. En vez de mirar miles de acciones una por una, tomas un grupo representativo y calculas cómo se movió en conjunto. El S and P quinientos, por ejemplo, agrupa a unas quinientas de las empresas más grandes de Estados Unidos.
+ESTUDIANTE: Entonces, si dicen que el S and P quinientos subió un uno por ciento, quiere decir que, en promedio, esas empresas grandes subieron más o menos un uno por ciento ese día.
+PROFESOR: Esa es la idea, con un matiz: las empresas más grandes pesan más en el promedio. Si Apple o Microsoft se mueven mucho, mueven el índice. Hay otros índices famosos. El Dow Jones, que es el más antiguo y tiene solo treinta empresas. El Nasdaq, que tiene mucha tecnología. Y en Colombia, el índice MSCI COLCAP.
+ESTUDIANTE: Una aclaración: lo del COLCAP no lo dicen los libros del curso, ¿no?
+PROFESOR: Correcto, eso lo agrego yo, porque vives en Colombia y te conviene saberlo. Los libros son casi todos de Estados Unidos o Europa. Y en inglés, índice se dice index. Escucha y repite.
+PROFESOR: Index.
+PAUSA: 2
+PROFESOR: The S and P five hundred is a stock market index.
+PAUSA: 4
+ESTUDIANTE: Bien. Tercera parte, mi favorita. ¿Quién juega en la bolsa?
+PROFESOR: Hay dos grandes grupos. Por un lado, los profesionales: fondos de inversión, bancos, fondos de pensiones, firmas que operan con computadoras a toda velocidad. Mueven miles de millones de dólares. Por otro lado, los inversores individuales, las personas como tú, que invierten su propio dinero.
+ESTUDIANTE: Y ahí ya perdimos, ¿no? Ellos tienen más dinero, más información, más computadoras.
+PROFESOR: Eso piensa casi todo el mundo, y Peter Lynch dice justo lo contrario. Su idea central es que el inversor aficionado parte con muchas ventajas, y que si las aprovecha bien puede obtener mejores resultados que los expertos.
+ESTUDIANTE: ¿Cómo así? Explícame eso.
+PROFESOR: Lynch da varias razones. Primera, el profesional tiene un jefe y tiene clientes. Si compra una acción rara y le va mal, lo pueden despedir. Entonces muchos profesionales prefieren comprar lo mismo que compran todos, aunque no sea lo mejor. Tú no le rindes cuentas a nadie.
+ESTUDIANTE: Eso es verdad. Yo puedo esperar todo lo que quiera.
+PROFESOR: Segunda razón: tú ves las empresas en tu vida diaria. Ves qué tienda se llena, qué producto compran tus amigos, qué aplicación usa todo el mundo en la universidad. Muchas veces el aficionado nota que algo funciona antes de que Wall Street lo descubra.
+ESTUDIANTE: Por eso dicen invierte en lo que conoces.
+PROFESOR: Esa frase se hizo famosa por Lynch, aunque él aclara que no basta con conocer el producto. Después hay que estudiar la empresa: sus números, su deuda, su crecimiento. Eso lo vamos a ver en el módulo nueve. Lynch tiene una frase muy buena sobre esto. Dice que el dinero tonto solo es tonto cuando escucha al dinero listo.
+ESTUDIANTE: Me gusta. Es decir, el pequeño inversor se equivoca cuando deja de pensar por sí mismo y empieza a copiar a los profesionales.
+PROFESOR: Así lo entiendo yo también. Ahora, para ser justos, Lynch también dice que los fondos de inversión son un gran invento para quien no tiene tiempo ni ganas de estudiar empresas. No dice que todo el mundo deba elegir acciones por su cuenta.
+ESTUDIANTE: Vamos con el segundo autor. André Kostolany. ¿Quién era?
+PROFESOR: Kostolany fue un especulador húngaro que vivió casi todo el siglo veinte y operó en las bolsas de París, Nueva York y Alemania. Su libro, El fabuloso mundo del dinero y la Bolsa, está lleno de anécdotas. Y tiene una clasificación de los inversores que me encanta. Los divide en duros y blandos.
+ESTUDIANTE: Espera, Migue, esto es para ti: en el chat te habíamos dicho tenaces y temblorosos.
+PROFESOR: Sí, y aquí va la corrección. Revisé el libro y la traducción dice duros y blandos. La idea es la misma, pero usemos las palabras del libro. Según Kostolany, los duros tienen tres cosas: dinero, paciencia e ideas.
+ESTUDIANTE: ¿Dinero en qué sentido? ¿Mucho dinero?
+PROFESOR: No necesariamente mucho. Dinero propio, que no deben y que no van a necesitar mañana. Paciencia, que para él significa nervios firmes. E ideas, es decir, un razonamiento propio sobre por qué compran. Los blandos son lo contrario: poco dinero, ninguna paciencia y menos ideas todavía.
+ESTUDIANTE: Y supongo que los blandos son los que venden en pánico cuando todo cae.
+PROFESOR: Exacto. Kostolany explica que, cuando las acciones están en manos de los blandos, cualquier noticia pesimista, por pequeña que sea, provoca ventas y caídas. Y cuando las acciones pasan de las manos de los blandos a las de los duros, el mercado se vuelve sólido, porque los duros no venden por cualquier cosa.
+ESTUDIANTE: Entonces la meta del curso es convertirme en un duro.
+PROFESOR: Esa es una gran forma de decirlo. Kostolany además habla de las cuatro ges. Viene del alemán: Geld, Gedanken, Geduld y Glück. Significan dinero, ideas, paciencia y suerte. Las tres primeras dependen de ti. La cuarta no, pero aparece más seguido cuando tienes las otras tres.
+ESTUDIANTE: Y en inglés, ¿cómo se dice inversor individual? Porque eso es lo que yo soy.
+PROFESOR: Retail investor. Retail significa al por menor, minorista. Escucha y repite.
+PROFESOR: Retail investor.
+PAUSA: 3
+PROFESOR: I am a retail investor.
+PAUSA: 3
+ESTUDIANTE: Muy bien. Y ahora la cuarta parte, la más dura. ¿Por qué pierde dinero la mayoría de los traders?
+PROFESOR: Aquí traemos al tercer autor de hoy, Alexander Elder. Fue psiquiatra antes de ser trader y escribió El nuevo vivir del trading. Elder empieza con una idea que muy pocos principiantes entienden. Primero hay que distinguir un juego de suma cero.
+ESTUDIANTE: Suma cero. Eso lo vimos en la universidad, en teoría de juegos.
+PROFESOR: Entonces te va a resultar fácil. En un juego de suma cero, lo que gana uno lo pierde otro. Elder pone este ejemplo: si tú y yo apostamos veinte dólares a si el índice sube o baja, uno gana veinte y el otro pierde veinte. El total es cero.
+ESTUDIANTE: Y a largo plazo gana el que está mejor informado.
+PROFESOR: Así es. Pero Elder dice que el trading ni siquiera es de suma cero. Es de suma negativa. ¿Por qué? Porque en cada operación hay gente que cobra, ganes o pierdas. El broker te cobra una comisión. Y además existe algo llamado deslizamiento.
+ESTUDIANTE: ¿Deslizamiento? Esa no la conozco.
+PROFESOR: El deslizamiento es la diferencia entre el precio al que tú quieres comprar y el precio al que de verdad compras. Imagina que ves una acción a cien dólares y das la orden de comprar ya mismo, al precio que haya. Cuando la orden se ejecuta, quizá ya está a cien con diez centavos. Esos diez centavos los perdiste sin darte cuenta.
+ESTUDIANTE: Diez centavos no parece mucho.
+PROFESOR: En una sola operación, no. Pero si haces muchas operaciones al año, se acumula. Elder dice que la industria del trading, es decir, las bolsas, los brokers y los asesores, vive de ese dinero que sale de los traders. Por eso, para ganar, no basta con ser un trader promedio. Tienes que ser claramente mejor que la mayoría.
+ESTUDIANTE: Eso suena desmotivante.
+PROFESOR: Al contrario, es liberador. Porque te dice exactamente qué necesitas: una ventaja real, reglas claras y costos bajos. En inglés hay dos palabras para esto. Comisión se dice commission, muy parecido al español. Y deslizamiento se dice slippage. Escucha y repite.
+PROFESOR: Commission.
+PAUSA: 2
+PROFESOR: Slippage.
+PAUSA: 2
+ESTUDIANTE: ¿Y ventaja? Dijiste que necesito una ventaja.
+PROFESOR: Esa es quizás la palabra más importante de todo el curso: edge. En trading, tu edge es la razón por la que, después de muchas operaciones, ganas más de lo que pierdes. Sin edge, el trading es simplemente apostar. Escucha y repite.
+PROFESOR: Edge.
+PAUSA: 2
+PROFESOR: Without an edge, trading is just gambling.
+PAUSA: 4
+ESTUDIANTE: Without an edge, trading is just gambling. Sin ventaja, el trading es solo apostar.
+PROFESOR: Muy bien dicho. Te agrego algo que no está en los libros pero que conviene saber hoy. Hay estudios académicos, como el de Brad Barber y Terrance Odean, que analizaron miles de cuentas de inversores individuales. Encontraron que los que más operaban eran los que peor les iba, sobre todo por los costos. Es decir, Elder tiene razón.
+ESTUDIANTE: Entonces, operar mucho no es lo mismo que operar bien.
+PROFESOR: Exacto. Hagamos el resumen de la lección. Dímelo tú.
+ESTUDIANTE: Uno: una acción es un pedacito de una empresa real. Dos: un índice es un termómetro que resume cómo se mueve un grupo de acciones. Tres: según Lynch, el inversor pequeño tiene ventajas, como la paciencia y ver las empresas en su vida diaria; y según Kostolany hay que ser un duro, con dinero propio, paciencia e ideas. Y cuatro: según Elder, el trading es un juego de suma negativa por las comisiones y el deslizamiento, así que necesito un edge.
+PROFESOR: Resumen perfecto. Ahora, el bloque de vocabulario. Te voy a decir cada palabra, su significado y una frase. Tú repites en la pausa. No importa si al principio te sale lento.
+PROFESOR: Primera palabra. Stock. Acción.
+PAUSA: 2
+PROFESOR: I want to buy stocks.
+PAUSA: 3
+PROFESOR: Segunda palabra. Share. Acción, cuando cuentas cuántas tienes.
+PAUSA: 2
+PROFESOR: I have ten shares.
+PAUSA: 3
+PROFESOR: Tercera palabra. Index. Índice.
+PAUSA: 2
+PROFESOR: The index went up today.
+PAUSA: 3
+ESTUDIANTE: Went up es el pasado de go up, subir, ¿verdad?
+PROFESOR: Sí. Went up, subió. Y el contrario es went down, bajó. Cuarta palabra. Stock exchange. Bolsa de valores.
+PAUSA: 2
+PROFESOR: Apple trades on the stock exchange.
+PAUSA: 3
+PROFESOR: Quinta palabra. Retail investor. Inversor individual o minorista.
+PAUSA: 2
+PROFESOR: Retail investors often buy at the top.
+PAUSA: 4
+ESTUDIANTE: Los inversores minoristas a menudo compran en el techo, en el punto más alto. Eso es lo que hacen los blandos de Kostolany.
+PROFESOR: Exacto, buena conexión. Sexta palabra. Commission. Comisión.
+PAUSA: 2
+PROFESOR: My broker charges a commission.
+PAUSA: 3
+PROFESOR: Séptima palabra. Slippage. Deslizamiento.
+PAUSA: 2
+PROFESOR: Slippage is a hidden cost.
+PAUSA: 3
+PROFESOR: Y la octava. Edge. Ventaja.
+PAUSA: 2
+PROFESOR: I need an edge.
+PAUSA: 3
+ESTUDIANTE: Una pregunta de gramática. ¿Por qué se dice I need an edge, con an, y no a edge?
+PROFESOR: Porque edge empieza con sonido de vocal. Antes de sonido de vocal se usa an. An edge, an index, an investor. Antes de consonante se usa a. A stock, a share, a broker.
+ESTUDIANTE: An edge, an index. A stock, a share. Entendido.
+PROFESOR: Ahora, tres preguntas para pensar. Puedes pausar el audio y responder en voz alta. Primera pregunta. Si compras una acción de una empresa, ¿de qué depende, a largo plazo, que tu acción valga más? Piénsalo un momento.
+PAUSA: 5
+PROFESOR: Depende de que a la empresa le vaya bien, que gane más dinero con los años. Una acción es un pedacito de una empresa real.
+PROFESOR: Segunda pregunta. ¿Qué tres cosas tiene un inversor duro, según Kostolany? Piénsalo un momento.
+PAUSA: 5
+PROFESOR: Dinero propio, paciencia e ideas.
+PROFESOR: Y la tercera, en inglés. Why do most traders lose money? ¿Por qué pierde dinero la mayoría de los traders? Intenta responder en inglés, aunque sea con pocas palabras.
+PAUSA: 6
+PROFESOR: Una respuesta posible es: Because trading is a negative sum game. Commissions and slippage take money from traders. Porque el trading es un juego de suma negativa. Las comisiones y el deslizamiento les quitan dinero a los traders.
+ESTUDIANTE: Repite conmigo: negative sum game.
+PAUSA: 3
+PROFESOR: Y ahora, la regla del día. Cada episodio termina con una de las veinte reglas de swing trading de Alan Farley, un trader estadounidense. Te la leo en inglés original y luego la explicamos.
+PROFESOR: Rule number five. Stand apart from the crowd at all times.
+PAUSA: 3
+ESTUDIANTE: Stand apart from the crowd. Mantente apartado de la multitud, siempre.
+PROFESOR: Exacto. Crowd es multitud. Farley dice que hay que operar antes, después o en contra de la multitud, nunca en medio de ella. Y conecta muy bien con lo de hoy. Los blandos de Kostolany son la multitud: compran cuando todos compran y venden en pánico cuando todos venden. Tu trabajo es no ser parte de esa multitud.
+ESTUDIANTE: Stand apart from the crowd at all times.
+PAUSA: 4
+PROFESOR: Para cerrar, las tres ideas que tienes que recordar sí o sí. Uno, cuando compras una acción eres socio de una empresa real. Dos, el inversor pequeño tiene ventajas, pero solo si se comporta como un duro: dinero propio, paciencia e ideas. Y tres, el trading es un juego de suma negativa, así que sin edge, sin ventaja, es solo apostar.
+ESTUDIANTE: Y tu tarea de hoy, Migue. Escribe de tres a cinco frases en inglés, unas cincuenta palabras, sobre lo que aprendiste. Usa al menos tres palabras de hoy: stock, share, index, stock exchange, retail investor, commission, slippage o edge. Mándamela por el chat y te la devuelvo corregida, con una versión modelo.
+PROFESOR: Un ejemplo para que veas el nivel: A stock is a small part of a company. Most traders lose money because of commissions and slippage. I want to be a patient investor with an edge. Así de sencillo. No tiene que ser perfecto.
+ESTUDIANTE: Mañana, en el episodio dos, vamos a hablar del trading como competencia: quién está del otro lado de cada operación, qué es el spread y cómo funcionan los creadores de mercado.
+PROFESOR: Gracias por escuchar, Migue. Nos vemos mañana. See you tomorrow.
+ESTUDIANTE: See you tomorrow.

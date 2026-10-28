@@ -5,15 +5,16 @@
 
 ## Estado actual
 
-- **Estado del plan:** el curso completo está en `curso.md` (13 módulos, 48 semanas). El mes 1 está detallado en `programa.md`. Todo **pendiente de aprobación** de Migue.
-- **Fecha de inicio:** por definir. Migue está en semana de finales.
-- **Próximo episodio:** 1, "Qué es la bolsa y quién juega en ella" (M1).
+- **Estado del plan:** **aprobado y en marcha.** El curso completo está en `curso.md` (13 módulos, 48 semanas) y el mes 1 en `programa.md`.
+- **Fecha de inicio:** 28-oct-2026 (miércoles). Migue escucha en la tarde.
+- **Próximo episodio:** 2, "El trading como competencia: comisiones, spread, slippage, creadores de mercado" (ELD Introducción + [+] microestructura). Regla de Farley: 13.
 - **Mezcla de idiomas actual:** 80 % español / 20 % inglés (meses 1-3), ajustada por la prueba A2.
 - **Audio, motor oficial (elegido por Migue el 28-oct-2026): edge-tts con voces bilingües.** La misma voz habla español e inglés.
   - Comando: `python .claude/skills/podcast-estudio/scripts/generar_audio.py guion.txt --motor edge --voces "PROFESOR=en-US-AndrewMultilingualNeural,ESTUDIANTE=en-US-AvaMultilingualNeural"`
   - Requisitos: `pip install edge-tts` y el dominio `speech.platform.bing.com` permitido en la red del entorno. El script ya usa el proxy y su CA y reintenta cuando no llega audio.
   - Respaldo si falla Microsoft: Kokoro local (venv de Python 3.12 con torch CPU, kokoro y espeak-ng; voces em_alex/ef_dora y am_michael/af_heart). Script de muestra: `scratchpad/scripts/muestra_kokoro.py`.
-  - No generar episodios hasta que Migue confirme el inicio.
+  - Las líneas `PAUSA: n` del guion meten n segundos de silencio para repetir (solo con edge).
+  - Generar un episodio tarda unos 35 min (muchos turnos cortos): ejecutarlo en segundo plano.
 
 ## Datos de Migue (por confirmar)
 
@@ -43,4 +44,4 @@ _Ninguno todavía._
 
 | # | Fecha | Lección | Vocabulario | Nota de Migue | Observaciones |
 |---|-------|---------|-------------|---------------|---------------|
-| — | — | — | — | — | — |
+| 1 | 28-oct-2026 | Qué es la bolsa y quién juega en ella (LYN I, KOS duros y blandos, ELD suma negativa) | stock, share, index, stock exchange, retail investor, commission, slippage, edge | pendiente | Se corrigió en el audio "tenaces/temblorosos" por "duros/blandos", que es lo que dice KOS. Guion: `podcasts-estudio/ingles-trading/01-que-es-la-bolsa/guion.txt` |

@@ -35,6 +35,8 @@ MODELOS_TTS_CONOCIDOS = ['gemini-2.5-flash-preview-tts', 'gemini-2.5-pro-preview
 VOCES_GEMINI = ['Charon', 'Kore']
 VOCES_EDGE = ['es-MX-JorgeNeural', 'es-MX-DaliaNeural']
 CA_PROXY = '/root/.ccr/ca-bundle.crt'
+# Línea `PAUSA: 3` = 3 s de silencio (para repetir en voz alta). Solo motor edge; Gemini las omite.
+PAUSA = 'PAUSA'
 ESTILO_POR_DEFECTO = (
     'Lee en español latinoamericano neutro esta conversación de un podcast educativo. '
     'Tono cercano y claro, ritmo pausado, como dos personas que estudian juntas.'
@@ -46,6 +48,13 @@ PALABRAS_POR_MINUTO = 150
 
 class ErrorClave(Exception):
     """Clave de Gemini ausente, inválida o sin permisos: no tiene sentido probar otros modelos."""
+
+
+def segundos_pausa(texto):
+    try:
+        return max(0.5, min(15.0, float(texto.replace(',', '.'))))
+    except ValueError:
+        return 3.0
 
 
 def log(mensaje):
@@ -205,6 +214,11 @@ async def edge_bloque(bloque, voces, destino, carpeta):
         edge_com._SSL_CTX = ssl.create_default_context(cafile=CA_PROXY)
     partes = []
     for i, (hablante, texto) in enumerate(bloque):
+        if hablante == PAUSA:
+            parte = carpeta / f'{destino.stem}_{i:03d}.wav'
+            ffmpeg('-f', 'lavfi', '-i', 'anullsrc=r=24000:cl=mono', '-t', str(segundos_pausa(texto)), str(parte))
+            partes.append(parte)
+            continue
         parte = carpeta / f'{destino.stem}_{i:03d}.mp3'  # destino es un .wav
         for intento in range(4):  # el servicio a veces responde sin audio: reintentar
             try:
@@ -276,13 +290,15 @@ def main():
     turnos = leer_guion(ruta_guion)
     if not turnos:
         sys.exit('El guion no tiene turnos con el formato "HABLANTE: texto".')
-    hablantes = list(dict.fromkeys(h for h, _ in turnos))
+    if args.motor == 'gemini':
+        turnos = [(h, t) for h, t in turnos if h != PAUSA]
+    hablantes = list(dict.fromkeys(h for h, _ in turnos if h != PAUSA))
     if args.motor == 'gemini' and len(hablantes) > 2:
         sys.exit(f'Gemini admite como mucho dos hablantes y el guion tiene {len(hablantes)}: {", ".join(hablantes)}.')
 
     voces = asignar_voces(hablantes, args.voces, VOCES_GEMINI if args.motor == 'gemini' else VOCES_EDGE)
     bloques = agrupar_bloques(turnos)
-    palabras = sum(len(t.split()) for _, t in turnos)
+    palabras = sum(len(t.split()) for h, t in turnos if h != PAUSA)
     salida = Path(args.salida) if args.salida else ruta_guion.with_name('episodio.mp3')
     titulo = next((l.lstrip('# ').strip() for l in ruta_guion.read_text(encoding='utf-8').splitlines()
                    if l.startswith('#')), ruta_guion.parent.name)
