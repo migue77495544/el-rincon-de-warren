@@ -28,13 +28,14 @@
 
 Parciales (`texto/parciales/`, solo ~80 páginas): González, Villahermosa, Williams, Hagstrom, Buffettología, Attali, Hormozi (2). Se integran cuando Migue suba el PDF completo. Encajan así: González → M6, Villahermosa y Williams → M5, Hagstrom y Buffettología → M9-M10.
 
-## Mezcla de idiomas
+## Mezcla de idiomas (ajustada a la prueba de nivel A2 del 28-oct-2026)
 
 | Meses | Español / inglés | Cómo |
 |-------|------------------|------|
-| 1-2 | 70 / 30 | Explicación en español, término y frase clave en inglés, *shadowing* |
-| 3-6 | 50 / 50 | Bloques alternos. Las preguntas finales van en inglés |
-| 7-12 | 20 / 80 | Episodio en inglés. El español solo aclara conceptos difíciles. Munger se lee en original |
+| 1-3 | 80 / 20 | Explicación en español, término y frase clave en inglés, *shadowing* lento. Gramática de la semana en el repaso del sábado |
+| 4-6 | 65 / 35 | Ejemplos y resúmenes en inglés. Las preguntas finales van en inglés |
+| 7-9 | 50 / 50 | Bloques alternos. Munger empieza con apoyo en español |
+| 10-12 | 30 / 70 | Episodio mayormente en inglés. El español solo aclara conceptos difíciles |
 
 ## Volumen total
 
@@ -131,4 +132,4 @@ Cada semana tiene 4 episodios de contenido (lunes a jueves), uno de mercado real
 5. **Dominar la psicología**: probabilidades, sesgos, disciplina y diario.
 6. **Analizar empresas**: categorías de Lynch, ratios, ROIC, DCF, *moats*, *checklist* de Munger.
 7. **Leer el contexto**: intermercado, macro y psicología de masas.
-8. **Inglés financiero profesional**: unas 1.000 palabras técnicas y la capacidad de leer a Munger y los informes 10-K, y de explicar una operación en inglés.
+8. **Inglés:** partiendo de A2, la meta realista es **B1 general y B1+/B2 leyendo y escuchando inglés financiero**, con unas 1.000 palabras técnicas. Hablar con fluidez requerirá conversación aparte.

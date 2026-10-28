@@ -8,12 +8,19 @@
 - **Estado del plan:** el curso completo está en `curso.md` (13 módulos, 48 semanas). El mes 1 está detallado en `programa.md`. Todo **pendiente de aprobación** de Migue.
 - **Fecha de inicio:** por definir. Migue está en semana de finales.
 - **Próximo episodio:** 1, "Qué es la bolsa y quién juega en ella" (M1).
-- **Mezcla de idiomas actual:** 70 % español / 30 % inglés (meses 1-2).
+- **Mezcla de idiomas actual:** 80 % español / 20 % inglés (meses 1-3), ajustada por la prueba A2.
 - **Audio:** no generar hasta que Migue lo pida.
 
 ## Datos de Migue (por confirmar)
 
-- Nivel de inglés, en sus palabras: _pendiente_
+- Nivel de inglés, en sus palabras: "entiendo si hablan lento, me defiendo en todo pero muy mal". Estudió en el colegio y en cursos sueltos, sin constancia.
+- **Prueba de nivel (28-oct-2026): A2 (básico alto).**
+  - Vocabulario: 3 de 6 bien (*savings*, *loss*, *bear market*). Falló *borrow*, *earnings* y *hedge*.
+  - Gramática: no completó ninguna de las 4 (condicional tipo 1, *present perfect*, pasado simple, comparativo).
+  - Lectura: captó la idea general, pero interpretó al revés *"let profits run"*.
+  - Escritura: A2-. Le faltan auxiliares (*I studying*), calca el orden del español y mezcla palabras en español.
+  - Al parecer dicta por voz: hay errores de transcripción.
+- **Gramática a reforzar (repaso de los sábados):** presente simple y continuo con auxiliar, pasado simple, *present perfect*, condicional tipo 1, comparativos.
 - Hora del episodio diario: _pendiente_
 - Zona horaria: _pendiente (probablemente Colombia, UTC-5)_
 

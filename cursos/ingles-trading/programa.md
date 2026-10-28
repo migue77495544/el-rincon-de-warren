@@ -1,7 +1,7 @@
 # Programa del primer mes (semanas 1-4): pendiente de aprobación
 
 **Módulos:** M1 (cómo funciona el mercado y el análisis técnico) y M2 (la mente del trader). Ver `curso.md`.
-**Mezcla de idiomas:** ≈70 % español y 30 % inglés. Cada concepto difícil se explica primero en español y después en inglés, y los términos clave se repiten con pausa para *shadowing*.
+**Mezcla de idiomas:** ≈80 % español y 20 % inglés (nivel A2). Cada concepto difícil se explica primero en español y después en inglés, y los términos clave se repiten con pausa para *shadowing*.
 **Uso:** es educativo, no es asesoría de inversión. Todo se practica en **cuenta de papel**.
 **Arranque:** "Semana 1" es la semana que Migue elija para empezar; puede ser después de finales.
 
@@ -17,11 +17,11 @@
 
 - **Lunes a jueves:** lección.
 - **Viernes:** mercado real de la semana, con tareas en la cuenta de papel.
-- **Sábado:** repaso de la semana, mini quiz y lectura en inglés de *Trading Rules*.
+- **Sábado:** repaso de la semana, mini quiz, **un punto de gramática** (sem. 1: presente simple y continuo; sem. 2: pasado simple; sem. 3: *present perfect*; sem. 4: condicional tipo 1 y comparativos) y lectura en inglés de *Trading Rules*.
 - **Domingo:** descanso.
 
 ### Nota en inglés de Migue (después de cada episodio, 5 min)
-- Al terminar cada episodio, Migue escribe un **mini resumen de ~100 palabras en inglés** con las ideas del día, usando al menos 3 palabras del vocabulario. Lo envía al chat.
+- Al terminar cada episodio, Migue escribe un **mini resumen en inglés**: 3-5 frases (~50 palabras) en el mes 1, ~75 palabras en el mes 2 y ~100 desde el mes 3, con las ideas del día, usando al menos 3 palabras del vocabulario. Lo envía al chat.
 - Claude devuelve: (1) **el texto corregido**, con los errores marcados y explicados en una línea; (2) **una versión modelo** de ~100 palabras; (3) 2 o 3 expresiones nuevas para reutilizar.
 - Se guarda en `notas/ep-XXX.md` (la nota original, la corrección y el modelo). Los errores que se repitan se anotan en `avance.md` para reforzarlos en los repasos de los sábados.
 - Los sábados, la nota es un resumen de toda la semana (~150 palabras).
