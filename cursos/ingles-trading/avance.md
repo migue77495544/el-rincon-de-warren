@@ -9,11 +9,11 @@
 - **Fecha de inicio:** por definir. Migue está en semana de finales.
 - **Próximo episodio:** 1, "Qué es la bolsa y quién juega en ella" (M1).
 - **Mezcla de idiomas actual:** 80 % español / 20 % inglés (meses 1-3), ajustada por la prueba A2.
-- **Audio:** no generar episodios hasta que Migue lo pida. **Motor por elegir** entre 3 muestras enviadas el 28-oct-2026:
-  1. edge-tts con voces colombianas (es-CO Gonzalo/Salomé para el español, en-US Andrew/Ava para el inglés).
-  2. edge-tts con voces bilingües (en-US Andrew/Ava *Multilingual*, la misma voz en los dos idiomas).
-  3. Kokoro, local (em_alex/ef_dora para el español, am_michael/af_heart para el inglés). Unas 4 veces más rápido que el tiempo real en CPU.
-  - Notas técnicas: la red ya permite huggingface.co y speech.platform.bing.com. edge-tts necesita `proxy=HTTPS_PROXY` y la CA `/root/.ccr/ca-bundle.crt`. Kokoro se instala en un venv de Python 3.12 (`uv venv -p python3.12`; en 3.13 falla la compilación de blis), con torch CPU y espeak-ng. No hay GEMINI_API_KEY.
+- **Audio, motor oficial (elegido por Migue el 28-oct-2026): edge-tts con voces bilingües.** La misma voz habla español e inglés.
+  - Comando: `python .claude/skills/podcast-estudio/scripts/generar_audio.py guion.txt --motor edge --voces "PROFESOR=en-US-AndrewMultilingualNeural,ESTUDIANTE=en-US-AvaMultilingualNeural"`
+  - Requisitos: `pip install edge-tts` y el dominio `speech.platform.bing.com` permitido en la red del entorno. El script ya usa el proxy y su CA y reintenta cuando no llega audio.
+  - Respaldo si falla Microsoft: Kokoro local (venv de Python 3.12 con torch CPU, kokoro y espeak-ng; voces em_alex/ef_dora y am_michael/af_heart). Script de muestra: `scratchpad/scripts/muestra_kokoro.py`.
+  - No generar episodios hasta que Migue confirme el inicio.
 
 ## Datos de Migue (por confirmar)
 

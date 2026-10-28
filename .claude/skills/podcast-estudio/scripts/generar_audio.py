@@ -34,6 +34,7 @@ API_GEMINI = 'https://generativelanguage.googleapis.com/v1beta'
 MODELOS_TTS_CONOCIDOS = ['gemini-2.5-flash-preview-tts', 'gemini-2.5-pro-preview-tts']
 VOCES_GEMINI = ['Charon', 'Kore']
 VOCES_EDGE = ['es-MX-JorgeNeural', 'es-MX-DaliaNeural']
+CA_PROXY = '/root/.ccr/ca-bundle.crt'
 ESTILO_POR_DEFECTO = (
     'Lee en español latinoamericano neutro esta conversación de un podcast educativo. '
     'Tono cercano y claro, ritmo pausado, como dos personas que estudian juntas.'
@@ -196,10 +197,23 @@ def gemini_bloque(bloque, voces, estilo, clave, modelos, destino):
 
 async def edge_bloque(bloque, voces, destino, carpeta):
     import edge_tts  # noqa: PLC0415 — dependencia opcional
+    import edge_tts.communicate as edge_com  # noqa: PLC0415
+    # En la nube el tráfico sale por un proxy que intercepta TLS: usar su CA y pasarlo explícito
+    proxy = os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
+    if os.path.exists(CA_PROXY):
+        import ssl  # noqa: PLC0415
+        edge_com._SSL_CTX = ssl.create_default_context(cafile=CA_PROXY)
     partes = []
     for i, (hablante, texto) in enumerate(bloque):
         parte = carpeta / f'{destino.stem}_{i:03d}.mp3'  # destino es un .wav
-        await edge_tts.Communicate(texto, voces[hablante], rate='-5%').save(str(parte))
+        for intento in range(4):  # el servicio a veces responde sin audio: reintentar
+            try:
+                await edge_tts.Communicate(texto, voces[hablante], rate='-5%', proxy=proxy).save(str(parte))
+                break
+            except edge_tts.exceptions.NoAudioReceived:
+                if intento == 3:
+                    raise
+                await asyncio.sleep(2 * (intento + 1))
         partes.append(parte)
     concatenar(partes, destino, pausa=0.25, carpeta=carpeta)
 
